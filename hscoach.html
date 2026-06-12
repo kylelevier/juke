@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JUKE — HS Coach Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --surface:#fff;--surface2:#f8f8f8;--surface3:#f0f0f0;
+  --text:#0d0d0d;--text-muted:#555;--text-dim:#888;
+  --border:rgba(0,0,0,.10);--border-mid:rgba(0,0,0,.18);
+  --magenta:#FF0080;
+  --interested:#0057FF;--contacted:#7B2FFF;--applied:#FF4500;--committed:#00E050;
+}
+body{font-family:'Archivo',sans-serif;background:#f4f4f4;color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:14px;height:60px;}
+.hd-logo{display:flex;align-items:center;}
+.hd-slogan{font-family:'Instrument Serif',serif;font-size:13px;font-weight:400;color:rgba(255,255,255,.45);letter-spacing:.01em;white-space:nowrap;}
+.hd-slogan em{font-style:italic;color:rgba(255,255,255,.75);}
+.hd-div{width:1px;height:26px;background:rgba(255,255,255,.15);flex-shrink:0;}
+.hd-badge{background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:4px;}
+.hd-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.hd-school-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 10px;cursor:pointer;}
+.hd-school-logo{width:22px;height:22px;border-radius:4px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.6);overflow:hidden;}
+.hd-school-logo img{width:100%;height:100%;object-fit:contain;}
+.hd-school-name{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;font-style:italic;text-transform:uppercase;color:rgba(255,255,255,.7);letter-spacing:.04em;}
+.hd-link{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:5px 12px;text-decoration:none;transition:color .15s,border-color .15s;}
+.hd-link:hover{color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.3);}
+
+/* ── TAB NAV ── */
+.tab-nav{background:#1A1A1A;padding:0 16px;display:flex;gap:4px;align-items:center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tab-nav::-webkit-scrollbar{display:none;}
+.tab-btn{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.38);padding:7px 14px;border:none;background:transparent;cursor:pointer;border-radius:20px;margin:6px 0;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.tab-btn:hover{color:rgba(255,255,255,.7);}
+.tab-btn.active{color:#FF0080;background:transparent;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ── PAGE LAYOUT ── */
+.page-wrap{max-width:1100px;margin:0 auto;padding:0 0 80px;}
+
+/* ── HS COACH PROFILE CARD ── */
+.coach-card{background:#0D0D0D;position:relative;overflow:hidden;}
+.coach-banner{position:relative;width:100%;height:150px;background:linear-gradient(135deg,#001510 0%,#000a20 60%,#150010 100%);overflow:hidden;cursor:pointer;}
+.coach-banner img.banner-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
+.coach-banner-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.coach-banner-cta{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);border:1.5px dashed rgba(255,255,255,.15);padding:6px 16px;border-radius:20px;}
+.coach-banner-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;}
+.coach-banner:hover .coach-banner-overlay{display:flex;}
+.coach-banner-overlay-label{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:rgba(255,0,128,.8);padding:7px 18px;border-radius:20px;}
+.coach-identity{display:flex;align-items:flex-end;gap:14px;padding:0 24px 16px;margin-top:-36px;position:relative;}
+.coach-logo-circle{position:relative;width:72px;height:72px;border-radius:12px;background:linear-gradient(135deg,#001510,#000a20);border:3px solid #0D0D0D;flex-shrink:0;overflow:hidden;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;}
+.coach-logo-circle img{width:100%;height:100%;object-fit:contain;display:block;}
+.coach-logo-initial{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:28px;color:rgba(255,255,255,.2);}
+.coach-logo-hint{position:absolute;inset:0;border-radius:10px;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;font-size:8px;font-family:'Archivo Condensed',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;}
+.coach-logo-circle:hover .coach-logo-hint{display:flex;}
+.coach-info{flex:1;min-width:0;padding-bottom:2px;}
+.coach-name{font-family:'Archivo Condensed',sans-serif;font-size:clamp(24px,5vw,40px);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.01em;color:#fff;line-height:.95;margin-bottom:4px;}
+.coach-title{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.coach-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.coach-pill{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);}
+.coach-pill.sport{border-color:rgba(0,224,80,.3);color:#00c060;background:rgba(0,224,80,.07);}
+.coach-pill.pro{border-color:rgba(255,0,128,.4);color:#FF0080;background:rgba(255,0,128,.08);}
+.coach-stats-row{display:flex;border-top:1px solid rgba(255,255,255,.07);}
+.coach-stat{flex:1;padding:12px 0;text-align:center;border-right:1px solid rgba(255,255,255,.06);}
+.coach-stat:last-child{border-right:none;}
+.coach-stat-num{font-family:'Archivo Condensed',sans-serif;font-size:22px;font-weight:900;color:#fff;line-height:1;}
+.coach-stat-lbl{font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.coach-bio{padding:12px 24px 16px;font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;border-top:1px solid rgba(255,255,255,.07);}
+
+/* ── SECTION BAR + VIEW TOGGLE ── */
+.section-bar{display:flex;align-items:center;justify-content:space-between;padding:18px 24px 12px;flex-wrap:wrap;gap:10px;}
+.section-title{font-family:'Archivo Condensed',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.06em;color:var(--text);}
+.section-actions{display:flex;align-items:center;gap:8px;}
+.section-btn{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0057FF;background:none;border:1px solid rgba(0,87,255,.25);border-radius:8px;padding:5px 12px;cursor:pointer;transition:all .15s;}
+.section-btn:hover{background:rgba(0,87,255,.06);}
+.view-toggle{display:flex;border:1px solid var(--border-mid);border-radius:8px;overflow:hidden;}
+.vtog{background:var(--surface);border:none;padding:6px 10px;cursor:pointer;color:var(--text-muted);transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.vtog:first-child{border-right:1px solid var(--border-mid);}
+.vtog.active{background:var(--text);color:var(--surface);}
+.vtog svg{display:block;}
+
+/* ── FILTER BAR ── */
+.filter-bar{padding:0 24px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.search-input-wrap{position:relative;flex:1;min-width:180px;}
+.search-input-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border-mid);border-radius:980px;color:var(--text);font-family:'Archivo',sans-serif;font-size:13px;padding:8px 14px 8px 34px;outline:none;transition:border-color .15s;}
+.search-input:focus{border-color:#0057FF;}
+.fchip-sel{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:20px;border:1px solid var(--border-mid);color:var(--text-muted);background:var(--surface);cursor:pointer;appearance:none;outline:none;}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 24px 12px;}
+.fchip{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:20px;border:1px solid var(--border-mid);color:var(--text-muted);background:var(--surface);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.fchip.active{background:#FF0080;border-color:#FF0080;color:#fff;}
+
+/* ── ROSTER CARD GRID ── */
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;padding:0 24px 24px;}
+.roster-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid transparent;border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s;position:relative;}
+.roster-card:hover{border-color:var(--border-mid);}
+.roster-card.st-interested{border-left-color:var(--interested);}
+.roster-card.st-contacted{border-left-color:var(--contacted);}
+.roster-card.st-applied{border-left-color:var(--applied);}
+.roster-card.st-committed{border-left-color:var(--committed);}
+.rc-hd{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.rc-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#1a0010,#000520);border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rc-av-init{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:18px;color:rgba(255,255,255,.3);}
+.rc-name{font-family:'Archivo Condensed',sans-serif;font-size:17px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.01em;color:var(--text);line-height:1;}
+.rc-school{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.rc-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.rc-pos{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;font-style:italic;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;background:#FF0080;color:#fff;}
+.rc-pos:first-child{font-size:11px;padding:3px 10px;}
+.rc-year{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;background:var(--surface3);color:var(--text-muted);border:1px solid var(--border);}
+.rc-stats{font-size:11px;color:var(--text-muted);margin-bottom:10px;}
+.rc-stats .v{color:var(--text);font-family:'Archivo Condensed',sans-serif;font-weight:700;font-style:italic;font-size:12px;}
+.rc-interest{font-size:11px;margin-bottom:10px;}
+.rc-interest-none{color:var(--text-dim);}
+.rc-interest-some{color:#0057FF;font-weight:500;}
+.rc-interest-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#0057FF;}
+.endorse-badge{position:absolute;top:12px;right:12px;font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(0,224,80,.1);border:1.5px solid rgba(0,224,80,.4);color:#00a03a;}
+.rc-ft{display:flex;gap:6px;border-top:1px solid var(--border);padding-top:10px;}
+.rc-btn{flex:1;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all .15s;}
+.rc-btn:hover{border-color:var(--border-mid);color:var(--text);}
+.rc-btn.primary{background:#FF0080;border-color:#FF0080;color:#fff;}
+.rc-btn.primary:hover{background:#d6006b;}
+.rc-btn.blue{background:#0057FF;border-color:#0057FF;color:#fff;}
+.rc-btn.blue:hover{background:#0046cc;}
+
+/* ── ROSTER TABLE ── */
+.roster-table-wrap{padding:0 24px 24px;overflow-x:auto;}
+.roster-table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:12px;}
+.roster-table th{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+.roster-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.roster-table tr:last-child td{border-bottom:none;}
+.roster-table tr:hover td{background:var(--surface2);}
+.rt-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#1a0010,#000520);display:inline-flex;align-items:center;justify-content:center;font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:12px;color:rgba(255,255,255,.3);}
+.rt-name{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);}
+.rt-pos-row{display:flex;gap:4px;flex-wrap:wrap;}
+.rt-pos{font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;font-style:italic;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:20px;background:#FF0080;color:#fff;}
+.rt-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:middle;margin-right:5px;}
+.rt-status-text{font-size:11px;color:var(--text-muted);}
+.rt-int{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:900;font-style:italic;}
+.rt-int.none{color:var(--text-dim);}
+.rt-int.some{color:#0057FF;}
+.rt-actions{display:flex;gap:5px;}
+.rt-btn{font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.rt-btn:hover{border-color:var(--border-mid);color:var(--text);}
+.rt-btn.primary{background:#FF0080;border-color:#FF0080;color:#fff;}
+.rt-btn.blue{background:#0057FF;border-color:#0057FF;color:#fff;}
+
+/* ── COLLEGE ACTIVITY ── */
+.activity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;padding:0 24px 24px;}
+.activity-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;transition:border-color .15s;}
+.activity-card:hover{border-color:var(--border-mid);}
+.ac-hd{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.ac-logo{width:44px;height:44px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.ac-logo img{width:100%;height:100%;object-fit:contain;}
+.ac-logo-init{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:16px;color:var(--text-muted);}
+.ac-school{font-family:'Archivo Condensed',sans-serif;font-size:15px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);line-height:1;margin-bottom:3px;}
+.ac-div{font-size:11px;color:var(--text-dim);}
+.ac-athletes{margin-bottom:10px;}
+.ac-athletes-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-weight:500;}
+.ac-athlete-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(0,87,255,.07);border:1px solid rgba(0,87,255,.18);border-radius:20px;padding:3px 9px;font-size:11px;color:#0057FF;font-weight:500;margin:0 4px 4px 0;cursor:pointer;transition:background .15s;}
+.ac-athlete-chip:hover{background:rgba(0,87,255,.13);}
+.ac-date{font-size:10px;color:var(--text-dim);}
+.ac-ft{border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:flex-end;}
+.ac-btn{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,87,255,.3);background:rgba(0,87,255,.05);color:#0057FF;cursor:pointer;transition:all .15s;}
+.ac-btn:hover{background:rgba(0,87,255,.1);}
+
+/* Activity table */
+.activity-table-wrap{padding:0 24px 24px;overflow-x:auto;}
+.activity-table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:12px;}
+.activity-table th{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+.activity-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.activity-table tr:last-child td{border-bottom:none;}
+.activity-table tr:hover td{background:var(--surface2);}
+.at-program{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);}
+.at-logo{width:26px;height:26px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);overflow:hidden;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:8px;}
+.at-logo img{width:100%;height:100%;object-fit:contain;}
+
+/* ── OUTREACH TAB ── */
+.outreach-wrap{padding:0 24px 24px;display:grid;grid-template-columns:1fr 320px;gap:16px;}
+.outreach-compose{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.outreach-compose-hd{font-family:'Archivo Condensed',sans-serif;font-size:16px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);margin-bottom:16px;}
+.compose-label{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;display:block;}
+.compose-input{width:100%;background:var(--surface2);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-family:'Archivo',sans-serif;font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s;margin-bottom:14px;}
+.compose-input:focus{border-color:#0057FF;}
+.compose-textarea{width:100%;background:var(--surface2);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-family:'Archivo',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:vertical;min-height:140px;line-height:1.6;transition:border-color .15s;margin-bottom:14px;}
+.compose-textarea:focus{border-color:#0057FF;}
+.athlete-select-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.athlete-tag{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:20px;border:1.5px solid var(--border-mid);color:var(--text-muted);cursor:pointer;transition:all .15s;}
+.athlete-tag.selected{background:#FF0080;border-color:#FF0080;color:#fff;}
+.outreach-send-row{display:flex;gap:10px;align-items:center;}
+.outreach-send-btn{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:#0057FF;color:#fff;border:none;border-radius:8px;padding:10px 24px;cursor:pointer;transition:background .15s;}
+.outreach-send-btn:hover{background:#0046cc;}
+.outreach-msg{font-size:11px;color:#00a03a;display:none;}
+.outreach-msg.show{display:block;}
+.outreach-sidebar{display:flex;flex-direction:column;gap:12px;}
+.template-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.template-hd{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);margin-bottom:8px;}
+.template-item{padding:8px 10px;border-radius:8px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.template-item:last-child{margin-bottom:0;}
+.template-item:hover{background:var(--surface2);border-color:var(--border-mid);}
+.template-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.template-sub{font-size:10px;color:var(--text-dim);}
+.pro-gate{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;}
+/* ── ENDORSEMENT REQUESTS PANEL ── */
+.end-req-panel{margin:0 24px 20px;border:1px solid rgba(0,87,255,.2);border-radius:12px;background:rgba(0,87,255,.04);overflow:hidden;}
+.end-req-panel-hd{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid rgba(0,87,255,.12);}
+.end-req-panel-title{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.06em;color:var(--text);}
+.end-req-badge{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:10px;background:#FF0080;color:#fff;}
+.end-pending-card{padding:14px 16px;border-bottom:1px solid rgba(0,87,255,.1);}
+.end-pending-card:last-child{border-bottom:none;}
+.epc-athlete-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.epc-av{width:32px;height:32px;border-radius:50%;background:#0057FF;display:flex;align-items:center;justify-content:center;font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.epc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.epc-note{font-size:12px;color:var(--text-muted);font-style:italic;line-height:1.5;}
+.epc-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;}
+.epc-textarea{width:100%;font-size:13px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);outline:none;resize:vertical;min-height:80px;font-family:inherit;line-height:1.55;box-sizing:border-box;transition:border .15s;}
+.epc-textarea:focus{border-color:#0057FF;}
+.epc-actions{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.epc-submit-btn{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:7px 16px;border-radius:8px;background:#0057FF;color:#fff;border:none;cursor:pointer;transition:opacity .15s;}
+.epc-submit-btn:hover{opacity:.85;}
+.epc-success{font-size:11px;color:#00A040;font-weight:600;}
+.end-req-none{padding:12px 16px;font-size:12px;color:var(--text-muted);font-style:italic;}
+.pro-gate-label{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#FF0080;margin-bottom:8px;}
+.pro-gate-title{font-family:'Archivo Condensed',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);margin-bottom:8px;}
+.pro-gate-sub{font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;}
+.pro-gate-btn{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;}
+
+/* ── PROFILE FORM ── */
+.profile-section{padding:0 24px 24px;}
+.profile-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:16px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);}
+.form-input,.form-select,.form-textarea{background:var(--surface);border:1px solid var(--border-mid);border-radius:8px;color:var(--text);font-family:'Archivo',sans-serif;font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s;width:100%;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#0057FF;}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.form-full{grid-column:1/-1;}
+.save-bar{padding:16px 0;display:flex;gap:10px;align-items:center;}
+.save-btn{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:#0057FF;color:#fff;border:none;border-radius:8px;padding:10px 24px;cursor:pointer;}
+.save-btn:hover{background:#0046cc;}
+.save-msg{font-size:12px;color:#00A03a;display:none;}
+.save-msg.show{display:block;}
+
+/* ── ATHLETE SLIDE-OVER ── */
+.sp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;}
+.sp-overlay.open{display:block;}
+.sp-drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:var(--surface);box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:501;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
+.sp-overlay.open .sp-drawer{transform:translateX(0);}
+.sp-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2;}
+.sp-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);line-height:1;padding:0;}
+.sp-title{font-family:'Archivo Condensed',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.06em;color:var(--text);}
+.sp-banner{height:100px;background:linear-gradient(135deg,#1a0010,#000520);position:relative;}
+.sp-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a0010,#000520);border:3px solid #fff;position:absolute;left:20px;bottom:-36px;display:flex;align-items:center;justify-content:center;font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:26px;color:rgba(255,255,255,.3);}
+.sp-name-block{padding:44px 20px 12px;}
+.sp-name{font-family:'Archivo Condensed',sans-serif;font-size:28px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);line-height:.95;margin-bottom:4px;}
+.sp-school{font-size:12px;color:var(--text-muted);}
+.sp-pills{display:flex;gap:5px;flex-wrap:wrap;padding:0 20px 12px;}
+.sp-divider{height:1px;background:var(--border);margin:0 20px 16px;}
+.sp-section{padding:0 20px 16px;}
+.sp-sec-title{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;}
+.sp-meas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px;}
+.sp-meas{text-align:center;background:var(--surface2);border-radius:8px;padding:10px 6px;}
+.sp-meas-val{font-family:'Archivo Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text);line-height:1;}
+.sp-meas-lbl{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+.sp-bio{font-size:12px;color:var(--text-muted);line-height:1.6;}
+.sp-note-area{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;font-family:'Archivo',sans-serif;color:var(--text);resize:vertical;min-height:60px;outline:none;background:var(--surface2);line-height:1.5;}
+.sp-note-area:focus{border-color:#0057FF;}
+.sp-actions{display:flex;gap:8px;padding:0 20px 20px;}
+.sp-action-btn{flex:1;font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all .15s;}
+.sp-action-btn.primary{background:#FF0080;border-color:#FF0080;color:#fff;}
+.sp-action-btn.blue{background:#0057FF;border-color:#0057FF;color:#fff;}
+.sp-interest-list{display:flex;flex-direction:column;gap:6px;}
+.sp-int-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;}
+.sp-int-logo{width:28px;height:28px;border-radius:6px;background:var(--surface3);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'Archivo Condensed',sans-serif;font-weight:700;color:var(--text-muted);}
+.sp-int-logo img{width:100%;height:100%;object-fit:contain;}
+.sp-int-school{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;font-style:italic;text-transform:uppercase;color:var(--text);flex:1;}
+.sp-int-stage{font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:20px;}
+
+/* ── ENDORSE MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border-radius:16px;width:min(420px,100%);padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.18);}
+.modal-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.modal-title{font-family:'Archivo Condensed',sans-serif;font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);}
+.modal-sub{font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;}
+.endorse-textarea{width:100%;border:1px solid var(--border-mid);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Archivo',sans-serif;color:var(--text);resize:vertical;min-height:100px;outline:none;background:var(--surface2);margin-bottom:14px;line-height:1.6;}
+.endorse-textarea:focus{border-color:#0057FF;}
+.endorse-traits{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.endorse-trait{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:20px;border:1.5px solid var(--border-mid);color:var(--text-muted);cursor:pointer;transition:all .15s;}
+.endorse-trait.selected{background:#00E050;border-color:#00E050;color:#0a4a1a;}
+.modal-ft{display:flex;gap:10px;justify-content:flex-end;}
+.modal-cancel{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:none;border:1px solid var(--border-mid);border-radius:8px;padding:9px 18px;cursor:pointer;color:var(--text-muted);}
+.modal-submit{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:#00E050;color:#0a4a1a;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;}
+
+/* ── EMPTY STATE ── */
+.empty-state{padding:40px 24px;text-align:center;color:var(--text-dim);}
+.empty-state-title{font-family:'Archivo Condensed',sans-serif;font-size:16px;font-weight:900;font-style:italic;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.empty-state-sub{font-size:12px;line-height:1.5;}
+
+@media(max-width:768px){
+  .outreach-wrap{grid-template-columns:1fr;}
+  .outreach-sidebar{order:-1;}
+}
+@media(max-width:600px){
+  .roster-grid,.activity-grid{padding:0 14px 20px;grid-template-columns:1fr;}
+  .roster-table-wrap,.activity-table-wrap{padding:0 14px 20px;}
+  .filter-bar{padding:0 14px 10px;}
+  .filter-chips{padding:0 14px 10px;}
+  .section-bar{padding:14px 14px 10px;}
+  .coach-identity{padding:0 14px 14px;}
+  .coach-bio{padding:10px 14px 12px;}
+  .profile-section{padding:0 14px 20px;}
+  .outreach-wrap{padding:0 14px 20px;}
+}
+/* ── JUKE AUTH CHIP ── */
+.juke-user-chip{display:flex;align-items:center;gap:8px;position:relative;cursor:pointer;user-select:none;}
+.juke-user-av{width:28px;height:28px;border-radius:50%;background:#FF0080;display:flex;align-items:center;justify-content:center;font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:12px;color:#fff;flex-shrink:0;}
+.juke-user-name{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.04em;color:rgba(255,255,255,.6);text-transform:uppercase;}
+.juke-logout-btn{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s;}
+.juke-logout-btn:hover{color:rgba(255,255,255,.6);border-color:rgba(255,255,255,.25);}
+/* ── USER CHIP DROPDOWN ── */
+.juke-chip-dd{position:absolute;top:calc(100% + 10px);right:0;background:#1c1c1e;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:6px 0;min-width:195px;box-shadow:0 12px 32px rgba(0,0,0,.5);display:none;z-index:400;}
+.juke-chip-dd.open{display:block;}
+.juke-chip-dd-header{padding:10px 14px 8px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:2px;}
+.juke-chip-dd-name{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.85);}
+.juke-chip-dd-role{font-size:10px;letter-spacing:.05em;color:rgba(255,255,255,.3);margin-top:2px;}
+.juke-chip-dd-section{padding:4px 0;}
+.juke-chip-dd-label{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.2);padding:6px 14px 2px;}
+.juke-chip-dd-item{display:block;width:100%;text-align:left;background:none;border:none;padding:7px 14px;font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5);cursor:pointer;transition:background .12s,color .12s;}
+.juke-chip-dd-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85);}
+.juke-chip-dd-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.juke-chip-dd-logout{color:rgba(255,80,80,.6);}
+.juke-chip-dd-logout:hover{background:rgba(255,64,64,.08)!important;color:rgba(255,100,100,.9)!important;}
+/* ── PROFILE SWITCHER ROWS ── */
+.juke-chip-dd-profile{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;padding:7px 14px;cursor:pointer;transition:background .12s;}
+.juke-chip-dd-profile:hover{background:rgba(255,255,255,.06);}
+.juke-chip-dd-profile.is-active{cursor:default;}
+.juke-chip-dd-profile.is-active:hover{background:none;}
+.jcp-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0;margin-top:1px;}
+.jcp-dot.on{background:#FF0080;}
+.jcp-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.jcp-org{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;font-style:italic;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.78);}
+.jcp-role{font-size:9px;color:rgba(255,255,255,.28);margin-top:1px;}
+.jcp-check{font-size:11px;color:#FF0080;flex-shrink:0;}
+/* ── HEADER ENVELOPE ── */
+.hd-msg-btn{background:none;border:none;cursor:pointer;position:relative;padding:6px 8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;color:rgba(255,255,255,.25);}
+.hd-msg-btn:hover{background:rgba(255,255,255,.08);}
+.hd-msg-btn.has-unread{color:#FF0080;}
+.hd-msg-btn svg{width:20px;height:17px;display:block;}
+
+/* ── ROLE SWITCHER ── */
+.role-switcher{position:fixed;bottom:20px;left:20px;z-index:9999;font-family:'Archivo Condensed',sans-serif;}
+.role-switcher-pill{display:flex;align-items:center;gap:7px;background:rgba(20,20,20,.92);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:6px 12px 6px 8px;cursor:pointer;transition:border-color .15s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.role-switcher-pill:hover{border-color:rgba(255,0,128,.45);}
+.role-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.role-switcher-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);white-space:nowrap;}
+.role-switcher-caret{font-size:8px;color:rgba(255,255,255,.3);margin-left:2px;}
+.role-switcher-menu{position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(20,20,20,.96);border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;min-width:180px;display:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.role-switcher-menu.open{display:block;}
+.rs-menu-hd{padding:8px 12px 6px;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);border-bottom:1px solid rgba(255,255,255,.07);}
+.rs-menu-item{display:flex;align-items:center;gap:9px;padding:9px 12px;text-decoration:none;transition:background .12s;}
+.rs-menu-item:hover{background:rgba(255,255,255,.06);}
+.rs-menu-item.active{background:rgba(255,0,128,.07);}
+.rs-menu-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.rs-menu-name{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;}
+.rs-menu-sub{font-size:10px;color:rgba(255,255,255,.35);margin-top:1px;}
+.rs-menu-back{display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.07);text-decoration:none;transition:background .12s;}
+.rs-menu-back:hover{background:rgba(255,255,255,.04);}
+.rs-menu-back-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);}
+</style>
+
+</head>
+<body>
+<script>
+(function(){
+  var auth=null;
+  try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
+  if(!auth||!auth.name){location.replace('login.html');return;}
+  var portals={athlete:'juke.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
+  if(auth.profiles&&auth.profiles.length){
+    var apid=auth.activeProfileId||auth.profiles[0].id;
+    var ap=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
+    if(ap.type!=='hs_coach'){location.replace(portals[ap.type]||'login.html');return;}
+    return;
+  }
+  if(!auth.type){location.replace('login.html');return;}
+  if(auth.type!=='hs_coach'){location.replace(portals[auth.type]||'login.html');return;}
+})();
+</script>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hd-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:28px;width:auto;display:block"><defs><linearGradient id="jukeGradHs" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs><path fill="url(#jukeGradHs)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/></svg></div>
+  <div class="hd-div"></div>
+  <div class="hd-slogan">Recruiting <em>her</em> way.</div>
+  <div class="hd-right">
+    <div class="hd-school-chip">
+      <div class="hd-school-logo" id="hd-logo-wrap"><span id="hd-abbr">DS</span></div>
+      <div class="hd-school-name" id="hd-school-short">DeSoto HS</div>
+    </div>
+    <button class="hd-msg-btn" id="hd-msg-btn" title="Messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()">
+      <svg viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="18" height="14" rx="2"/>
+        <polyline points="1,3 10,10 19,3"/>
+      </svg>
+    </button>
+    <div class="juke-user-chip" id="juke-user-chip" style="display:none"></div>
+  </div>
+</header>
+
+<!-- ── TAB NAV ── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tab-roster" onclick="switchTab('roster')">My Roster</button>
+  <button class="tab-btn" id="tab-activity" onclick="switchTab('activity')">College Activity</button>
+  <button class="tab-btn" id="tab-outreach" onclick="switchTab('outreach')">Outreach Tools</button>
+  <button class="tab-btn" id="tab-hsprofile" onclick="switchTab('hsprofile')">My Profile</button>
+  <button class="tab-btn" id="tab-messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
+</nav>
+
+<!-- ── HS COACH PROFILE CARD ── -->
+<input type="file" id="banner-input" accept="image/*" style="display:none" onchange="handleBanner(this)"/>
+<input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)"/>
+<div class="coach-card" id="hs-coach-card">
+  <div class="coach-banner" id="coach-banner" onclick="document.getElementById('banner-input').click()">
+    <div class="coach-banner-placeholder" id="coach-banner-ph"><div class="coach-banner-cta">Add Team Banner</div></div>
+    <div class="coach-banner-overlay"><div class="coach-banner-overlay-label">Change Banner</div></div>
+  </div>
+  <div class="coach-identity">
+    <div class="coach-logo-circle" id="coach-logo-circle" onclick="document.getElementById('logo-input').click()">
+      <div class="coach-logo-initial" id="coach-logo-init">D</div>
+      <div class="coach-logo-hint">Edit</div>
+    </div>
+    <div class="coach-info">
+      <div class="coach-name" id="hs-display-name">Coach Marcus Williams</div>
+      <div class="coach-title" id="hs-display-title">Head Flag Football Coach · DeSoto High School</div>
+      <div class="coach-pills">
+        <span class="coach-pill sport" id="hs-pill-sport">Flag Football</span>
+        <span class="coach-pill" id="hs-pill-loc">DeSoto, TX</span>
+        <span class="coach-pill" id="hs-pill-league">6A UIL</span>
+        <span class="coach-pill pro">Pro</span>
+      </div>
+    </div>
+  </div>
+  <div class="coach-stats-row">
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-roster">18</div><div class="coach-stat-lbl">Roster</div></div>
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-seniors">4</div><div class="coach-stat-lbl">Seniors</div></div>
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-interest">6</div><div class="coach-stat-lbl">Getting Interest</div></div>
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-endorsed">5</div><div class="coach-stat-lbl">Endorsed</div></div>
+  </div>
+  <div class="coach-bio" id="hs-display-bio">DeSoto Eagles flag football — building the next generation of collegiate athletes. We've sent athletes to D1, D2, and D3 programs across the country. If you're recruiting in Texas, start here.</div>
+</div>
+
+<!-- ── PAGE WRAP ── -->
+<div class="page-wrap">
+
+<!-- ════ MY ROSTER TAB ════ -->
+<div class="tab-content active" id="content-roster">
+  <div class="section-bar">
+    <div class="section-title">My Roster <span style="color:var(--text-dim);font-size:12px;font-style:normal;font-weight:400;letter-spacing:0;text-transform:none" id="roster-count">8 athletes</span></div>
+    <div class="section-actions">
+      <button class="section-btn" onclick="addAthletePrompt()">+ Add Athlete</button>
+      <div class="view-toggle">
+        <button class="vtog active" id="roster-vtog-cards" onclick="setRosterView('cards')" title="Card view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </button>
+        <button class="vtog" id="roster-vtog-table" onclick="setRosterView('table')" title="Table view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <div class="search-input-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="roster-search" placeholder="Search by name…" oninput="renderRoster()"/>
+    </div>
+    <select class="fchip-sel" id="f-year" onchange="renderRoster()">
+      <option value="">All Years</option>
+      <option>2025</option><option>2026</option><option>2027</option><option>2028</option>
+    </select>
+    <select class="fchip-sel" id="f-status" onchange="renderRoster()">
+      <option value="">All Status</option>
+      <option value="none">No Interest</option>
+      <option value="interested">Interested</option>
+      <option value="contacted">Contacted</option>
+      <option value="applied">Applied</option>
+      <option value="committed">Committed</option>
+    </select>
+  </div>
+  <div class="filter-chips" id="roster-pos-chips">
+    <span class="fchip" onclick="toggleRosterPos(this,'QB')">QB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'WR')">WR</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'RB')">RB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'CB')">CB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'S')">S</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'LB')">LB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'PR')">PR</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'KR')">KR</span>
+  </div>
+  <!-- Card view -->
+  <div class="roster-grid" id="roster-grid"></div>
+  <!-- Table view -->
+  <div class="roster-table-wrap" id="roster-table-wrap" style="display:none">
+    <table class="roster-table" id="roster-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Athlete</th>
+          <th>Positions</th>
+          <th>Year</th>
+          <th>GPA</th>
+          <th>40yd</th>
+          <th>Programs</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="roster-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ COLLEGE ACTIVITY TAB ════ -->
+<div class="tab-content" id="content-activity">
+  <!-- Endorsement Requests Panel -->
+  <div class="end-req-panel" id="end-req-panel" style="display:none">
+    <div class="end-req-panel-hd">
+      <span class="end-req-panel-title">Endorsement Requests</span>
+      <span class="end-req-badge" id="end-req-badge">0 pending</span>
+    </div>
+    <div id="end-req-cards"></div>
+  </div>
+  <div class="section-bar">
+    <div class="section-title">College Activity</div>
+    <div class="section-actions">
+      <div class="view-toggle">
+        <button class="vtog active" id="activity-vtog-cards" onclick="setActivityView('cards')" title="Card view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </button>
+        <button class="vtog" id="activity-vtog-table" onclick="setActivityView('table')" title="Table view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Card view -->
+  <div class="activity-grid" id="activity-grid"></div>
+  <!-- Table view -->
+  <div class="activity-table-wrap" id="activity-table-wrap" style="display:none">
+    <table class="activity-table">
+      <thead>
+        <tr>
+          <th>Program</th>
+          <th>Division</th>
+          <th>Athlete(s) Viewed</th>
+          <th>Last Activity</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="activity-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ OUTREACH TOOLS TAB ════ -->
+<div class="tab-content" id="content-outreach">
+  <div class="section-bar">
+    <div class="section-title">Outreach Tools</div>
+  </div>
+  <div class="outreach-wrap">
+    <!-- Compose panel -->
+    <div class="outreach-compose">
+      <div class="outreach-compose-hd">Compose Outreach Email</div>
+      <label class="compose-label">To: College Program / Coach</label>
+      <input class="compose-input" id="outreach-to" placeholder="e.g. Northern Arizona University Flag Football">
+      <label class="compose-label">Feature These Athletes</label>
+      <div class="athlete-select-row" id="outreach-athlete-row"></div>
+      <label class="compose-label">Subject</label>
+      <input class="compose-input" id="outreach-subject" placeholder="Player spotlight from DeSoto HS…">
+      <label class="compose-label">Message</label>
+      <textarea class="compose-textarea" id="outreach-body" placeholder="Coach, I wanted to bring a few of my athletes to your attention…"></textarea>
+      <div class="outreach-send-row">
+        <button class="outreach-send-btn" onclick="sendOutreach()">Send Outreach</button>
+        <span class="outreach-msg" id="outreach-msg">Sent!</span>
+      </div>
+      <!-- PRO: Bulk Outreach -->
+      <div style="margin-top:24px">
+        <div class="pro-gate">
+          <div class="pro-gate-label">Pro Feature</div>
+          <div class="pro-gate-title">Bulk Program Outreach</div>
+          <div class="pro-gate-sub">Target multiple college programs at once. Filter by division, conference, location, or scholarship availability — then send a single customized campaign featuring your top athletes.</div>
+          <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar: templates + pro gates -->
+    <div class="outreach-sidebar">
+      <div class="template-card">
+        <div class="template-hd">Email Templates</div>
+        <div class="template-item" onclick="applyTemplate('intro')">
+          <div class="template-name">Player Introduction</div>
+          <div class="template-sub">First-contact intro for a single athlete</div>
+        </div>
+        <div class="template-item" onclick="applyTemplate('spotlight')">
+          <div class="template-name">Season Spotlight</div>
+          <div class="template-sub">End-of-season stats + highlight reel</div>
+        </div>
+        <div class="template-item" onclick="applyTemplate('followup')">
+          <div class="template-name">Follow-Up</div>
+          <div class="template-sub">Check in after initial contact</div>
+        </div>
+        <div class="template-item" onclick="applyTemplate('roster')">
+          <div class="template-name">Full Roster Blast</div>
+          <div class="template-sub">Showcase your entire eligible class</div>
+        </div>
+      </div>
+      <div class="pro-gate">
+        <div class="pro-gate-label">Pro Feature</div>
+        <div class="pro-gate-title">Contact List Export</div>
+        <div class="pro-gate-sub">Download verified coach contact info for programs in your target region.</div>
+        <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
+      </div>
+      <div class="pro-gate">
+        <div class="pro-gate-label">Pro Feature</div>
+        <div class="pro-gate-title">Program Targeting</div>
+        <div class="pro-gate-sub">Filter 357+ college programs by division, scholarship, location, and conference. Build the perfect outreach list for each athlete.</div>
+        <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MY PROFILE TAB ════ -->
+<div class="tab-content" id="content-hsprofile">
+  <div class="section-bar"><div class="section-title">My Profile</div></div>
+  <div class="profile-section">
+    <div class="profile-form-grid">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input class="form-input" id="hs-fname" value="Marcus" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input class="form-input" id="hs-lname" value="Williams" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="hs-title" value="Head Flag Football Coach" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">School / Club Name</label>
+        <input class="form-input" id="hs-school" value="DeSoto High School" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input class="form-input" id="hs-city" value="DeSoto" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">State</label>
+        <input class="form-input" id="hs-state" value="TX" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">League / Classification</label>
+        <input class="form-input" id="hs-league" value="6A UIL" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Years Coaching</label>
+        <input class="form-input" id="hs-years" type="number" value="8" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="hs-email" type="email" value="m.williams@desotoisd.edu">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" id="hs-phone" type="tel" value="(972) 555-0184">
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">Program Bio</label>
+        <textarea class="form-textarea" id="hs-bio" oninput="updateHSCard()" style="min-height:100px">DeSoto Eagles flag football — building the next generation of collegiate athletes. We've sent athletes to D1, D2, and D3 programs across the country. If you're recruiting in Texas, start here.</textarea>
+      </div>
+    </div>
+    <div class="save-bar">
+      <button class="save-btn" onclick="saveHSProfile()">Save Profile</button>
+      <span class="save-msg" id="hs-save-msg">Saved!</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: MESSAGES                                        -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-messages">
+  <div class="section-hd" style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;">
+    <span class="section-title" style="font-family:'Archivo Condensed',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;color:#fff;">Messages</span>
+    <button class="hd-action" onclick="openNewMsg()" style="font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">+ New Message</button>
+  </div>
+  <div class="msg-wrap" id="msg-wrap">
+    <div class="msg-thread-panel" id="msg-thread-panel">
+      <div class="msg-thread-search">
+        <input type="text" placeholder="Search conversations…" oninput="filterThreads(this.value)" id="msg-search">
+      </div>
+      <div class="msg-thread-list" id="msg-thread-list"></div>
+    </div>
+    <div class="msg-main" id="msg-main">
+      <div class="msg-empty-state" id="msg-empty-state">
+        <div class="msg-empty-icon">💬</div>
+        <div>Select a conversation to start messaging</div>
+      </div>
+      <div style="display:none;flex-direction:column;flex:1;overflow:hidden;" id="msg-convo">
+        <div class="msg-main-header" id="msg-main-header">
+          <button class="back-btn" onclick="closeMsgThread()">&#8249;</button>
+          <div class="msg-header-av type-athlete" id="msg-header-av"></div>
+          <div>
+            <div class="msg-header-name" id="msg-header-name"></div>
+            <div class="msg-header-sub" id="msg-header-sub"></div>
+          </div>
+        </div>
+        <div class="msg-bubbles" id="msg-bubbles"></div>
+        <div class="msg-compose">
+          <textarea class="msg-compose-area" id="msg-compose-area" placeholder="Type a message…" rows="1" onkeydown="msgComposeKeydown(event)" oninput="msgComposeResize(this)"></textarea>
+          <button class="msg-send-btn" onclick="sendMsg()" title="Send">&#8593;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<!-- ── ATHLETE SLIDE-OVER ── -->
+<div class="sp-overlay" id="sp-overlay" onclick="closeSP(event)">
+  <div class="sp-drawer" id="sp-drawer">
+    <div class="sp-hd">
+      <div class="sp-title" id="sp-title">Athlete Profile</div>
+      <button class="sp-close" onclick="closeSPDirect()">✕</button>
+    </div>
+    <div class="sp-body" id="sp-body"></div>
+  </div>
+</div>
+
+<!-- ── ENDORSE MODAL ── -->
+<div class="modal-overlay" id="endorse-overlay" onclick="closeEndorseModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-title" id="endorse-title">Endorse Athlete</div>
+      <button class="modal-close" onclick="closeEndorseModal()">✕</button>
+    </div>
+    <div class="modal-sub" id="endorse-sub">Your endorsement carries weight. College coaches trust HS/club coach vouches — be specific and honest.</div>
+    <div class="endorse-traits" id="endorse-traits">
+      <span class="endorse-trait" onclick="toggleTrait(this)">High Character</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Coachable</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Team Leader</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Work Ethic</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Academics</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Game IQ</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Athleticism</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">D1 Potential</span>
+    </div>
+    <textarea class="endorse-textarea" id="endorse-text" placeholder="Write a personal endorsement… (optional)"></textarea>
+    <div class="modal-ft">
+      <button class="modal-cancel" onclick="closeEndorseModal()">Cancel</button>
+      <button class="modal-submit" onclick="submitEndorse()">Submit Endorsement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// LOCALSTORAGE HELPERS
+// ──────────────────────────────────────────────
+const ls  = key => { try { return JSON.parse(localStorage.getItem('juke_hs_'+key)); } catch(e){ return null; } };
+const lss = (key,val) => { try { localStorage.setItem('juke_hs_'+key, JSON.stringify(val)); } catch(e){} };
+
+// ──────────────────────────────────────────────
+// SAMPLE DATA
+// ──────────────────────────────────────────────
+const ATHLETES = [
+  {id:1, fname:'Camryn', lname:'Wells',       pos:['WR','PR'], year:2026, gpa:3.9, height:"5'6\"", forty:'4.38', vertical:'32"', school:'DeSoto HS', state:'TX', programs:[{name:'N. Arizona',div:'NCAA D1',stage:'contacted'},{name:'Texas A&M',div:'NCAA D1',stage:'interested'},{name:'UNLV',div:'NCAA D1',stage:'interested'},{name:'Colorado St.',div:'NCAA D1',stage:'contacted'},{name:'Boise State',div:'NCAA D1',stage:'interested'}], bio:'3× All-State WR. Elite separation route runner with top-10% 40 time. Academic All-State 2024.'},
+  {id:2, fname:'Destiny', lname:'Okafor',     pos:['QB'],      year:2025, gpa:3.7, height:"5'9\"", forty:'4.62', vertical:'28"', school:'DeSoto HS', state:'TX', programs:[{name:'Ole Miss',div:'NCAA D1',stage:'applied'},{name:'Arkansas St.',div:'NCAA D1',stage:'contacted'},{name:'UTSA',div:'NCAA D1',stage:'interested'}], bio:'Dual-threat QB. 3,200 passing yards, 31 TDs. District MVP two consecutive seasons.'},
+  {id:3, fname:'Amara',   lname:'Johnson',    pos:['CB','S'],  year:2026, gpa:3.5, height:"5'5\"", forty:'4.45', vertical:'30"', school:'DeSoto HS', state:'TX', programs:[{name:'Maryland',div:'NCAA D1',stage:'interested'},{name:'Howard',div:'NCAA D1',stage:'interested'}], bio:'Shutdown corner with 12 INTs over two seasons. Also contributes as a safety.'},
+  {id:4, fname:'Taylor',  lname:'Brooks',     pos:['WR'],      year:2027, gpa:3.8, height:"5'7\"", forty:'4.41', vertical:'31"', school:'DeSoto HS', state:'TX', programs:[{name:'UNLV',div:'NCAA D1',stage:'interested'}], bio:'Underclassman with D1 upside. Long speed, strong hands, keeps improving every week.'},
+  {id:5, fname:'Maya',    lname:'Chen',       pos:['RB','KR'], year:2026, gpa:4.0, height:"5'4\"", forty:'4.52', vertical:'27"', school:'DeSoto HS', state:'TX', programs:[], bio:'Valedictorian-track RB. Elite vision and lateral agility. Needs exposure.'},
+  {id:6, fname:'Jasmine', lname:'Rivera',     pos:['LB'],      year:2025, gpa:3.2, height:"5'8\"", forty:'4.48', vertical:'29"', school:'DeSoto HS', state:'TX', programs:[{name:'Ole Miss',div:'NCAA D1',stage:'interested'},{name:'Auburn',div:'NCAA D1',stage:'contacted'},{name:'Louisiana',div:'NCAA D1',stage:'interested'},{name:'Grambling',div:'NCAA D1',stage:'contacted'}], bio:'Physical LB with great instincts. 40+ flag pulls last season. Underrated by the ratings systems.'},
+  {id:7, fname:'Keara',   lname:'Thomas',     pos:['S'],       year:2027, gpa:3.6, height:"5'6\"", forty:'4.55', vertical:'26"', school:'DeSoto HS', state:'TX', programs:[{name:'FIU',div:'NCAA D1',stage:'interested'}], bio:'Versatile safety with strong coverage skills and leadership qualities beyond her years.'},
+  {id:8, fname:'Brianna', lname:'Washington', pos:['QB','WR'], year:2026, gpa:3.4, height:"5'8\"", forty:'4.49', vertical:'28"', school:'DeSoto HS', state:'TX', programs:[], bio:'Dual-position weapon. Can play QB or slot WR at the next level. Needs film to circulate.'},
+];
+
+const ACTIVITY = [
+  {id:1, school:'Northern Arizona',  abbr:'NAU', domain:'nau.edu',          div:'NCAA D1 – Big Sky',       athletes:[1,2], date:'2 days ago'},
+  {id:2, school:'Texas A&M',         abbr:'A&M', domain:'tamu.edu',         div:'NCAA D1 – SEC',            athletes:[1],   date:'4 days ago'},
+  {id:3, school:'Ole Miss',          abbr:'OM',  domain:'olemiss.edu',      div:'NCAA D1 – SEC',            athletes:[2,6], date:'5 days ago'},
+  {id:4, school:'Maryland',          abbr:'UMD', domain:'umd.edu',          div:'NCAA D1 – Big Ten',        athletes:[3],   date:'1 week ago'},
+  {id:5, school:'Auburn',            abbr:'AU',  domain:'auburn.edu',       div:'NCAA D1 – SEC',            athletes:[6],   date:'1 week ago'},
+  {id:6, school:'UNLV',              abbr:'UNLV',domain:'unlv.edu',         div:'NCAA D1 – Mountain West',  athletes:[1,4], date:'10 days ago'},
+];
+
+const STAGE_LABELS = {none:'No Contact',interested:'Interested',contacted:'Contacted',applied:'Applied',committed:'Committed'};
+const STAGE_COLORS = {interested:'#0057FF',contacted:'#7B2FFF',applied:'#FF4500',committed:'#00E050'};
+
+// Endorsements stored in localStorage
+let endorsements = ls('endorsements') || {};
+
+// ──────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────
+function el(id){ return document.getElementById(id); }
+
+function athleteStatus(a){
+  if(!a.programs.length) return 'none';
+  const stages = a.programs.map(p=>p.stage);
+  if(stages.includes('committed')) return 'committed';
+  if(stages.includes('applied'))   return 'applied';
+  if(stages.includes('contacted')) return 'contacted';
+  return 'interested';
+}
+
+function statusColor(st){
+  return STAGE_COLORS[st] || 'transparent';
+}
+
+function logoUrl(domain){ return 'https://logo.clearbit.com/'+domain; }
+
+function initials(a){ return (a.fname[0]+(a.lname?a.lname[0]:'')).toUpperCase(); }
+
+// ── SEED SCHOOL FROM ACTIVE AUTH PROFILE ─────────────────────────────────────
+function seedSchoolFromAuth(){
+  try{
+    var auth=JSON.parse(localStorage.getItem('juke_auth'));
+    if(!auth||!auth.profiles) return;
+    var apid=auth.activeProfileId||auth.profiles[0].id;
+    var ap=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
+    if(!ap) return;
+    var abbr=ap.abbr||(ap.org||'').split(/\s+/).map(function(w){return w[0];}).join('').slice(0,3).toUpperCase()||'HS';
+    var abbrEl=document.getElementById('hd-abbr');
+    if(abbrEl) abbrEl.textContent=abbr;
+    var nameEl=document.getElementById('hd-school-short');
+    if(nameEl) nameEl.textContent=(ap.org||'').length>14?(ap.org||'').slice(0,12)+'…':(ap.org||'Your School');
+    // Seed form school field if not set from saved profile
+    var schoolEl=document.getElementById('hs-school');
+    if(schoolEl&&!ls('profile')&&ap.org) schoolEl.value=ap.org;
+    var fnameEl=document.getElementById('hs-fname');
+    if(fnameEl&&!ls('profile')&&auth.name){
+      var parts=auth.name.split(' ');
+      fnameEl.value=parts[0]||'';
+      var lnameEl=document.getElementById('hs-lname');
+      if(lnameEl&&parts.length>1) lnameEl.value=parts.slice(1).join(' ');
+    }
+  }catch(e){}
+}
+
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Restore saved profile
+  const saved = ls('profile');
+  if(saved){
+    if(saved.fname) el('hs-fname').value = saved.fname;
+    if(saved.lname) el('hs-lname').value = saved.lname;
+    if(saved.title) el('hs-title').value = saved.title;
+    if(saved.school) el('hs-school').value = saved.school;
+    if(saved.city) el('hs-city').value = saved.city;
+    if(saved.state) el('hs-state').value = saved.state;
+    if(saved.league) el('hs-league').value = saved.league;
+    if(saved.bio) el('hs-bio').value = saved.bio;
+  }
+  // Restore banner/logo photos
+  const banner = ls('banner');
+  if(banner){ renderBannerPhoto(banner); }
+  const logo = ls('logo');
+  if(logo){ renderLogoPhoto(logo); }
+
+  seedSchoolFromAuth();
+  updateHSCard();
+  renderRoster();
+  renderActivity();
+  renderOutreachAthletes();
+});
+
+// ──────────────────────────────────────────────
+// ── ENDORSEMENT REQUESTS ─────────────────────────────────
+function escEnd(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function hsInitials(name){return(name||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();}
+
+function loadEndorsementRequests(){
+  var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
+  var pending=all.filter(function(e){return e.status==='pending';});
+  var panel=document.getElementById('end-req-panel');
+  var cards=document.getElementById('end-req-cards');
+  var badge=document.getElementById('end-req-badge');
+  if(!panel||!cards) return;
+  if(pending.length){
+    panel.style.display='';
+    badge.textContent=pending.length+' pending';
+    cards.innerHTML=pending.map(function(e){
+      return '<div class="end-pending-card" id="endcard-'+escEnd(e.id)+'">'
+        +'<div class="epc-athlete-row">'
+        +'<div class="epc-av">'+hsInitials(e.athleteName)+'</div>'
+        +'<div><div class="epc-name">'+escEnd(e.athleteName||'Athlete')+'</div>'
+        +(e.coachNote?'<div class="epc-note">&#8220;'+escEnd(e.coachNote)+'&#8221;</div>':'')
+        +'</div></div>'
+        +'<label class="epc-label">Your endorsement</label>'
+        +'<textarea class="epc-textarea" id="endtext-'+escEnd(e.id)+'" placeholder="What makes this athlete stand out? What will a college program be getting?"></textarea>'
+        +'<div class="epc-actions">'
+        +'<button class="epc-submit-btn" onclick="submitHSEndorsement(\''+escEnd(e.id)+'\')">Submit Endorsement</button>'
+        +'<span class="epc-success" id="endsuccess-'+escEnd(e.id)+'" style="display:none">✓ Submitted</span>'
+        +'</div></div>';
+    }).join('');
+  } else {
+    panel.style.display='';
+    badge.style.display='none';
+    cards.innerHTML='<div class="end-req-none">No pending requests. Athletes who list you as their coach reference will appear here.</div>';
+  }
+}
+
+function submitHSEndorsement(id){
+  var textEl=document.getElementById('endtext-'+id);
+  var text=textEl?textEl.value.trim():'';
+  if(!text){alert('Please write an endorsement before submitting.');return;}
+  var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
+  var idx=all.findIndex(function(e){return e.id===id;});
+  if(idx<0)return;
+  all[idx].status='endorsed';
+  all[idx].endorsementText=text;
+  all[idx].submittedAt=new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  try{localStorage.setItem('juke_endorsements',JSON.stringify(all));}catch(e){}
+  var ok=document.getElementById('endsuccess-'+id);
+  if(ok)ok.style.display='inline';
+  setTimeout(function(){
+    var card=document.getElementById('endcard-'+id);
+    if(card)card.style.display='none';
+    loadEndorsementRequests();
+  },1600);
+}
+
+// Seed a demo pending request so the panel shows on first visit
+(function seedHSPendingRequest(){
+  var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
+  if(!all.some(function(e){return e.id==='end_demo_pending';})){
+    all.push({
+      id:'end_demo_pending',
+      athleteProfileId:'demo_athlete_2',
+      athleteName:'Jordan Rivera',
+      coachName:'HS Coach',
+      coachSchool:'DeSoto HS',
+      coachTitle:'Head Coach',
+      coachNote:'Coach, I\'m reaching out to college programs and could really use your support. A few honest words from you would mean everything to my recruiting process.',
+      status:'pending',
+      requestedAt:'May 2026'
+    });
+    try{localStorage.setItem('juke_endorsements',JSON.stringify(all));}catch(e){}
+  }
+})();
+
+// TAB SWITCHING
+// ──────────────────────────────────────────────
+function switchTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const content = el('content-'+id);
+  const btn = el('tab-'+id);
+  if(content) content.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='activity') loadEndorsementRequests();
+}
+
+// ──────────────────────────────────────────────
+// VIEW TOGGLES
+// ──────────────────────────────────────────────
+let rosterView = 'cards';
+let activityView = 'cards';
+
+function setRosterView(v){
+  rosterView = v;
+  el('roster-grid').style.display         = v==='cards' ? '' : 'none';
+  el('roster-table-wrap').style.display   = v==='table' ? '' : 'none';
+  el('roster-vtog-cards').classList.toggle('active', v==='cards');
+  el('roster-vtog-table').classList.toggle('active', v==='table');
+  renderRoster();
+}
+
+function setActivityView(v){
+  activityView = v;
+  el('activity-grid').style.display        = v==='cards' ? '' : 'none';
+  el('activity-table-wrap').style.display  = v==='table' ? '' : 'none';
+  el('activity-vtog-cards').classList.toggle('active', v==='cards');
+  el('activity-vtog-table').classList.toggle('active', v==='table');
+  renderActivity();
+}
+
+// ──────────────────────────────────────────────
+// PROFILE CARD
+// ──────────────────────────────────────────────
+function updateHSCard(){
+  const fname  = el('hs-fname')?.value||'';
+  const lname  = el('hs-lname')?.value||'';
+  const title  = el('hs-title')?.value||'';
+  const school = el('hs-school')?.value||'';
+  const city   = el('hs-city')?.value||'';
+  const state  = el('hs-state')?.value||'';
+  const league = el('hs-league')?.value||'';
+  const bio    = el('hs-bio')?.value||'';
+  const abbr   = school.split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase();
+
+  if(el('hs-display-name'))  el('hs-display-name').textContent = [fname,lname].filter(Boolean).join(' ')||'Your Name';
+  if(el('hs-display-title')) el('hs-display-title').textContent = [title, school].filter(Boolean).join(' · ');
+  if(el('hs-pill-loc'))      el('hs-pill-loc').textContent = [city,state].filter(Boolean).join(', ')||'Location';
+  if(el('hs-pill-league'))   el('hs-pill-league').textContent = league||'League';
+  if(el('hs-display-bio'))   el('hs-display-bio').textContent = bio;
+  if(el('hd-abbr'))          el('hd-abbr').textContent = abbr||'HS';
+  if(el('hd-school-short'))  el('hd-school-short').textContent = school.length>14 ? school.slice(0,12)+'…' : (school||'Your School');
+  if(el('coach-logo-init'))  el('coach-logo-init').textContent = abbr[0]||'?';
+
+  // Update stats
+  const endorsed = Object.keys(endorsements).length;
+  const withInterest = ATHLETES.filter(a=>a.programs.length>0).length;
+  if(el('hs-stat-roster'))   el('hs-stat-roster').textContent   = ATHLETES.length;
+  if(el('hs-stat-seniors'))  el('hs-stat-seniors').textContent  = ATHLETES.filter(a=>a.year===2025).length;
+  if(el('hs-stat-interest')) el('hs-stat-interest').textContent = withInterest;
+  if(el('hs-stat-endorsed')) el('hs-stat-endorsed').textContent = endorsed;
+}
+
+function saveHSProfile(){
+  lss('profile',{
+    fname:  el('hs-fname')?.value,
+    lname:  el('hs-lname')?.value,
+    title:  el('hs-title')?.value,
+    school: el('hs-school')?.value,
+    city:   el('hs-city')?.value,
+    state:  el('hs-state')?.value,
+    league: el('hs-league')?.value,
+    bio:    el('hs-bio')?.value,
+  });
+  const msg = el('hs-save-msg');
+  if(msg){ msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2200); }
+}
+
+// ──────────────────────────────────────────────
+// PHOTO UPLOAD
+// ──────────────────────────────────────────────
+function handleBanner(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { lss('banner', e.target.result); renderBannerPhoto(e.target.result); };
+  reader.readAsDataURL(file);
+}
+function renderBannerPhoto(dataUrl){
+  const banner = el('coach-banner'); if(!banner) return;
+  const existing = banner.querySelector('img.banner-img'); if(existing) existing.remove();
+  const ph = el('coach-banner-ph'); if(ph) ph.style.display='none';
+  const img = document.createElement('img'); img.src=dataUrl; img.alt='Banner'; img.className='banner-img';
+  banner.insertBefore(img, banner.firstChild);
+}
+function handleLogo(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { lss('logo', e.target.result); renderLogoPhoto(e.target.result); };
+  reader.readAsDataURL(file);
+}
+function renderLogoPhoto(dataUrl){
+  const circle = el('coach-logo-circle'); if(!circle) return;
+  const existing = circle.querySelector('img.logo-img'); if(existing) existing.remove();
+  const init = el('coach-logo-init'); if(init) init.style.display='none';
+  const img = document.createElement('img'); img.src=dataUrl; img.alt='Logo'; img.className='logo-img';
+  img.style.cssText='width:100%;height:100%;object-fit:contain;display:block;';
+  circle.insertBefore(img, circle.firstChild);
+}
+
+// ──────────────────────────────────────────────
+// ROSTER RENDERING
+// ──────────────────────────────────────────────
+let selectedPositions = new Set();
+
+function toggleRosterPos(chip, pos){
+  if(selectedPositions.has(pos)){ selectedPositions.delete(pos); chip.classList.remove('active'); }
+  else { selectedPositions.add(pos); chip.classList.add('active'); }
+  renderRoster();
+}
+
+function filteredAthletes(){
+  const q      = (el('roster-search')?.value||'').toLowerCase();
+  const year   = el('f-year')?.value||'';
+  const status = el('f-status')?.value||'';
+  return ATHLETES.filter(a=>{
+    const name = (a.fname+' '+a.lname).toLowerCase();
+    if(q && !name.includes(q)) return false;
+    if(year && String(a.year)!==year) return false;
+    if(status && athleteStatus(a)!==status) return false;
+    if(selectedPositions.size && !a.pos.some(p=>selectedPositions.has(p))) return false;
+    return true;
+  });
+}
+
+function renderRoster(){
+  const athletes = filteredAthletes();
+  const countEl = el('roster-count');
+  if(countEl) countEl.textContent = athletes.length+' athlete'+(athletes.length!==1?'s':'');
+
+  if(rosterView==='cards') renderRosterCards(athletes);
+  else renderRosterTable(athletes);
+}
+
+function renderRosterCards(athletes){
+  const grid = el('roster-grid'); if(!grid) return;
+  if(!athletes.length){ grid.innerHTML='<div class="empty-state"><div class="empty-state-title">No athletes found</div><div class="empty-state-sub">Try adjusting your filters.</div></div>'; return; }
+  grid.innerHTML = athletes.map(a=>{
+    const st = athleteStatus(a);
+    const endorsed = endorsements[a.id];
+    const stLabel  = STAGE_LABELS[st]||'';
+    const stColor  = STAGE_COLORS[st]||'';
+    const intCount = a.programs.length;
+    return `<div class="roster-card st-${st}" onclick="openSP(${a.id})">
+      ${endorsed?'<div class="endorse-badge">Endorsed</div>':''}
+      <div class="rc-hd">
+        <div class="rc-av"><div class="rc-av-init">${initials(a)}</div></div>
+        <div>
+          <div class="rc-name">${a.fname} ${a.lname}</div>
+          <div class="rc-school">${a.school} · ${a.state}</div>
+        </div>
+      </div>
+      <div class="rc-pills">
+        ${a.pos.map((p,i)=>`<span class="rc-pos">${p}</span>`).join('')}
+        <span class="rc-year">${a.year}</span>
+        ${st!=='none'?`<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stColor};color:${stColor};background:${stColor}18;">${stLabel}</span>`:''}
+      </div>
+      <div class="rc-stats">
+        ${a.gpa?`<span class="v">${a.gpa}</span> GPA`:''}${a.height?` · <span class="v">${a.height}</span>`:''}${a.forty?` · <span class="v">${a.forty}</span> 40`:''}
+      </div>
+      <div class="rc-interest">
+        ${intCount===0
+          ? '<span class="rc-interest-none">No college interest yet</span>'
+          : `<span class="rc-interest-some">📍 ${intCount} program${intCount!==1?'s':''} interested</span>`}
+      </div>
+      <div class="rc-ft" onclick="event.stopPropagation()">
+        <button class="rc-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓ Endorsed':'Endorse'}</button>
+        <button class="rc-btn" onclick="openSP(${a.id})">View Profile</button>
+        <button class="rc-btn blue" onclick="openOutreachFor(${a.id})">Outreach →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRosterTable(athletes){
+  const tbody = el('roster-tbody'); if(!tbody) return;
+  if(!athletes.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-dim)">No athletes found</td></tr>'; return; }
+  tbody.innerHTML = athletes.map(a=>{
+    const st       = athleteStatus(a);
+    const stColor  = STAGE_COLORS[st]||'#ccc';
+    const stLabel  = STAGE_LABELS[st]||'No Contact';
+    const endorsed = endorsements[a.id];
+    return `<tr>
+      <td><div class="rt-av">${initials(a)}</div></td>
+      <td>
+        <div class="rt-name" style="cursor:pointer" onclick="openSP(${a.id})">${a.fname} ${a.lname}</div>
+        ${endorsed?'<span style="font-size:9px;color:#00a03a;font-weight:600">✓ Endorsed</span>':''}
+      </td>
+      <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${p}</span>`).join('')}</div></td>
+      <td>${a.year}</td>
+      <td>${a.gpa||'—'}</td>
+      <td>${a.forty||'—'}</td>
+      <td><span class="rt-int ${a.programs.length?'some':'none'}">${a.programs.length||'0'}</span></td>
+      <td>
+        <span class="rt-status-dot" style="background:${stColor}"></span>
+        <span class="rt-status-text">${stLabel}</span>
+      </td>
+      <td>
+        <div class="rt-actions" onclick="event.stopPropagation()">
+          <button class="rt-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓':'Endorse'}</button>
+          <button class="rt-btn blue" onclick="openOutreachFor(${a.id})">Outreach</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ──────────────────────────────────────────────
+// COLLEGE ACTIVITY
+// ──────────────────────────────────────────────
+function renderActivity(){
+  if(activityView==='cards') renderActivityCards();
+  else renderActivityTable();
+}
+
+function renderActivityCards(){
+  const grid = el('activity-grid'); if(!grid) return;
+  grid.innerHTML = ACTIVITY.map(act=>{
+    const athletes = act.athletes.map(id=>ATHLETES.find(a=>a.id===id)).filter(Boolean);
+    const logoSrc = logoUrl(act.domain);
+    return `<div class="activity-card">
+      <div class="ac-hd">
+        <div class="ac-logo">
+          <img src="${logoSrc}" alt="${act.school}" onerror="this.parentNode.innerHTML='<span class=ac-logo-init>${act.abbr}</span>'">
+        </div>
+        <div>
+          <div class="ac-school">${act.school}</div>
+          <div class="ac-div">${act.div}</div>
+        </div>
+      </div>
+      <div class="ac-athletes">
+        <div class="ac-athletes-lbl">Viewed your athletes</div>
+        ${athletes.map(a=>`<span class="ac-athlete-chip" onclick="openSP(${a.id})">
+          ${initials(a)} ${a.fname} ${a.lname}
+        </span>`).join('')}
+      </div>
+      <div class="ac-date">Last active ${act.date}</div>
+      <div class="ac-ft">
+        <button class="ac-btn" onclick="openOutreachTo('${act.school}')">Contact This Program →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderActivityTable(){
+  const tbody = el('activity-tbody'); if(!tbody) return;
+  tbody.innerHTML = ACTIVITY.map(act=>{
+    const athletes = act.athletes.map(id=>ATHLETES.find(a=>a.id===id)).filter(Boolean);
+    const logoSrc = logoUrl(act.domain);
+    return `<tr>
+      <td>
+        <span class="at-logo"><img src="${logoSrc}" alt="${act.school}" onerror="this.textContent='${act.abbr[0]}'"></span>
+        <span class="at-program">${act.school}</span>
+      </td>
+      <td style="font-size:11px;color:var(--text-muted)">${act.div}</td>
+      <td>${athletes.map(a=>`<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0" onclick="openSP(${a.id})">${a.fname} ${a.lname}</span>`).join('')}</td>
+      <td style="font-size:11px;color:var(--text-dim)">${act.date}</td>
+      <td><button class="rt-btn blue" onclick="openOutreachTo('${act.school}')">Contact</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ──────────────────────────────────────────────
+// OUTREACH
+// ──────────────────────────────────────────────
+function renderOutreachAthletes(){
+  const row = el('outreach-athlete-row'); if(!row) return;
+  row.innerHTML = ATHLETES.map(a=>`<span class="athlete-tag" data-id="${a.id}" onclick="toggleOutreachAthlete(this)">${a.fname} ${a.lname}</span>`).join('');
+}
+
+function toggleOutreachAthlete(tag){
+  tag.classList.toggle('selected');
+  updateOutreachBody();
+}
+
+function updateOutreachBody(){
+  const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')];
+  if(!selected.length) return;
+  const school = el('hs-school')?.value||'DeSoto HS';
+  const coachName = [el('hs-fname')?.value, el('hs-lname')?.value].filter(Boolean).join(' ')||'Coach';
+  const names = selected.map(t=>{
+    const id = parseInt(t.dataset.id);
+    const a = ATHLETES.find(x=>x.id===id);
+    return a ? a.fname+' '+a.lname : '';
+  }).filter(Boolean);
+  if(!el('outreach-subject').value){
+    el('outreach-subject').value = `Player Spotlight from ${school}: ${names.slice(0,2).join(', ')}${names.length>2?' +more':''}`;
+  }
+  if(!el('outreach-body').value){
+    el('outreach-body').value = `Coach,\n\nI wanted to bring ${names.length>1?'a few of my athletes':'one of my athletes'} to your attention — ${names.join(', ')} from ${school}.\n\n${names.length>1?'They have':'She has'} the athleticism and character to compete at the next level, and I believe ${names.length>1?'they would':'she would'} thrive in your program.\n\nI've attached their JUKE profile links. Happy to send game film, transcripts, or schedule a call at your convenience.\n\nBest,\n${coachName}\n${school}`;
+  }
+}
+
+function openOutreachFor(athleteId){
+  switchTab('outreach');
+  setTimeout(()=>{
+    // Select just this athlete
+    document.querySelectorAll('#outreach-athlete-row .athlete-tag').forEach(t=>{
+      if(parseInt(t.dataset.id)===athleteId){ t.classList.add('selected'); }
+      else { t.classList.remove('selected'); }
+    });
+    el('outreach-subject').value='';
+    el('outreach-body').value='';
+    updateOutreachBody();
+    el('outreach-to').focus();
+  },50);
+}
+
+function openOutreachTo(school){
+  switchTab('outreach');
+  setTimeout(()=>{
+    el('outreach-to').value = school;
+    el('outreach-to').focus();
+  },50);
+}
+
+function sendOutreach(){
+  const to   = el('outreach-to').value;
+  const subj = el('outreach-subject').value;
+  const body = el('outreach-body').value;
+  if(!to||!subj||!body){ alert('Please fill in the recipient, subject, and message.'); return; }
+  const msg = el('outreach-msg');
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'), 2500);
+  el('outreach-to').value='';
+  el('outreach-subject').value='';
+  el('outreach-body').value='';
+  document.querySelectorAll('#outreach-athlete-row .athlete-tag').forEach(t=>t.classList.remove('selected'));
+}
+
+const TEMPLATES = {
+  intro: {
+    subject: 'Player Introduction — {name} | {school}',
+    body: 'Coach,\n\nI wanted to introduce you to {name}, a Class of {year} {pos} from {school}.\n\nShe is {gpa} GPA, clocking {forty} in the 40-yard dash, and has shown elite instincts on film. She\'s exactly the type of athlete your program should have on your radar.\n\nI\'d love to connect and share more. Happy to send film at your request.\n\nCoach {coachName}\n{school}'
+  },
+  spotlight: {
+    subject: 'Season Spotlight — {name} | {school}',
+    body: 'Coach,\n\nEnd of season update on {name} ({pos}, Class of {year}) from {school}.\n\nThis season she was one of the top performers in our league. You can find her full stats and updated highlight film on her JUKE profile.\n\nLooking forward to hearing from you.\n\nCoach {coachName}'
+  },
+  followup: {
+    subject: 'Following Up — {name} | {school}',
+    body: 'Coach,\n\nI wanted to follow up on our earlier message regarding {name}.\n\nShe remains highly interested in your program and has been closely following your team this season. A campus visit or call would go a long way.\n\nThanks for your time.\n\nCoach {coachName}'
+  },
+  roster: {
+    subject: 'Eligible Class Spotlight | {school}',
+    body: 'Coach,\n\nI\'m reaching out to share our current eligible class from {school}.\n\nWe have multiple athletes ready to compete at the collegiate level across several positions. I\'d be happy to send individual profiles and film for any athletes that catch your eye.\n\nCoach {coachName}'
+  }
+};
+
+function applyTemplate(key){
+  const tpl = TEMPLATES[key]; if(!tpl) return;
+  const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')];
+  let a = null;
+  if(selected.length){ const id=parseInt(selected[0].dataset.id); a=ATHLETES.find(x=>x.id===id); }
+  const school    = el('hs-school')?.value||'DeSoto HS';
+  const coachName = [el('hs-fname')?.value, el('hs-lname')?.value].filter(Boolean).join(' ')||'Coach';
+  const fill = s => s
+    .replace(/{name}/g,  a?a.fname+' '+a.lname:'[Athlete Name]')
+    .replace(/{year}/g,  a?a.year:'[Year]')
+    .replace(/{pos}/g,   a?a.pos.join('/'):  '[Position]')
+    .replace(/{gpa}/g,   a?a.gpa+'':         '[GPA]')
+    .replace(/{forty}/g, a?a.forty:           '[40 Time]')
+    .replace(/{school}/g,    school)
+    .replace(/{coachName}/g, coachName);
+  el('outreach-subject').value = fill(tpl.subject);
+  el('outreach-body').value    = fill(tpl.body);
+}
+
+// ──────────────────────────────────────────────
+// ATHLETE SLIDE-OVER
+// ──────────────────────────────────────────────
+let currentSPId = null;
+
+function openSP(id){
+  const a = ATHLETES.find(x=>x.id===id); if(!a) return;
+  currentSPId = id;
+  const st = athleteStatus(a);
+  const endorsed = endorsements[id];
+  const savedNote = ls('note_'+id)||'';
+  el('sp-title').textContent = a.fname+' '+a.lname;
+  el('sp-body').innerHTML = `
+    <div class="sp-banner"></div>
+    <div class="sp-av">${initials(a)}</div>
+    <div class="sp-name-block">
+      <div class="sp-name">${a.fname} ${a.lname}</div>
+      <div class="sp-school">${a.school} · ${a.state} · Class of ${a.year}</div>
+    </div>
+    <div class="sp-pills">
+      ${a.pos.map(p=>`<span class="rc-pos">${p}</span>`).join('')}
+      <span class="rc-year">${a.year}</span>
+      ${st!=='none'?`<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${STAGE_COLORS[st]};color:${STAGE_COLORS[st]};background:${STAGE_COLORS[st]}18;">${STAGE_LABELS[st]}</span>`:''}
+    </div>
+    <div class="sp-divider"></div>
+    <div class="sp-section">
+      <div class="sp-sec-title">Measurables</div>
+      <div class="sp-meas-grid">
+        <div class="sp-meas"><div class="sp-meas-val">${a.height||'—'}</div><div class="sp-meas-lbl">Height</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${a.forty||'—'}</div><div class="sp-meas-lbl">40-Yard</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${a.vertical||'—'}</div><div class="sp-meas-lbl">Vertical</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${a.gpa||'—'}</div><div class="sp-meas-lbl">GPA</div></div>
+      </div>
+    </div>
+    ${a.bio?`<div class="sp-section"><div class="sp-sec-title">Bio</div><div class="sp-bio">${a.bio}</div></div>`:''}
+    <div class="sp-divider"></div>
+    <div class="sp-section">
+      <div class="sp-sec-title">College Interest (${a.programs.length})</div>
+      ${a.programs.length?
+        `<div class="sp-interest-list">${a.programs.map(p=>{
+          const col=STAGE_COLORS[p.stage]||'#888';
+          const lbl=STAGE_LABELS[p.stage]||'';
+          return `<div class="sp-int-row">
+            <div class="sp-int-logo">
+              <img src="https://logo.clearbit.com/${p.name.toLowerCase().replace(/\s+/g,'')}.edu" alt="${p.name}" onerror="this.parentNode.textContent='${p.name[0]}'">
+            </div>
+            <span class="sp-int-school">${p.name}</span>
+            <span class="sp-int-stage" style="background:${col}18;border:1.5px solid ${col};color:${col};font-family:'Archivo Condensed';font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:20px;">${lbl}</span>
+          </div>`;
+        }).join('')}</div>`
+        :'<div style="font-size:12px;color:var(--text-dim)">No college interest logged yet. Use Outreach Tools to start the conversation.</div>'}
+    </div>
+    ${endorsed?`<div class="sp-divider"></div><div class="sp-section"><div class="sp-sec-title">Your Endorsement</div><div class="sp-bio" style="color:#00a03a">${typeof endorsed==='object'&&endorsed.text?endorsed.text:'Endorsed by coach.'}</div></div>`:''}
+    <div class="sp-divider"></div>
+    <div class="sp-section">
+      <div class="sp-sec-title">Coach Notes</div>
+      <textarea class="sp-note-area" id="sp-note-area" onblur="saveSPNote(${id})" placeholder="Private notes about this athlete…">${savedNote}</textarea>
+    </div>
+    <div class="sp-actions">
+      <button class="sp-action-btn primary" onclick="openEndorse(${a.id})">Endorse / Update</button>
+      <button class="sp-action-btn blue" onclick="openOutreachFor(${a.id})">Outreach →</button>
+      <button class="sp-action-btn" onclick="openMsgFromOutside('athlete_'+${a.id})">Message</button>
+    </div>
+  `;
+  el('sp-overlay').classList.add('open');
+}
+
+function saveSPNote(id){
+  const area = el('sp-note-area'); if(!area) return;
+  lss('note_'+id, area.value);
+}
+
+function closeSP(e){
+  if(e.target===el('sp-overlay')) closeSPDirect();
+}
+function closeSPDirect(){
+  el('sp-overlay').classList.remove('open');
+  currentSPId = null;
+}
+
+// ──────────────────────────────────────────────
+// ENDORSEMENTS
+// ──────────────────────────────────────────────
+let endorseTarget = null;
+
+function openEndorse(id){
+  endorseTarget = id;
+  const a = ATHLETES.find(x=>x.id===id); if(!a) return;
+  el('endorse-title').textContent = 'Endorse '+a.fname+' '+a.lname;
+  el('endorse-sub').textContent   = 'Your endorsement carries weight. College coaches trust HS/club coach vouches — be specific and honest.';
+  el('endorse-text').value        = typeof endorsements[id]==='object' ? (endorsements[id].text||'') : '';
+  // Reset traits
+  document.querySelectorAll('.endorse-trait').forEach(t=>{
+    const savedTraits = typeof endorsements[id]==='object' ? (endorsements[id].traits||[]) : [];
+    t.classList.toggle('selected', savedTraits.includes(t.textContent));
+  });
+  el('endorse-overlay').classList.add('open');
+}
+
+function closeEndorseModal(e){
+  if(!e || e.target===el('endorse-overlay')) {
+    el('endorse-overlay').classList.remove('open');
+    endorseTarget = null;
+  }
+}
+
+function toggleTrait(el){ el.classList.toggle('selected'); }
+
+function submitEndorse(){
+  if(!endorseTarget) return;
+  const traits = [...document.querySelectorAll('.endorse-trait.selected')].map(t=>t.textContent);
+  const text   = el('endorse-text').value.trim();
+  endorsements[endorseTarget] = {traits, text, date: new Date().toLocaleDateString()};
+  lss('endorsements', endorsements);
+  updateHSCard();
+  renderRoster();
+  el('endorse-overlay').classList.remove('open');
+  endorseTarget = null;
+}
+
+function addAthletePrompt(){
+  alert('Add Athlete flow coming soon — this will open a form to manually add a player to your roster or invite them to create a JUKE profile.');
+}
+
+// ── JUKE USER CHIP ──
+(function(){
+  var auth=null;
+  try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
+  if(!auth) return;
+  var chip=document.getElementById('juke-user-chip');
+  if(!chip) return;
+  var parts=auth.name.trim().split(' ');
+  var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+  var RL={athlete:'Athlete',college_coach:'College Coach',hs_coach:'HS / Club Coach'};
+  var activeProfile=null;
+  if(auth.profiles&&auth.profiles.length){
+    var apid=auth.activeProfileId||auth.profiles[0].id;
+    activeProfile=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
+  }
+  var roleOrg=activeProfile&&activeProfile.org?'HS / Club Coach · '+activeProfile.org:'HS / Club Coach';
+  var profilesHTML='';
+  if(auth.profiles&&auth.profiles.length){
+    profilesHTML+='<div class="juke-chip-dd-divider"></div><div class="juke-chip-dd-section">';
+    auth.profiles.forEach(function(p){
+      var isA=p.id===(auth.activeProfileId||'');
+      profilesHTML+='<button class="juke-chip-dd-profile'+(isA?' is-active':'')+'"'
+        +(isA?'':' onclick="switchProfile(\''+p.id+'\')"')+'>'
+        +'<span class="jcp-dot'+(isA?' on':'')+'"></span>'
+        +'<span class="jcp-info"><span class="jcp-org">'+(p.org||RL[p.type]||p.type)+'</span><span class="jcp-role">'+(RL[p.type]||p.type)+'</span></span>'
+        +(isA?'<span class="jcp-check">✓</span>':'')
+        +'</button>';
+    });
+    profilesHTML+='</div>';
+  }
+  chip.innerHTML=
+    '<div class="juke-user-av">'+inits+'</div>'
+    +'<span class="juke-user-name">'+parts[0]+'</span>'
+    +'<div class="juke-chip-dd" id="juke-chip-dd">'
+      +'<div class="juke-chip-dd-header">'
+        +'<div class="juke-chip-dd-name">'+auth.name+'</div>'
+        +'<div class="juke-chip-dd-role">'+roleOrg+'</div>'
+      +'</div>'
+      +profilesHTML
+      +'<div class="juke-chip-dd-section">'
+        +'<button class="juke-chip-dd-item" onclick="location.href=\'login.html\'">+ Add Account</button>'
+      +'</div>'
+      +'<div class="juke-chip-dd-divider"></div>'
+      +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
+    +'</div>';
+  chip.style.display='flex';
+  chip.addEventListener('click',function(e){
+    if(e.target.closest('.juke-chip-dd')) return;
+    document.getElementById('juke-chip-dd').classList.toggle('open');
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#juke-user-chip')){
+      var dd=document.getElementById('juke-chip-dd');
+      if(dd) dd.classList.remove('open');
+    }
+  });
+})();
+
+function switchProfile(profileId){
+  try{
+    var auth=JSON.parse(localStorage.getItem('juke_auth'));
+    if(!auth) return;
+    auth.activeProfileId=profileId;
+    localStorage.setItem('juke_auth',JSON.stringify(auth));
+    var p=auth.profiles.find(function(x){return x.id===profileId;});
+    if(!p) return;
+    var portals={athlete:'juke.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
+    location.href=portals[p.type]||'login.html';
+  }catch(e){}
+}
+function jukeLogout(){localStorage.removeItem('juke_auth');location.href='login.html';}
+
+
+
+</script>
+
+
+<script>window.JUKE_PORTAL_TYPE='hs_coach';</script>
+<script src="juke-messaging.js"></script>
+
+<!-- ROLE SWITCHER -->
+<div class="role-switcher" id="role-switcher">
+  <div class="role-switcher-menu" id="rs-menu">
+    <div class="rs-menu-hd">Switch portal</div>
+    <a class="rs-menu-item" href="juke.html">
+      <div class="rs-menu-dot" style="background:linear-gradient(135deg,#FF0080,#7B2FFF)"></div>
+      <div><div class="rs-menu-name">Athlete</div><div class="rs-menu-sub">Recruiting portal</div></div>
+    </a>
+    <a class="rs-menu-item" href="coach.html">
+      <div class="rs-menu-dot" style="background:#7B2FFF"></div>
+      <div><div class="rs-menu-name">College Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
+    </a>
+    <a class="rs-menu-item active" href="hscoach.html">
+      <div class="rs-menu-dot" style="background:#0057FF"></div>
+      <div><div class="rs-menu-name">HS / Club Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
+    </a>
+    <a class="rs-menu-back" href="index.html">
+      <div class="rs-menu-back-label">&#x2190; Back to launcher</div>
+    </a>
+  </div>
+  <div class="role-switcher-pill" onclick="document.getElementById('rs-menu').classList.toggle('open')">
+    <div class="role-switcher-dot" style="background:#0057FF"></div>
+    <div class="role-switcher-label">HS / Club Coach</div>
+    <div class="role-switcher-caret">&#x25B2;</div>
+  </div>
+</div>
+<script>
+document.addEventListener('click',function(e){
+  var sw=document.getElementById('role-switcher');
+  if(sw&&!sw.contains(e.target))document.getElementById('rs-menu').classList.remove('open');
+});
+</script>
+</body>
+</html>
