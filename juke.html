@@ -536,9 +536,8 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:20px
 
 /* ── PIPELINE DRAG & DROP ── */
 .pipeline-card{cursor:grab;}
-.pipeline-card.dragging{opacity:.4;transform:scale(.97);}
-.sortable-drag{opacity:.9!important;transform:scale(1.03);box-shadow:0 8px 24px rgba(0,0,0,.18)!important;border-radius:12px;}
-.pipeline-card.dragging{opacity:.4;transform:scale(.97);}
+.gu-mirror{opacity:.9;box-shadow:0 8px 24px rgba(0,0,0,.22)!important;border-radius:12px;cursor:grabbing;}
+.gu-transit{opacity:.3;}
 .pipeline-col-body.drag-over{background:var(--columbia-bg);border-radius:12px;outline:2px dashed var(--columbia-bd);}
 .pipeline-drag-handle{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--text-dim);font-size:14px;cursor:grab;flex-shrink:0;transition:color .12s;}
 .pipeline-drag-handle:hover{color:var(--columbia);}
