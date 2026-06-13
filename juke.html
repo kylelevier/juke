@@ -2669,56 +2669,65 @@ function renderMilestoneRail(){
 }
 
 // Move a card to a new column without a full board re-render
-function movePipelineCard(school, targetBody, targetStageKey){
-  if(!school||!targetBody||!targetStageKey)return;
-  statusData[school]=targetStageKey;
-  recordMilestone(school,targetStageKey);
-  lsSet('juke_status',statusData);cloudSave();
-
-  const card=document.querySelector('.pipeline-card[data-school="'+school.replace(/"/g,'\\"')+'"]');
-  if(!card){renderPipeline();return;}
-
-  const oldBody=card.parentElement;
-
-  // Update left-border stage colour class
-  card.className=card.className.replace(/\bstatus-\S+/,'status-'+targetStageKey);
-
-  // Move card to target column
-  const placeholder=targetBody.querySelector('.pipeline-empty-col');
-  if(placeholder)placeholder.remove();
-  targetBody.appendChild(card);
-
-  // If old column is now empty, restore placeholder
-  if(oldBody&&oldBody!==targetBody&&!oldBody.querySelector('.pipeline-card')){
-    oldBody.innerHTML='<div class="pipeline-empty-col">Drop cards here</div>';
+// ── PIPELINE DRAG HANDLERS (pure pointer events, no library) ─
+function _pdMove(e){
+  if(!_pd.clone) return;
+  const x=e.clientX-_pd.ox, y=e.clientY-_pd.oy;
+  _pd.clone.style.left=x+'px';
+  _pd.clone.style.top=y+'px';
+  if(!_pd.moved&&(Math.abs(e.clientX-_pd.sx)>4||Math.abs(e.clientY-_pd.sy)>4)){
+    _pd.moved=true;
+    _pd.card.classList.add('juke-dragging');
   }
-
-  // Refresh header counts on all columns
+  // Highlight target column
+  if(_pd.over){_pd.over.classList.remove('juke-drag-over');_pd.over=null;}
+  _pd.clone.style.visibility='hidden';
+  const hit=document.elementFromPoint(e.clientX,e.clientY);
+  _pd.clone.style.visibility='';
+  const col=hit&&hit.closest('.pipeline-col-body');
+  if(col&&col!==_pd.card.parentElement){col.classList.add('juke-drag-over');_pd.over=col;}
+}
+function _pdUp(e){
+  document.removeEventListener('mousemove',_pdMove);
+  document.removeEventListener('mouseup',_pdUp);
+  if(_pd.over) _pd.over.classList.remove('juke-drag-over');
+  if(_pd.clone){_pd.clone.remove();_pd.clone=null;}
+  if(!_pd.card){_pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};return;}
+  _pd.card.classList.remove('juke-dragging');
+  const targetBody=_pd.over;
+  const school=_pd.card.dataset.school;
+  const sourceBody=_pd.card.parentElement;
+  _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
+  if(!targetBody||!school) return;
+  const targetStage=targetBody.dataset.stage;
+  // Move card in DOM
+  targetBody.querySelector('.pipeline-empty-col')?.remove();
+  targetBody.appendChild(document.querySelector(`.pipeline-card[data-school="${CSS.escape(school)}"]`));
+  // Restore placeholder in source if now empty
+  if(!sourceBody.querySelector('.pipeline-card')){
+    const ph=document.createElement('div');
+    ph.className='pipeline-empty-col';ph.textContent='Drop cards here';
+    sourceBody.appendChild(ph);
+  }
+  // Update card class
+  const movedCard=targetBody.querySelector(`.pipeline-card[data-school="${CSS.escape(school)}"]`);
+  if(movedCard){
+    [...movedCard.classList].filter(c=>c.startsWith('status-')).forEach(c=>movedCard.classList.remove(c));
+    movedCard.classList.add('status-'+targetStage);
+  }
+  // Refresh counts
   document.querySelectorAll('.pipeline-col').forEach(col=>{
-    const b=col.querySelector('.pipeline-col-body');
-    const cnt=col.querySelector('.pipeline-col-count');
+    const b=col.querySelector('.pipeline-col-body'),cnt=col.querySelector('.pipeline-col-count');
     if(b&&cnt)cnt.textContent=b.querySelectorAll('.pipeline-card').length;
   });
-
-}
-
-function _pdbg(msg){
-  let el=document.getElementById('_pdbg');
-  if(!el){
-    el=document.createElement('div');
-    el.id='_pdbg';
-    el.style.cssText='position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,.9);color:#4ade80;font:11px/1.5 monospace;padding:10px 12px;border-radius:8px;z-index:99999;max-width:340px;white-space:pre;';
-    document.body.appendChild(el);
-  }
-  const lines=(el._lines||[]);
-  lines.push(new Date().toTimeString().slice(0,8)+' '+msg);
-  if(lines.length>12)lines.shift();
-  el._lines=lines;
-  el.textContent=lines.join('\n');
+  // Persist
+  statusData[school]=targetStage;
+  recordMilestone(school,targetStage);
+  lsSet('juke_status',statusData);
+  cloudSave();
 }
 
 function renderPipeline(){
-  _pdbg('renderPipeline() called');
   renderMilestoneRail();
   const schoolsByStage={};
   PIPELINE_STAGES.forEach(s=>schoolsByStage[s.key]=[]);
@@ -2727,142 +2736,73 @@ function renderPipeline(){
   });
   const total=Object.values(schoolsByStage).flat().length;
 
-  // Summary strip
   document.getElementById('pipeline-summary').innerHTML=`
     <div class="pipeline-stat"><div class="pipeline-stat-num">${total}</div><div class="pipeline-stat-lbl">Total</div></div>
     ${PIPELINE_STAGES.map(s=>`<div class="pipeline-stat"><div class="pipeline-stat-num" style="color:${s.color}">${schoolsByStage[s.key].length}</div><div class="pipeline-stat-lbl">${s.label}</div></div>`).join('')}
   `;
 
-  // Build columns (DOM, not innerHTML, so we can attach listeners)
   const colsEl=document.getElementById('pipeline-cols');
-  // Destroy existing Dragula instance before wiping DOM
-  if(pipelineDrake){ pipelineDrake.destroy(); pipelineDrake=null; }
   colsEl.innerHTML='';
   PIPELINE_STAGES.forEach(stage=>{
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
-
     const col=document.createElement('div');
     col.className='pipeline-col';
-    col.innerHTML=`
-      <div class="pipeline-col-hd">
-        <span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span>
-        <span class="pipeline-col-count">${schools.length}</span>
-      </div>`;
-
+    col.innerHTML=`<div class="pipeline-col-hd"><span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span><span class="pipeline-col-count">${schools.length}</span></div>`;
     const body=document.createElement('div');
     body.className='pipeline-col-body';
     body.dataset.stage=stage.key;
-
     if(!schools.length){
-      body.innerHTML=`<div class="pipeline-empty-col">Drop cards here</div>`;
+      const ph=document.createElement('div');
+      ph.className='pipeline-empty-col';ph.textContent='Drop cards here';
+      body.appendChild(ph);
     } else {
-      schools.forEach(r=>{
-        body.appendChild(buildPipelineCard(r,stage.key));
-      });
+      schools.forEach(r=>body.appendChild(buildPipelineCard(r,stage.key)));
     }
-
     col.appendChild(body);
     colsEl.appendChild(col);
-  });
-
-  // Init Dragula — connects all column bodies as a shared drag group
-  const bodies=Array.from(document.querySelectorAll('.pipeline-col-body'));
-  pipelineDrake=dragula(bodies,{
-    moves:(el)=>el.classList.contains('pipeline-card'),
-    accepts:(el,target,source)=>target!==source
-  });
-
-  pipelineDrake.on('drag',(el)=>{ _pipelineDragging=true; _pdbg('drag start: '+(el.dataset.school||'?')); });
-  pipelineDrake.on('dragend',(el)=>{ _pdbg('dragend: '+(el.dataset.school||'?')); setTimeout(()=>{ _pipelineDragging=false; },50); });
-  pipelineDrake.on('cancel',(el)=>{ _pdbg('cancel: '+(el.dataset.school||'?')); setTimeout(()=>{ _pipelineDragging=false; },50); });
-
-  pipelineDrake.on('drop',(el,target,source)=>{
-    _pdbg('drop: '+(el.dataset.school||'?')+' → '+(target?.dataset.stage||'none'));
-    if(!target||target===source) return;
-
-    const school=el.dataset.school;
-    const targetStage=target.dataset.stage;
-    if(!school||!targetStage) return;
-
-    // Update data
-    statusData[school]=targetStage;
-    recordMilestone(school,targetStage);
-    lsSet('juke_status',statusData);
-    cloudSave();
-
-    // Defer all DOM changes until Dragula has finished its own cleanup
-    setTimeout(()=>{
-      // Update card left-border color class
-      [...el.classList].filter(c=>c.startsWith('status-')).forEach(c=>el.classList.remove(c));
-      el.classList.add('status-'+targetStage);
-
-      // Remove placeholder from target column
-      target.querySelector('.pipeline-empty-col')?.remove();
-
-      // Add placeholder to source column if now empty of cards
-      if(!source.querySelector('.pipeline-card')){
-        const ph=document.createElement('div');
-        ph.className='pipeline-empty-col';
-        ph.textContent='Drop cards here';
-        source.appendChild(ph);
-      }
-
-      // Refresh column counts
-      document.querySelectorAll('.pipeline-col').forEach(col=>{
-        const b=col.querySelector('.pipeline-col-body');
-        const cnt=col.querySelector('.pipeline-col-count');
-        if(b&&cnt) cnt.textContent=b.querySelectorAll('.pipeline-card').length;
-      });
-    },0);
   });
 }
 
 function buildPipelineCard(r,stageKey){
-  const net=fmtNet(r);
   const card=document.createElement('div');
   card.className=`pipeline-card status-${stageKey}`;
   card.dataset.school=r.School;
 
-  const hd=document.createElement('div');
-  hd.className='pipeline-card-hd';
-
+  const hd=document.createElement('div');hd.className='pipeline-card-hd';
   const handle=document.createElement('span');
-  handle.className='pipeline-drag-handle';
-  handle.title='Drag to move';
-  handle.setAttribute('aria-label','drag handle');
-  handle.textContent='⠿';
-
-  const logoWrap=_logoPlaceholder(r.School);
-  logoWrap.dataset.logo=r.School;
-
-  const hdText=document.createElement('div');
-  hdText.className='pipeline-card-hd-text';
+  handle.className='pipeline-drag-handle';handle.title='Drag to move';handle.textContent='⠿';
+  const logoWrap=_logoPlaceholder(r.School);logoWrap.dataset.logo=r.School;
+  const hdText=document.createElement('div');hdText.className='pipeline-card-hd-text';
   hdText.innerHTML=`<div class="pipeline-card-name">${r.School}</div><div class="pipeline-card-meta">${r.State||''} · ${r.Region||''}</div>`;
+  hd.appendChild(handle);hd.appendChild(logoWrap);hd.appendChild(hdText);
 
-  hd.appendChild(handle);
-  hd.appendChild(logoWrap);
-  hd.appendChild(hdText);
-
-  const row=document.createElement('div');
-  row.className='pipeline-card-row';
-  row.style.marginTop='8px';
-  row.innerHTML=`<span class="pipeline-card-net">${net}</span>${getFit(r)>=0?fitBadge(getFit(r)):''}`;
-
-  const tags=document.createElement('div');
-  tags.className='pipeline-card-tags';
+  const row=document.createElement('div');row.className='pipeline-card-row';row.style.marginTop='8px';
+  row.innerHTML=`<span class="pipeline-card-net">${fmtNet(r)}</span>${getFit(r)>=0?fitBadge(getFit(r)):''}`;
+  const tags=document.createElement('div');tags.className='pipeline-card-tags';
   tags.innerHTML=`${divTag(r['Governing Body'],r['Division'])}${vcTag(r['Varsity or Club'])}${r.HBCU==='Yes'?'<span class="tag tag-hbcu">HBCU</span>':''}`;
 
-  card.appendChild(hd);
-  card.appendChild(row);
-  card.appendChild(tags);
-
-  // Fetch logo async
+  card.appendChild(hd);card.appendChild(row);card.appendChild(tags);
   fetchSchoolLogo(r.School,logoWrap);
 
-  // Click opens Program Profile (drag handled by SortableJS)
+  // Drag: mousedown starts the drag
+  card.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    const rect=card.getBoundingClientRect();
+    _pd.card=card;_pd.sx=e.clientX;_pd.sy=e.clientY;
+    _pd.ox=e.clientX-rect.left;_pd.oy=e.clientY-rect.top;_pd.moved=false;
+    _pd.clone=card.cloneNode(true);
+    _pd.clone.className=card.className+' juke-drag-clone';
+    _pd.clone.style.width=rect.width+'px';
+    _pd.clone.style.left=rect.left+'px';_pd.clone.style.top=rect.top+'px';
+    document.body.appendChild(_pd.clone);
+    document.addEventListener('mousemove',_pdMove);
+    document.addEventListener('mouseup',_pdUp);
+    e.preventDefault();
+  });
+
+  // Click opens profile (only if not a drag)
   card.addEventListener('click',e=>{
-    _pdbg('card click: '+r.School+' dragging='+_pipelineDragging);
-    if(_pipelineDragging) return; // suppress click that fires after a drag
+    if(_pd.moved)return;
     if(e.target.classList.contains('pipeline-drag-handle'))return;
     openProgramProfile(r.School);
   });
