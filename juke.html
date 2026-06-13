@@ -2842,6 +2842,7 @@ function buildPipelineCard(r,stageKey){
 
   // Click opens Program Profile (drag handled by SortableJS)
   card.addEventListener('click',e=>{
+    if(_pipelineDragging) return; // suppress click that fires after a drag
     if(e.target.classList.contains('pipeline-drag-handle'))return;
     openProgramProfile(r.School);
   });
