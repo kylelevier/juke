@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JUKE — Recruiting Her Way</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#0D0D0D;color:#fff;font-family:-apple-system,'SF Pro Display',system-ui,sans-serif;}
+body{display:flex;flex-direction:column;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
+
+/* ── GLOW ── */
+.glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(255,0,128,.12) 0%,rgba(123,47,255,.06) 50%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* ── WRAP ── */
+.wrap{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;max-width:520px;width:100%;}
+
+/* ── LOGO ── */
+.logo{margin-bottom:40px;}
+
+/* ── HEADLINE ── */
+.stay{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:clamp(52px,10vw,84px);letter-spacing:-.01em;text-transform:uppercase;line-height:.95;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* ── SLOGAN ── */
+.slogan{font-family:'Instrument Serif',serif;font-size:28px;font-style:italic;color:rgba(255,255,255,.45);letter-spacing:.01em;margin-bottom:48px;}
+.slogan em{color:rgba(255,255,255,.75);font-style:italic;}
+
+/* ── ROLE SELECT ── */
+.role-select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:rgba(255,255,255,.7);font-size:14px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.role-select:focus{border-color:rgba(255,0,128,.4);}
+.role-select option{background:#1a1a1a;color:#fff;}
+
+/* ── FORM ── */
+.form-row{display:flex;gap:10px;width:100%;margin-bottom:16px;align-items:stretch;}
+.email-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;color:#fff;font-size:15px;outline:none;transition:border-color .2s;font-family:inherit;}
+.email-input::placeholder{color:rgba(255,255,255,.3);}
+.email-input:focus{border-color:rgba(255,0,128,.4);background:rgba(255,255,255,.08);}
+.submit-btn{background:linear-gradient(135deg,#7B2FFF,#FF0080);border:none;border-radius:12px;padding:14px 24px;color:#fff;font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity .2s,transform .15s;}
+.submit-btn:hover{opacity:.9;}
+.submit-btn:active{transform:scale(.97);}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── STATUS ── */
+.status{font-size:13px;height:18px;transition:all .3s;}
+.status.success{color:#4ade80;}
+.status.error{color:#f87171;}
+
+/* ── FOOTER ── */
+.footer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-family:'Instrument Serif',serif;font-size:12px;color:rgba(255,255,255,.2);white-space:nowrap;}
+
+@media(max-width:540px){
+  .form-row{flex-direction:column;}
+  .submit-btn{width:100%;}
+  .role-select{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div class="wrap">
+
+  <!-- Logo -->
+  <div class="logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:56px;width:auto;display:block">
+      <defs><linearGradient id="jukeGrad" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs>
+      <path fill="url(#jukeGrad)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
+    </svg>
+  </div>
+
+  <!-- Slogan -->
+  <p class="slogan">Recruiting <em>her</em> way.</p>
+
+  <!-- Form -->
+  <div class="form-row">
+    <input class="email-input" type="email" id="email" placeholder="your@email.com" autocomplete="email"/>
+    <select class="role-select" id="role">
+      <option value="athlete">Athlete</option>
+      <option value="college_coach">College Coach</option>
+      <option value="hs_coach">HS / Club Coach</option>
+    </select>
+    <button class="submit-btn" id="submitBtn" onclick="submit()">Stay in Touch</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+</div>
+
+<div class="footer">© 2026 JUKE · shejukes.com</div>
+
+<script>
+const SUPABASE_URL = 'https://jlmppmmyybdwarjclxyg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsbXBwbW15eWJkd2FyamNseHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMzg4MjgsImV4cCI6MjA5NjYxNDgyOH0.jVS6DBzpjk9UDCP61WCxWSe6LXwc-V6Z9bI4uimMpNE';
+
+async function submit() {
+  const email = document.getElementById('email').value.trim();
+  const selectedRole = document.getElementById('role').value;
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    status.textContent = 'Please enter a valid email.';
+    status.className = 'status error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  status.textContent = '';
+  status.className = 'status';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ email, role: selectedRole })
+    });
+
+    if (res.ok) {
+      status.textContent = "You're on the list. We'll be in touch.";
+      status.className = 'status success';
+      document.getElementById('email').value = '';
+      btn.textContent = '✓ You\'re in';
+    } else if (res.status === 409) {
+      status.textContent = "You're already on the list.";
+      status.className = 'status success';
+      btn.disabled = false;
+      btn.textContent = 'Notify Me';
+    } else {
+      throw new Error('Server error');
+    }
+  } catch(e) {
+    status.textContent = 'Something went wrong. Try again.';
+    status.className = 'status error';
+    btn.disabled = false;
+    btn.textContent = 'Notify Me';
+  }
+}
+
+document.getElementById('email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submit();
+});
+</script>
+</body>
+</html>

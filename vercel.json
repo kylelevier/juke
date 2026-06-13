@@ -1,8 +1,9 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
     { "source": "/athlete", "destination": "/juke.html" },
     { "source": "/coach", "destination": "/coach.html" },
-    { "source": "/hscoach", "destination": "/hscoach.html" }
+    { "source": "/hscoach", "destination": "/hscoach.html" },
+    { "source": "/preview", "destination": "/index.html" },
+    { "source": "/", "destination": "/landing.html" }
   ]
 }

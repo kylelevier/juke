@@ -1,41 +1,29 @@
 #!/bin/bash
 
-# Load full user PATH (picks up nvm, homebrew, etc.)
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+# Load full user PATH (picks up Node from standard install locations)
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 [ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc" 2>/dev/null
-[ -f "$HOME/.nvm/nvm.sh" ] && source "$HOME/.nvm/nvm.sh" 2>/dev/null && nvm use default 2>/dev/null
 
 cd "$(dirname "$0")"
+rm -f .git/index.lock 2>/dev/null
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  JUKE — Deploy to Vercel"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-
-# Clear any stale git lock
-rm -f .git/index.lock 2>/dev/null
-
-# Init git if needed
-if [ ! -d ".git" ]; then
-  echo "→ Initializing git repo..."
-  git init
-  git checkout -b main 2>/dev/null || true
-  git config user.email "kylelevier@gmail.com"
-  git config user.name "Kyle Levier"
-fi
-
-echo "→ Staging files..."
-git add .
-git commit -m "feat: JUKE prototype" --allow-empty 2>/dev/null
-
+echo "→ Node $(node -v) / npm $(npm -v)"
 echo ""
 
-# Install Vercel CLI if not present
+# Install Vercel CLI if needed
 if ! command -v vercel &> /dev/null; then
   echo "→ Installing Vercel CLI..."
   npm install -g vercel
   echo ""
 fi
+
+# Stage any changes
+git add . 2>/dev/null
+git diff --cached --quiet 2>/dev/null || git commit -m "chore: update" 2>/dev/null
 
 echo "→ Deploying to Vercel (valorgirlsflag team)..."
 echo "   A browser window will open to log in if needed."
