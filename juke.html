@@ -526,7 +526,11 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:20px
 .pipeline-card-name{font-family:'Archivo Condensed',sans-serif;font-weight:900;font-style:italic;font-size:14px;text-transform:uppercase;letter-spacing:.02em;color:var(--text);margin-bottom:3px;line-height:1.2;}
 .pipeline-card-meta{font-size:11px;color:var(--text-muted);margin-bottom:8px;}
 .pipeline-card-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.pipeline-card-net{font-size:12px;font-weight:600;color:var(--columbia);}
+.pipeline-card-net{font-size:12px;font-weight:600;color:var(--columbia);cursor:text;border-bottom:1px dashed transparent;transition:border-color .15s;}
+.pipeline-card-net:hover{border-bottom-color:var(--columbia);}
+.pipeline-card-net-input{font-size:12px;font-weight:600;color:var(--columbia);background:transparent;border:none;border-bottom:1px solid var(--columbia);outline:none;width:90px;font-family:inherit;padding:0;}
+.pp-user-notes{width:100%;box-sizing:border-box;min-height:72px;resize:vertical;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text);line-height:1.6;font-family:inherit;}
+.pp-user-notes:focus{outline:none;border-color:var(--columbia);}
 .pipeline-card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
 .pipeline-empty-col{border:1.5px dashed var(--border);border-radius:12px;padding:24px 14px;text-align:center;color:var(--text-dim);font-size:12px;}
 .pipeline-add-hint{margin-top:18px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--columbia);line-height:1.5;}
