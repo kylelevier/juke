@@ -15,7 +15,7 @@ git add . 2>/dev/null
 git diff --cached --quiet 2>/dev/null || git commit -m "chore: update" 2>/dev/null
 
 echo "→ Deploying..."
-npx vercel@latest --yes --scope valorgirlsflag
+npx vercel@latest --yes
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
