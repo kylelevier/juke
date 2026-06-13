@@ -2752,26 +2752,45 @@ function renderPipeline(){
     colsEl.appendChild(col);
   });
 
-  // Init SortableJS on every column body
-  // SortableJS owns the DOM move — onEnd only updates data
+  // Init SortableJS — let it own the DOM, only update data in onEnd
   document.querySelectorAll('.pipeline-col-body').forEach(body=>{
     new Sortable(body,{
       group:'pipeline',
+      draggable:'.pipeline-card',
       animation:0,
-      filter:'.pipeline-empty-col',
       onEnd(evt){
+        if(evt.from===evt.to) return; // reorder within same col, nothing to do
+
         const school=evt.item.dataset.school;
         const targetStage=evt.to.dataset.stage;
         if(!school||!targetStage) return;
 
-        // Update data + persistence
+        // Update data
         statusData[school]=targetStage;
         recordMilestone(school,targetStage);
         lsSet('juke_status',statusData);
         cloudSave();
 
-        // Re-render after SortableJS fully finishes (no animation = safe at 0ms)
-        setTimeout(renderPipeline, 0);
+        // Update card stage class
+        evt.item.className=evt.item.className.replace(/\bstatus-\S+/,'status-'+targetStage);
+
+        // Remove placeholder from target column
+        evt.to.querySelector('.pipeline-empty-col')?.remove();
+
+        // Add placeholder to source column if now empty
+        if(!evt.from.querySelector('.pipeline-card')){
+          const ph=document.createElement('div');
+          ph.className='pipeline-empty-col';
+          ph.textContent='Drop cards here';
+          evt.from.appendChild(ph);
+        }
+
+        // Refresh column counts
+        document.querySelectorAll('.pipeline-col').forEach(col=>{
+          const b=col.querySelector('.pipeline-col-body');
+          const cnt=col.querySelector('.pipeline-col-count');
+          if(b&&cnt) cnt.textContent=b.querySelectorAll('.pipeline-card').length;
+        });
       }
     });
   });
