@@ -2750,46 +2750,45 @@ function renderPipeline(){
     colsEl.appendChild(col);
   });
 
-  // Init SortableJS — let it own the DOM, only update data in onEnd
-  document.querySelectorAll('.pipeline-col-body').forEach(body=>{
-    new Sortable(body,{
-      group:'pipeline',
-      draggable:'.pipeline-card',
-      animation:0,
-      onEnd(evt){
-        if(evt.from===evt.to) return; // reorder within same col, nothing to do
+  // Init Dragula — connects all column bodies as a shared drag group
+  const bodies=Array.from(document.querySelectorAll('.pipeline-col-body'));
+  pipelineDrake=dragula(bodies,{
+    moves:(el)=>el.classList.contains('pipeline-card'),
+    accepts:(el,target,source)=>target!==source
+  });
 
-        const school=evt.item.dataset.school;
-        const targetStage=evt.to.dataset.stage;
-        if(!school||!targetStage) return;
+  pipelineDrake.on('drop',(el,target,source)=>{
+    if(!target||target===source) return;
 
-        // Update data
-        statusData[school]=targetStage;
-        recordMilestone(school,targetStage);
-        lsSet('juke_status',statusData);
-        cloudSave();
+    const school=el.dataset.school;
+    const targetStage=target.dataset.stage;
+    if(!school||!targetStage) return;
 
-        // Update card stage class
-        evt.item.className=evt.item.className.replace(/\bstatus-\S+/,'status-'+targetStage);
+    // Update data
+    statusData[school]=targetStage;
+    recordMilestone(school,targetStage);
+    lsSet('juke_status',statusData);
+    cloudSave();
 
-        // Remove placeholder from target column
-        evt.to.querySelector('.pipeline-empty-col')?.remove();
+    // Update card left-border color class
+    el.className=el.className.replace(/\bstatus-\S+/g,'')+'status-'+targetStage;
 
-        // Add placeholder to source column if now empty
-        if(!evt.from.querySelector('.pipeline-card')){
-          const ph=document.createElement('div');
-          ph.className='pipeline-empty-col';
-          ph.textContent='Drop cards here';
-          evt.from.appendChild(ph);
-        }
+    // Remove placeholder from target column
+    target.querySelector('.pipeline-empty-col')?.remove();
 
-        // Refresh column counts
-        document.querySelectorAll('.pipeline-col').forEach(col=>{
-          const b=col.querySelector('.pipeline-col-body');
-          const cnt=col.querySelector('.pipeline-col-count');
-          if(b&&cnt) cnt.textContent=b.querySelectorAll('.pipeline-card').length;
-        });
-      }
+    // Add placeholder to source column if now empty of cards
+    if(!source.querySelector('.pipeline-card')){
+      const ph=document.createElement('div');
+      ph.className='pipeline-empty-col';
+      ph.textContent='Drop cards here';
+      source.appendChild(ph);
+    }
+
+    // Refresh column counts
+    document.querySelectorAll('.pipeline-col').forEach(col=>{
+      const b=col.querySelector('.pipeline-col-body');
+      const cnt=col.querySelector('.pipeline-col-count');
+      if(b&&cnt) cnt.textContent=b.querySelectorAll('.pipeline-card').length;
     });
   });
 }
