@@ -2758,6 +2758,10 @@ function renderPipeline(){
     accepts:(el,target,source)=>target!==source
   });
 
+  pipelineDrake.on('drag',()=>{ _pipelineDragging=true; });
+  pipelineDrake.on('dragend',()=>{ setTimeout(()=>{ _pipelineDragging=false; },50); });
+  pipelineDrake.on('cancel',()=>{ setTimeout(()=>{ _pipelineDragging=false; },50); });
+
   pipelineDrake.on('drop',(el,target,source)=>{
     if(!target||target===source) return;
 
