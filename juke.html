@@ -2792,27 +2792,30 @@ function renderPipeline(){
     lsSet('juke_status',statusData);
     cloudSave();
 
-    // Update card left-border color class (use classList to avoid clobbering gu-transit)
-    [...el.classList].filter(c=>c.startsWith('status-')).forEach(c=>el.classList.remove(c));
-    el.classList.add('status-'+targetStage);
+    // Defer all DOM changes until Dragula has finished its own cleanup
+    setTimeout(()=>{
+      // Update card left-border color class
+      [...el.classList].filter(c=>c.startsWith('status-')).forEach(c=>el.classList.remove(c));
+      el.classList.add('status-'+targetStage);
 
-    // Remove placeholder from target column
-    target.querySelector('.pipeline-empty-col')?.remove();
+      // Remove placeholder from target column
+      target.querySelector('.pipeline-empty-col')?.remove();
 
-    // Add placeholder to source column if now empty of cards
-    if(!source.querySelector('.pipeline-card')){
-      const ph=document.createElement('div');
-      ph.className='pipeline-empty-col';
-      ph.textContent='Drop cards here';
-      source.appendChild(ph);
-    }
+      // Add placeholder to source column if now empty of cards
+      if(!source.querySelector('.pipeline-card')){
+        const ph=document.createElement('div');
+        ph.className='pipeline-empty-col';
+        ph.textContent='Drop cards here';
+        source.appendChild(ph);
+      }
 
-    // Refresh column counts
-    document.querySelectorAll('.pipeline-col').forEach(col=>{
-      const b=col.querySelector('.pipeline-col-body');
-      const cnt=col.querySelector('.pipeline-col-count');
-      if(b&&cnt) cnt.textContent=b.querySelectorAll('.pipeline-card').length;
-    });
+      // Refresh column counts
+      document.querySelectorAll('.pipeline-col').forEach(col=>{
+        const b=col.querySelector('.pipeline-col-body');
+        const cnt=col.querySelector('.pipeline-col-count');
+        if(b&&cnt) cnt.textContent=b.querySelectorAll('.pipeline-card').length;
+      });
+    },0);
   });
 }
 
