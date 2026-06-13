@@ -14,6 +14,9 @@ echo ""
 git add . 2>/dev/null
 git diff --cached --quiet 2>/dev/null || git commit -m "chore: update" 2>/dev/null
 
+echo "→ Logging in to Vercel (browser will open)..."
+npx vercel@latest login
+echo ""
 echo "→ Deploying..."
 npx vercel@latest --yes
 
