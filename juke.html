@@ -723,6 +723,17 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
 .pp-pipeline-btn{background:var(--columbia);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s;}
 .pp-pipeline-btn:hover{background:var(--columbia-dk);}
 .pp-pipeline-btn.added{background:var(--green);}
+.pp-offer-btn{background:transparent;color:#b45309;border:1.5px solid #f59e0b;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.pp-offer-btn:hover{background:#fef3c7;}
+.pp-offer-btn.offered{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.pipeline-card-offer-badge{display:inline-block;background:#f59e0b;color:#fff;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+.pp-offers-showcase{padding:16px 20px;border-top:1px solid var(--border);}
+.pp-offers-showcase-title{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
+.pp-offers-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.pp-offer-chip{display:flex;align-items:center;gap:8px;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:6px 12px;}
+.pp-offer-chip-logo{width:24px;height:24px;object-fit:contain;border-radius:4px;}
+.pp-offer-chip-init{width:24px;height:24px;background:#f59e0b;color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.pp-offer-chip-name{font-size:12px;font-weight:600;color:#92400e;}
 .pp-hero{padding:20px 20px 12px;display:flex;align-items:center;gap:14px;}
 .pp-logo-wrap{width:64px;height:64px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
 .pp-logo-wrap img{width:100%;height:100%;object-fit:contain;}
@@ -1904,6 +1915,7 @@ function cnReadMore(btn){
     <div class="pp-topbar">
       <button class="pp-back" onclick="closeProgramProfile()">‹</button>
       <div class="pp-topbar-title" id="pp-topbar-title">Program Profile</div>
+      <button class="pp-offer-btn" id="pp-offer-btn" onclick="ppToggleOffer()">🏅 Offered</button>
       <button class="pp-pipeline-btn" id="pp-pipeline-btn" onclick="ppTogglePipeline()">+ My Board</button>
     </div>
     <div id="pp-body"><!-- rendered by JS --></div>
@@ -2114,7 +2126,7 @@ function schoolLink(name,inner){const u=SCHOOL_URLS[name];return u?`<a href="${u
 const ADMIN_PW='juke2027';
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return{}}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-let statusData=lsGet('juke_status'),adminNotes=lsGet('juke_notes'),adminForms=lsGet('juke_forms'),costOverrides=lsGet('juke_cost');
+let statusData=lsGet('juke_status'),adminNotes=lsGet('juke_notes'),adminForms=lsGet('juke_forms'),costOverrides=lsGet('juke_cost'),offersData=lsGet('juke_offers');
 // ── PIPELINE DRAG STATE ──────────────────────────────────────
 let _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
 let playerData=lsGet('juke_player');
@@ -2777,7 +2789,7 @@ function buildPipelineCard(r,stageKey){
   handle.className='pipeline-drag-handle';handle.title='Drag to move';handle.textContent='⠿';
   const logoWrap=_logoPlaceholder(r.School);logoWrap.dataset.logo=r.School;
   const hdText=document.createElement('div');hdText.className='pipeline-card-hd-text';
-  hdText.innerHTML=`<div class="pipeline-card-name">${r.School}</div><div class="pipeline-card-meta">${r.State||''} · ${r.Region||''}</div>`;
+  hdText.innerHTML=`<div class="pipeline-card-name">${r.School}</div>${offersData[r.School]?'<span class="pipeline-card-offer-badge">Offered</span>':''}<div class="pipeline-card-meta">${r.State||''} · ${r.Region||''}</div>`;
   hd.appendChild(handle);hd.appendChild(logoWrap);hd.appendChild(hdText);
 
   const row=document.createElement('div');row.className='pipeline-card-row';row.style.marginTop='8px';
@@ -3445,6 +3457,25 @@ function ppSaveNote(val){
   adminNotes[_ppCurrent]=val;
   lsSet('juke_notes',adminNotes);
   cloudSave();
+}
+function ppToggleOffer(){
+  if(!_ppCurrent)return;
+  const isOffered=!!offersData[_ppCurrent];
+  if(isOffered)delete offersData[_ppCurrent];
+  else offersData[_ppCurrent]=true;
+  lsSet('juke_offers',offersData);
+  const btn=document.getElementById('pp-offer-btn');
+  if(btn){btn.textContent=offersData[_ppCurrent]?'🏅 Offered':'🏅 Offered';btn.className='pp-offer-btn'+(offersData[_ppCurrent]?' offered':'');}
+  // Update live card badge
+  const card=document.querySelector(`.pipeline-card[data-school="${CSS.escape(_ppCurrent)}"]`);
+  if(card){
+    card.querySelector('.pipeline-card-offer-badge')?.remove();
+    if(offersData[_ppCurrent]){
+      const badge=document.createElement('span');badge.className='pipeline-card-offer-badge';badge.textContent='Offered';
+      const nameEl=card.querySelector('.pipeline-card-name');
+      if(nameEl)nameEl.after(badge);
+    }
+  }
 }
 function getForm(s){return adminForms[s]||RAW.find(r=>r.School===s)?.['Athlete Interest / Recruiting Form']||'';}
 function recruitHtml(s){const u=getForm(s);if(!u||u==='See school athletics website')return'<span class="recruit-na">—</span>';return`<a class="recruit-link" href="${u}" target="_blank" rel="noopener">Visit ↗</a>`;}
@@ -4841,7 +4872,7 @@ async function handlePublishToggle(){
   if(pill){ pill.textContent=on?'Publishing…':'Removing…'; pill.className='publish-live-pill draft'; }
 
   // Snapshot current profile data
-  const pd = {...lsGet('juke_player')};
+  const pd = {...lsGet('juke_player'), _offers:Object.keys(lsGet('juke_offers'))};
   pd._positions = Array.from(document.querySelectorAll('#pos-grid .pos-chip.selected input')).map(i=>i.value);
   pd['pf-div']    = document.getElementById('pf-div')?.value||'';
   pd['pf-region'] = document.getElementById('pf-region')?.value||'';
@@ -5064,6 +5095,8 @@ function openProgramProfile(schoolName){
   const btn=document.getElementById('pp-pipeline-btn');
   btn.textContent=inPipe?'✓ On My Board':'+ My Board';
   btn.className='pp-pipeline-btn'+(inPipe?' added':'');
+  const offerBtn=document.getElementById('pp-offer-btn');
+  if(offerBtn)offerBtn.className='pp-offer-btn'+(offersData[schoolName]?' offered':'');
 
   setTimeout(function(){
     const wrap=document.getElementById('pp-logo-wrap');
