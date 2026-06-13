@@ -533,8 +533,9 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:20px
 
 /* ── PIPELINE DRAG & DROP ── */
 .pipeline-card{cursor:grab;}
-.gu-mirror{opacity:.9;box-shadow:0 8px 24px rgba(0,0,0,.22)!important;border-radius:12px;cursor:grabbing;}
-.gu-transit{opacity:.3;}
+.pipeline-card.juke-dragging{opacity:.25;pointer-events:none;}
+.pipeline-col-body.juke-drag-over{background:var(--columbia-bg);outline:2px dashed var(--columbia-bd);border-radius:10px;}
+.juke-drag-clone{position:fixed;pointer-events:none;z-index:9000;opacity:.92;box-shadow:0 10px 28px rgba(0,0,0,.22);border-radius:12px;cursor:grabbing;}
 .pipeline-col-body.drag-over{background:var(--columbia-bg);border-radius:12px;outline:2px dashed var(--columbia-bd);}
 .pipeline-drag-handle{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--text-dim);font-size:14px;cursor:grab;flex-shrink:0;transition:color .12s;}
 .pipeline-drag-handle:hover{color:var(--columbia);}
@@ -2110,8 +2111,8 @@ const ADMIN_PW='juke2027';
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return{}}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let statusData=lsGet('juke_status'),adminNotes=lsGet('juke_notes'),adminForms=lsGet('juke_forms');
-let pipelineDrake=null; // Dragula instance
-let _pipelineDragging=false; // suppress post-drag click events
+// ── PIPELINE DRAG STATE ──────────────────────────────────────
+let _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
 let playerData=lsGet('juke_player');
 
 // ── PROFILE WIZARD ──────────────────────────────────────
