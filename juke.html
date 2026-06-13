@@ -2114,6 +2114,7 @@ function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){re
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let statusData=lsGet('juke_status'),adminNotes=lsGet('juke_notes'),adminForms=lsGet('juke_forms');
 let pipelineDrake=null; // Dragula instance
+let _pipelineDragging=false; // suppress post-drag click events
 let playerData=lsGet('juke_player');
 
 // ── PROFILE WIZARD ──────────────────────────────────────
