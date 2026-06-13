@@ -2792,8 +2792,9 @@ function renderPipeline(){
     lsSet('juke_status',statusData);
     cloudSave();
 
-    // Update card left-border color class
-    el.className=el.className.replace(/\bstatus-\S+/g,'')+'status-'+targetStage;
+    // Update card left-border color class (use classList to avoid clobbering gu-transit)
+    [...el.classList].filter(c=>c.startsWith('status-')).forEach(c=>el.classList.remove(c));
+    el.classList.add('status-'+targetStage);
 
     // Remove placeholder from target column
     target.querySelector('.pipeline-empty-col')?.remove();
