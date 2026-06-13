@@ -2704,7 +2704,23 @@ function movePipelineCard(school, targetBody, targetStageKey){
 
 }
 
+function _pdbg(msg){
+  let el=document.getElementById('_pdbg');
+  if(!el){
+    el=document.createElement('div');
+    el.id='_pdbg';
+    el.style.cssText='position:fixed;bottom:10px;right:10px;background:rgba(0,0,0,.9);color:#4ade80;font:11px/1.5 monospace;padding:10px 12px;border-radius:8px;z-index:99999;max-width:340px;white-space:pre;';
+    document.body.appendChild(el);
+  }
+  const lines=(el._lines||[]);
+  lines.push(new Date().toTimeString().slice(0,8)+' '+msg);
+  if(lines.length>12)lines.shift();
+  el._lines=lines;
+  el.textContent=lines.join('\n');
+}
+
 function renderPipeline(){
+  _pdbg('renderPipeline() called');
   renderMilestoneRail();
   const schoolsByStage={};
   PIPELINE_STAGES.forEach(s=>schoolsByStage[s.key]=[]);
