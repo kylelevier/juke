@@ -2114,7 +2114,7 @@ function schoolLink(name,inner){const u=SCHOOL_URLS[name];return u?`<a href="${u
 const ADMIN_PW='juke2027';
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return{}}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-let statusData=lsGet('juke_status'),adminNotes=lsGet('juke_notes'),adminForms=lsGet('juke_forms');
+let statusData=lsGet('juke_status'),adminNotes=lsGet('juke_notes'),adminForms=lsGet('juke_forms'),costOverrides=lsGet('juke_cost');
 // ── PIPELINE DRAG STATE ──────────────────────────────────────
 let _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
 let playerData=lsGet('juke_player');
@@ -3413,6 +3413,12 @@ document.addEventListener('click', function(e){
   }
 }, true);
 function getNote(s){return adminNotes[s]||'';}
+function ppSaveNote(val){
+  if(!_ppCurrent)return;
+  adminNotes[_ppCurrent]=val;
+  lsSet('juke_notes',adminNotes);
+  cloudSave();
+}
 function getForm(s){return adminForms[s]||RAW.find(r=>r.School===s)?.['Athlete Interest / Recruiting Form']||'';}
 function recruitHtml(s){const u=getForm(s);if(!u||u==='See school athletics website')return'<span class="recruit-na">—</span>';return`<a class="recruit-link" href="${u}" target="_blank" rel="noopener">Visit ↗</a>`;}
 function esc(s){return s.replace(/'/g,"\'");}
