@@ -2781,7 +2781,34 @@ function buildPipelineCard(r,stageKey){
   hd.appendChild(handle);hd.appendChild(logoWrap);hd.appendChild(hdText);
 
   const row=document.createElement('div');row.className='pipeline-card-row';row.style.marginTop='8px';
-  row.innerHTML=`<span class="pipeline-card-net">${fmtNet(r)}</span>${getFit(r)>=0?fitBadge(getFit(r)):''}`;
+  const netSpan=document.createElement('span');
+  netSpan.className='pipeline-card-net';
+  netSpan.title='Click to update your cost estimate';
+  netSpan.textContent=costOverrides[r.School]||fmtNet(r);
+  netSpan.addEventListener('click',function(e){
+    if(_pd.moved)return;
+    e.stopPropagation();
+    const raw=(costOverrides[r.School]||fmtNet(r)).replace(/[$,]/g,'').replace('—','');
+    const inp=document.createElement('input');
+    inp.type='text';inp.className='pipeline-card-net-input';
+    inp.value=raw==='—'?'':raw;inp.placeholder='e.g. 18000';
+    netSpan.replaceWith(inp);inp.focus();inp.select();
+    const save=()=>{
+      const num=parseInt(inp.value.replace(/[$,\s]/g,''));
+      if(!isNaN(num)&&num>0)costOverrides[r.School]='$'+num.toLocaleString();
+      else if(!inp.value.trim())delete costOverrides[r.School];
+      lsSet('juke_cost',costOverrides);
+      netSpan.textContent=costOverrides[r.School]||fmtNet(r);
+      inp.replaceWith(netSpan);
+    };
+    inp.addEventListener('blur',save);
+    inp.addEventListener('keydown',function(ke){
+      if(ke.key==='Enter'){ke.preventDefault();inp.blur();}
+      if(ke.key==='Escape'){inp.replaceWith(netSpan);}
+    });
+  });
+  row.appendChild(netSpan);
+  if(getFit(r)>=0){const tmp=document.createElement('span');tmp.innerHTML=fitBadge(getFit(r));while(tmp.firstChild)row.appendChild(tmp.firstChild);}
   const tags=document.createElement('div');tags.className='pipeline-card-tags';
   tags.innerHTML=`${divTag(r['Governing Body'],r['Division'])}${vcTag(r['Varsity or Club'])}${r.HBCU==='Yes'?'<span class="tag tag-hbcu">HBCU</span>':''}`;
 
