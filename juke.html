@@ -2720,11 +2720,8 @@ function renderPipeline(){
 
   // Build columns (DOM, not innerHTML, so we can attach listeners)
   const colsEl=document.getElementById('pipeline-cols');
-  // Destroy existing Sortable instances before wiping DOM
-  // (prevents orphaned document-level event listeners on re-render)
-  colsEl.querySelectorAll('.pipeline-col-body').forEach(b=>{
-    const s=Sortable.get(b); if(s) s.destroy();
-  });
+  // Destroy existing Dragula instance before wiping DOM
+  if(pipelineDrake){ pipelineDrake.destroy(); pipelineDrake=null; }
   colsEl.innerHTML='';
   PIPELINE_STAGES.forEach(stage=>{
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
