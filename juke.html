@@ -2779,6 +2779,7 @@ function renderPipeline(){
   pipelineDrake.on('cancel',(el)=>{ _pdbg('cancel: '+(el.dataset.school||'?')); setTimeout(()=>{ _pipelineDragging=false; },50); });
 
   pipelineDrake.on('drop',(el,target,source)=>{
+    _pdbg('drop: '+(el.dataset.school||'?')+' → '+(target?.dataset.stage||'none'));
     if(!target||target===source) return;
 
     const school=el.dataset.school;
@@ -2858,6 +2859,7 @@ function buildPipelineCard(r,stageKey){
 
   // Click opens Program Profile (drag handled by SortableJS)
   card.addEventListener('click',e=>{
+    _pdbg('card click: '+r.School+' dragging='+_pipelineDragging);
     if(_pipelineDragging) return; // suppress click that fires after a drag
     if(e.target.classList.contains('pipeline-drag-handle'))return;
     openProgramProfile(r.School);
