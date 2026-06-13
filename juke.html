@@ -725,8 +725,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
 .pp-pipeline-btn.added{background:var(--green);}
 .pp-offer-btn{background:transparent;color:#b45309;border:1.5px solid #f59e0b;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;}
 .pp-offer-btn:hover{background:#fef3c7;}
-.pp-offer-btn.offered{background:#f59e0b;color:#fff;border-color:#f59e0b;}
-.pipeline-card-offer-badge{display:inline-block;background:#f59e0b;color:#fff;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+.pp-offer-btn.offered{background:linear-gradient(135deg,#f6d365 0%,#c8972a 50%,#f6d365 100%);color:#5c3a00;border-color:#c8972a;text-shadow:0 1px 0 rgba(255,255,255,.3);}
+.pipeline-card-offer-badge{display:inline-block;background:linear-gradient(135deg,#f6d365 0%,#c8972a 50%,#f6d365 100%);color:#5c3a00;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;box-shadow:0 1px 3px rgba(180,120,0,.3);}
 .pp-offers-showcase{padding:16px 20px;border-top:1px solid var(--border);}
 .pp-offers-showcase-title{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
 .pp-offers-grid{display:flex;flex-wrap:wrap;gap:10px;}
@@ -1915,7 +1915,7 @@ function cnReadMore(btn){
     <div class="pp-topbar">
       <button class="pp-back" onclick="closeProgramProfile()">‹</button>
       <div class="pp-topbar-title" id="pp-topbar-title">Program Profile</div>
-      <button class="pp-offer-btn" id="pp-offer-btn" onclick="ppToggleOffer()">🏅 Offered</button>
+      <button class="pp-offer-btn" id="pp-offer-btn" onclick="ppToggleOffer()">Offered</button>
       <button class="pp-pipeline-btn" id="pp-pipeline-btn" onclick="ppTogglePipeline()">+ My Board</button>
     </div>
     <div id="pp-body"><!-- rendered by JS --></div>
