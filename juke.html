@@ -532,8 +532,8 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:20px
 .pipeline-add-hint{margin-top:18px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--columbia);line-height:1.5;}
 
 /* ── PIPELINE DRAG & DROP ── */
-.pipeline-card[draggable]{cursor:grab;}
-.pipeline-card[draggable]:active{cursor:grabbing;}
+.pipeline-card{cursor:grab;touch-action:none;}
+.pipeline-card:active{cursor:grabbing;}
 .pipeline-card.dragging{opacity:.4;transform:scale(.97);}
 .pipeline-col-body.drag-over{background:var(--columbia-bg);border-radius:12px;outline:2px dashed var(--columbia-bd);}
 .pipeline-drag-handle{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--text-dim);font-size:14px;cursor:grab;flex-shrink:0;transition:color .12s;}
@@ -2697,9 +2697,6 @@ function movePipelineCard(school, targetBody, targetStageKey){
     if(b&&cnt)cnt.textContent=b.querySelectorAll('.pipeline-card').length;
   });
 
-  // Re-attach touch listener on the moved card
-  card.removeEventListener('touchstart',onTouchStart);
-  card.addEventListener('touchstart',onTouchStart,{passive:false});
 }
 
 function renderPipeline(){
@@ -2743,36 +2740,18 @@ function renderPipeline(){
       });
     }
 
-    // Drop zone listeners
-    body.addEventListener('dragover',e=>{
-      e.preventDefault();
-      e.dataTransfer.dropEffect='move';
-      body.classList.add('drag-over');
-    });
-    body.addEventListener('dragleave',e=>{
-      if(!body.contains(e.relatedTarget))body.classList.remove('drag-over');
-    });
-    body.addEventListener('drop',e=>{
-      e.preventDefault();
-      body.classList.remove('drag-over');
-      const school=_draggedSchool||e.dataTransfer.getData('text/plain');
-      if(!school)return;
-      movePipelineCard(school,body,stage.key);
-    });
+    // Drop zone highlight is handled by pointer move (see pipelineDragStart)
 
     col.appendChild(body);
     colsEl.appendChild(col);
   });
 
-  // Touch drag support
-  initTouchDrag();
 }
 
 function buildPipelineCard(r,stageKey){
   const net=fmtNet(r);
   const card=document.createElement('div');
   card.className=`pipeline-card status-${stageKey}`;
-  card.draggable=true;
   card.dataset.school=r.School;
 
   const hd=document.createElement('div');
@@ -2811,27 +2790,16 @@ function buildPipelineCard(r,stageKey){
   // Fetch logo async
   fetchSchoolLogo(r.School,logoWrap);
 
-  // Desktop drag
-  let _dragged=false;
-  card.addEventListener('dragstart',e=>{
-    _dragged=true;
-    _draggedSchool=r.School;
-    e.dataTransfer.setData('text/plain',r.School);
-    e.dataTransfer.effectAllowed='move';
-    setTimeout(()=>card.classList.add('dragging'),0);
+  // Pointer-based drag (works on desktop + mobile, avoids HTML5 DnD quirks)
+  card.addEventListener('pointerdown', e=>{
+    if(e.target.closest('button,a')) return;
+    pipelineDragStart(e, card, r.School);
   });
-  card.addEventListener('dragend',()=>{
-    card.classList.remove('dragging');
-    _draggedSchool=null;
-    setTimeout(()=>{_dragged=false;},50);
-  });
-  // Let dragover bubble up to column body
-  card.addEventListener('dragover',e=>{e.preventDefault();});
 
-  // Click opens Program Profile
-  card.addEventListener('click',e=>{
-    if(_dragged)return;
-    if(e.target.classList.contains('pipeline-drag-handle'))return;
+  // Click opens Program Profile (only if not a drag)
+  card.addEventListener('click', e=>{
+    if(_dragMoved) return;
+    if(e.target.classList.contains('pipeline-drag-handle')) return;
     openProgramProfile(r.School);
   });
 
@@ -3241,59 +3209,58 @@ function _paintLogo(wrap,url,name){
 }
 
 
-// ── TOUCH DRAG (mobile) ────────────────────────────────
-let _draggedSchool=null;
-let _touchCard=null,_touchGhost=null,_touchStartX=0,_touchStartY=0;
-function initTouchDrag(){
-  document.querySelectorAll('.pipeline-card').forEach(card=>{
-    card.addEventListener('touchstart',onTouchStart,{passive:false});
-  });
-}
-function onTouchStart(e){
-  const card=e.currentTarget;
-  _touchCard=card;
-  _touchStartX=e.touches[0].clientX;
-  _touchStartY=e.touches[0].clientY;
-  // Ghost
-  _touchGhost=card.cloneNode(true);
-  _touchGhost.style.cssText=`position:fixed;z-index:9999;opacity:.85;pointer-events:none;width:${card.offsetWidth}px;transform:scale(1.03);border-radius:10px;background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.12);`;
-  const rect=card.getBoundingClientRect();
-  _touchGhost.style.top=rect.top+'px';
-  _touchGhost.style.left=rect.left+'px';
-  document.body.appendChild(_touchGhost);
-  card.style.opacity='.3';
-  document.addEventListener('touchmove',onTouchMove,{passive:false});
-  document.addEventListener('touchend',onTouchEnd);
-}
-function onTouchMove(e){
-  e.preventDefault();
-  if(!_touchGhost)return;
-  const dx=e.touches[0].clientX-_touchStartX;
-  const dy=e.touches[0].clientY-_touchStartY;
-  const rect=_touchCard.getBoundingClientRect();
-  _touchGhost.style.top=(rect.top+dy)+'px';
-  _touchGhost.style.left=(rect.left+dx)+'px';
-  // Highlight drop zone
-  document.querySelectorAll('.pipeline-col-body').forEach(b=>b.classList.remove('drag-over'));
-  const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);
-  const zone=el&&el.closest('.pipeline-col-body');
-  if(zone)zone.classList.add('drag-over');
-}
-function onTouchEnd(e){
-  document.removeEventListener('touchmove',onTouchMove);
-  document.removeEventListener('touchend',onTouchEnd);
-  document.querySelectorAll('.pipeline-col-body').forEach(b=>b.classList.remove('drag-over'));
-  const droppedCard=_touchCard;
-  const droppedSchool=droppedCard?.dataset.school;
-  if(_touchGhost){_touchGhost.remove();_touchGhost=null;}
-  if(droppedCard){droppedCard.style.opacity='';}
-  _touchCard=null;
-  const pt=e.changedTouches[0];
-  const el=document.elementFromPoint(pt.clientX,pt.clientY);
-  const zone=el&&el.closest('.pipeline-col-body');
-  if(zone&&droppedSchool){
-    movePipelineCard(droppedSchool,zone,zone.dataset.stage);
+// ── POINTER DRAG (desktop + mobile unified) ─────────────
+let _draggedSchool=null,_dragGhost=null,_dragCard=null,_dragMoved=false;
+const DRAG_THRESHOLD=6;
+
+function pipelineDragStart(e, card, school){
+  const startX=e.clientX, startY=e.clientY;
+  let started=false;
+
+  function onMove(ev){
+    const dx=ev.clientX-startX, dy=ev.clientY-startY;
+    if(!started){
+      if(Math.abs(dx)<DRAG_THRESHOLD&&Math.abs(dy)<DRAG_THRESHOLD) return;
+      started=true;
+      _dragMoved=true;
+      _dragCard=card;
+      _draggedSchool=school;
+      card.setPointerCapture(e.pointerId);
+      const rect=card.getBoundingClientRect();
+      _dragGhost=card.cloneNode(true);
+      _dragGhost.style.cssText=`position:fixed;z-index:9999;opacity:.88;pointer-events:none;width:${rect.width}px;top:${rect.top}px;left:${rect.left}px;transform:scale(1.03) rotate(1deg);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);transition:none;`;
+      document.body.appendChild(_dragGhost);
+      card.style.opacity='.35';
+    }
+    const rect=card.getBoundingClientRect();
+    _dragGhost.style.top=(rect.top+(ev.clientY-startY))+'px';
+    _dragGhost.style.left=(rect.left+(ev.clientX-startX))+'px';
+    document.querySelectorAll('.pipeline-col-body').forEach(b=>b.classList.remove('drag-over'));
+    const el=document.elementFromPoint(ev.clientX,ev.clientY);
+    const zone=el&&el.closest('.pipeline-col-body');
+    if(zone) zone.classList.add('drag-over');
   }
+
+  function onUp(ev){
+    card.removeEventListener('pointermove',onMove);
+    card.removeEventListener('pointerup',onUp);
+    card.removeEventListener('pointercancel',onUp);
+    document.querySelectorAll('.pipeline-col-body').forEach(b=>b.classList.remove('drag-over'));
+    if(_dragGhost){_dragGhost.remove();_dragGhost=null;}
+    card.style.opacity='';
+    if(started&&_draggedSchool){
+      const el=document.elementFromPoint(ev.clientX,ev.clientY);
+      const zone=el&&el.closest('.pipeline-col-body');
+      if(zone) movePipelineCard(_draggedSchool,zone,zone.dataset.stage);
+    }
+    _dragCard=null;
+    _draggedSchool=null;
+    setTimeout(()=>{_dragMoved=false;},50);
+  }
+
+  card.addEventListener('pointermove',onMove);
+  card.addEventListener('pointerup',onUp);
+  card.addEventListener('pointercancel',onUp);
 }
 
 // ── PROFILE STATE ────────────────────────────────────────
