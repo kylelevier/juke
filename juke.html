@@ -6,6 +6,8 @@
 <title>JUKE — College Recruiting</title>
 <!-- Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- SortableJS — drag and drop for pipeline board -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -532,8 +534,9 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:20px
 .pipeline-add-hint{margin-top:18px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--columbia);line-height:1.5;}
 
 /* ── PIPELINE DRAG & DROP ── */
-.pipeline-card{cursor:grab;touch-action:none;}
-.pipeline-card:active{cursor:grabbing;}
+.pipeline-card{cursor:grab;}
+.pipeline-card.dragging{opacity:.4;transform:scale(.97);}
+.sortable-drag{opacity:.9!important;transform:scale(1.03);box-shadow:0 8px 24px rgba(0,0,0,.18)!important;border-radius:12px;}
 .pipeline-card.dragging{opacity:.4;transform:scale(.97);}
 .pipeline-col-body.drag-over{background:var(--columbia-bg);border-radius:12px;outline:2px dashed var(--columbia-bd);}
 .pipeline-drag-handle{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--text-dim);font-size:14px;cursor:grab;flex-shrink:0;transition:color .12s;}
@@ -2716,6 +2719,11 @@ function renderPipeline(){
 
   // Build columns (DOM, not innerHTML, so we can attach listeners)
   const colsEl=document.getElementById('pipeline-cols');
+  // Destroy existing Sortable instances before wiping DOM
+  // (prevents orphaned document-level event listeners on re-render)
+  colsEl.querySelectorAll('.pipeline-col-body').forEach(b=>{
+    const s=Sortable.get(b); if(s) s.destroy();
+  });
   colsEl.innerHTML='';
   PIPELINE_STAGES.forEach(stage=>{
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
@@ -2740,12 +2748,35 @@ function renderPipeline(){
       });
     }
 
-    // Drop zone highlight is handled by pointer move (see pipelineDragStart)
-
     col.appendChild(body);
     colsEl.appendChild(col);
   });
 
+  // Init SortableJS on every column body
+  // SortableJS owns the DOM move — onEnd only updates data
+  document.querySelectorAll('.pipeline-col-body').forEach(body=>{
+    new Sortable(body,{
+      group:'pipeline',
+      animation:150,
+      ghostClass:'dragging',
+      dragClass:'sortable-drag',
+      filter:'.pipeline-empty-col',
+      onEnd(evt){
+        const school=evt.item.dataset.school;
+        const targetStage=evt.to.dataset.stage;
+        if(!school||!targetStage) return;
+
+        // Update data + persistence
+        statusData[school]=targetStage;
+        recordMilestone(school,targetStage);
+        lsSet('juke_status',statusData);
+        cloudSave();
+
+        // Defer re-render so SortableJS finishes cleanup before DOM rebuild
+        setTimeout(renderPipeline, 0);
+      }
+    });
+  });
 }
 
 function buildPipelineCard(r,stageKey){
@@ -2790,16 +2821,9 @@ function buildPipelineCard(r,stageKey){
   // Fetch logo async
   fetchSchoolLogo(r.School,logoWrap);
 
-  // Pointer-based drag (works on desktop + mobile, avoids HTML5 DnD quirks)
-  card.addEventListener('pointerdown', e=>{
-    if(e.target.closest('button,a')) return;
-    pipelineDragStart(e, card, r.School);
-  });
-
-  // Click opens Program Profile (only if not a drag)
-  card.addEventListener('click', e=>{
-    if(_dragMoved) return;
-    if(e.target.classList.contains('pipeline-drag-handle')) return;
+  // Click opens Program Profile (drag handled by SortableJS)
+  card.addEventListener('click',e=>{
+    if(e.target.classList.contains('pipeline-drag-handle'))return;
     openProgramProfile(r.School);
   });
 
@@ -3209,59 +3233,6 @@ function _paintLogo(wrap,url,name){
 }
 
 
-// ── POINTER DRAG (desktop + mobile unified) ─────────────
-let _draggedSchool=null,_dragGhost=null,_dragCard=null,_dragMoved=false;
-const DRAG_THRESHOLD=6;
-
-function pipelineDragStart(e, card, school){
-  const startX=e.clientX, startY=e.clientY;
-  let started=false;
-
-  function onMove(ev){
-    const dx=ev.clientX-startX, dy=ev.clientY-startY;
-    if(!started){
-      if(Math.abs(dx)<DRAG_THRESHOLD&&Math.abs(dy)<DRAG_THRESHOLD) return;
-      started=true;
-      _dragMoved=true;
-      _dragCard=card;
-      _draggedSchool=school;
-      card.setPointerCapture(e.pointerId);
-      const rect=card.getBoundingClientRect();
-      _dragGhost=card.cloneNode(true);
-      _dragGhost.style.cssText=`position:fixed;z-index:9999;opacity:.88;pointer-events:none;width:${rect.width}px;top:${rect.top}px;left:${rect.left}px;transform:scale(1.03) rotate(1deg);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);transition:none;`;
-      document.body.appendChild(_dragGhost);
-      card.style.opacity='.35';
-    }
-    const rect=card.getBoundingClientRect();
-    _dragGhost.style.top=(rect.top+(ev.clientY-startY))+'px';
-    _dragGhost.style.left=(rect.left+(ev.clientX-startX))+'px';
-    document.querySelectorAll('.pipeline-col-body').forEach(b=>b.classList.remove('drag-over'));
-    const el=document.elementFromPoint(ev.clientX,ev.clientY);
-    const zone=el&&el.closest('.pipeline-col-body');
-    if(zone) zone.classList.add('drag-over');
-  }
-
-  function onUp(ev){
-    card.removeEventListener('pointermove',onMove);
-    card.removeEventListener('pointerup',onUp);
-    card.removeEventListener('pointercancel',onUp);
-    document.querySelectorAll('.pipeline-col-body').forEach(b=>b.classList.remove('drag-over'));
-    if(_dragGhost){_dragGhost.remove();_dragGhost=null;}
-    card.style.opacity='';
-    if(started&&_draggedSchool){
-      const el=document.elementFromPoint(ev.clientX,ev.clientY);
-      const zone=el&&el.closest('.pipeline-col-body');
-      if(zone) movePipelineCard(_draggedSchool,zone,zone.dataset.stage);
-    }
-    _dragCard=null;
-    _draggedSchool=null;
-    setTimeout(()=>{_dragMoved=false;},50);
-  }
-
-  card.addEventListener('pointermove',onMove);
-  card.addEventListener('pointerup',onUp);
-  card.addEventListener('pointercancel',onUp);
-}
 
 // ── PROFILE STATE ────────────────────────────────────────
 let profileAwards=[];
