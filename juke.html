@@ -2757,9 +2757,7 @@ function renderPipeline(){
   document.querySelectorAll('.pipeline-col-body').forEach(body=>{
     new Sortable(body,{
       group:'pipeline',
-      animation:150,
-      ghostClass:'dragging',
-      dragClass:'sortable-drag',
+      animation:0,
       filter:'.pipeline-empty-col',
       onEnd(evt){
         const school=evt.item.dataset.school;
@@ -2772,7 +2770,7 @@ function renderPipeline(){
         lsSet('juke_status',statusData);
         cloudSave();
 
-        // Defer re-render so SortableJS finishes cleanup before DOM rebuild
+        // Re-render after SortableJS fully finishes (no animation = safe at 0ms)
         setTimeout(renderPipeline, 0);
       }
     });
