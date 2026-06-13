@@ -2746,6 +2746,7 @@ function renderPipeline(){
     // Drop zone listeners
     body.addEventListener('dragover',e=>{
       e.preventDefault();
+      e.dataTransfer.dropEffect='move';
       body.classList.add('drag-over');
     });
     body.addEventListener('dragleave',e=>{
@@ -2754,7 +2755,7 @@ function renderPipeline(){
     body.addEventListener('drop',e=>{
       e.preventDefault();
       body.classList.remove('drag-over');
-      const school=e.dataTransfer.getData('text/plain');
+      const school=_draggedSchool||e.dataTransfer.getData('text/plain');
       if(!school)return;
       movePipelineCard(school,body,stage.key);
     });
@@ -2814,26 +2815,18 @@ function buildPipelineCard(r,stageKey){
   let _dragged=false;
   card.addEventListener('dragstart',e=>{
     _dragged=true;
+    _draggedSchool=r.School;
     e.dataTransfer.setData('text/plain',r.School);
     e.dataTransfer.effectAllowed='move';
     setTimeout(()=>card.classList.add('dragging'),0);
   });
   card.addEventListener('dragend',()=>{
     card.classList.remove('dragging');
+    _draggedSchool=null;
     setTimeout(()=>{_dragged=false;},50);
   });
-  // Allow drops when cursor is over a card, and handle the drop directly
-  card.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();});
-  card.addEventListener('drop',e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    const school=e.dataTransfer.getData('text/plain');
-    if(!school)return;
-    const colBody=card.closest('.pipeline-col-body');
-    if(!colBody)return;
-    colBody.classList.remove('drag-over');
-    movePipelineCard(school,colBody,colBody.dataset.stage);
-  });
+  // Let dragover bubble up to column body
+  card.addEventListener('dragover',e=>{e.preventDefault();});
 
   // Click opens Program Profile
   card.addEventListener('click',e=>{
@@ -3249,6 +3242,7 @@ function _paintLogo(wrap,url,name){
 
 
 // ── TOUCH DRAG (mobile) ────────────────────────────────
+let _draggedSchool=null;
 let _touchCard=null,_touchGhost=null,_touchStartX=0,_touchStartY=0;
 function initTouchDrag(){
   document.querySelectorAll('.pipeline-card').forEach(card=>{
