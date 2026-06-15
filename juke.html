@@ -1187,7 +1187,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
 .msg-tab-badge{display:inline-block;background:#FF0080;color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 5px;margin-left:4px;line-height:1.5;vertical-align:middle;}
 
 /* Full-height messages tab */
-#content-messages{display:flex;flex-direction:column;height:calc(100vh - 104px);height:calc(100dvh - 104px);overflow:hidden;padding:0;}
+#content-messages{flex-direction:column;height:calc(100vh - 104px);height:calc(100dvh - 104px);overflow:hidden;padding:0;}
+#content-messages.active{display:flex;}
 #content-messages .section-hd{flex-shrink:0;padding:12px 16px 10px;border-bottom:1px solid rgba(255,255,255,.08);}
 
 /* Two-panel wrap */
@@ -5639,73 +5640,73 @@ async function openSchoolWorkspace(schoolName){
   const r=RAW.find(x=>x.School===schoolName);
   if(!r)return;
   _wsSchool=schoolName;
-  _wsData={log:[],contacts:[],tasks:[],offer:{status:’none’},notes:[],ppId:null,jukeAlert:null,ppCreatedAt:null};
+  _wsData={log:[],contacts:[],tasks:[],offer:{status:'none'},notes:[],ppId:null,jukeAlert:null,ppCreatedAt:null};
 
-  const sel=document.getElementById(‘ws-stage-select’);
-  sel.innerHTML=PIPELINE_STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join(‘’);
-  const curStage=statusData[schoolName]||’dream_schools’;
+  const sel=document.getElementById('ws-stage-select');
+  sel.innerHTML=PIPELINE_STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('');
+  const curStage=statusData[schoolName]||'dream_schools';
   sel.value=curStage;
 
   const sc=WS_STAGE_COLORS[curStage]||WS_STAGE_COLORS.interested;
-  const abbr=schoolName.split(‘ ‘).map(w=>w[0]).join(‘’).slice(0,3).toUpperCase();
-  const av=document.getElementById(‘ws-av’);
+  const abbr=schoolName.split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase();
+  const av=document.getElementById('ws-av');
   av.textContent=abbr;av.style.background=sc.bg;av.style.color=sc.text;
-  document.getElementById(‘ws-name’).textContent=schoolName;
-  document.getElementById(‘ws-warmth’).innerHTML=’’;
-  document.getElementById(‘ws-juke-bar’).classList.remove(‘show’);
-  document.getElementById(‘ws-tasks-strip’).classList.remove(‘has-tasks’);
-  document.getElementById(‘ws-body’).innerHTML=’<div class="ws-empty">Loading…</div>’;
-  document.getElementById(‘ws-bottom-bar’).innerHTML=’’;
-  document.getElementById(‘ws-overlay’).classList.add(‘open’);
-  document.body.style.overflow=’hidden’;
+  document.getElementById('ws-name').textContent=schoolName;
+  document.getElementById('ws-warmth').innerHTML='';
+  document.getElementById('ws-juke-bar').classList.remove('show');
+  document.getElementById('ws-tasks-strip').classList.remove('has-tasks');
+  document.getElementById('ws-body').innerHTML='<div class="ws-empty">Loading…</div>';
+  document.getElementById('ws-bottom-bar').innerHTML='';
+  document.getElementById('ws-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
 
   if(!sb||!currentUser){_renderWsOffline();return;}
 
   try{
-    const {data:prog}=await sb.from(‘programs’).select(‘id’).eq(‘school’,schoolName).single();
-    if(!prog){_renderWsOffline(‘School not found in database.’);return;}
+    const {data:prog}=await sb.from('programs').select('id').eq('school',schoolName).single();
+    if(!prog){_renderWsOffline('School not found in database.');return;}
 
     let ppRow;
-    const {data:existing}=await sb.from(‘player_programs’)
-      .select(‘id,stage,created_at’).eq(‘user_id’,currentUser.id).eq(‘program_id’,prog.id).single();
+    const {data:existing}=await sb.from('player_programs')
+      .select('id,stage,created_at').eq('user_id',currentUser.id).eq('program_id',prog.id).single();
     if(existing){
       ppRow=existing;
       if(existing.stage!==curStage)
-        await sb.from(‘player_programs’).update({stage:curStage,updated_at:new Date().toISOString()}).eq(‘id’,existing.id);
+        await sb.from('player_programs').update({stage:curStage,updated_at:new Date().toISOString()}).eq('id',existing.id);
     }else{
-      const {data:created}=await sb.from(‘player_programs’)
+      const {data:created}=await sb.from('player_programs')
         .insert({user_id:currentUser.id,program_id:prog.id,stage:curStage})
-        .select(‘id,stage,created_at’).single();
+        .select('id,stage,created_at').single();
       ppRow=created;
     }
     _wsPPId=ppRow?.id;_wsData.ppId=_wsPPId;_wsData.ppCreatedAt=ppRow?.created_at;
 
     const [logRes,conRes,taskRes,offRes,noteRes,jukeRes]=await Promise.all([
-      sb.from(‘program_communications’).select(‘*’).eq(‘player_program_id’,_wsPPId).order(‘logged_at’,{ascending:false}),
-      sb.from(‘program_contacts’).select(‘*’).eq(‘player_program_id’,_wsPPId).order(‘created_at’),
-      sb.from(‘program_tasks’).select(‘*’).eq(‘player_program_id’,_wsPPId).order(‘created_at’),
-      sb.from(‘program_offers’).select(‘*’).eq(‘player_program_id’,_wsPPId).maybeSingle(),
-      sb.from(‘program_notes’).select(‘*’).eq(‘player_program_id’,_wsPPId).order(‘created_at’,{ascending:false}),
-      sb.rpc(‘get_stale_programs’,{stale_days:14}),
+      sb.from('program_communications').select('*').eq('player_program_id',_wsPPId).order('logged_at',{ascending:false}),
+      sb.from('program_contacts').select('*').eq('player_program_id',_wsPPId).order('created_at'),
+      sb.from('program_tasks').select('*').eq('player_program_id',_wsPPId).order('created_at'),
+      sb.from('program_offers').select('*').eq('player_program_id',_wsPPId).maybeSingle(),
+      sb.from('program_notes').select('*').eq('player_program_id',_wsPPId).order('created_at',{ascending:false}),
+      sb.rpc('get_stale_programs',{stale_days:14}),
     ]);
     _wsData.log=logRes.data||[];
     _wsData.contacts=conRes.data||[];
     _wsData.tasks=taskRes.data||[];
-    _wsData.offer=offRes.data||{status:’none’};
+    _wsData.offer=offRes.data||{status:'none'};
     _wsData.notes=noteRes.data||[];
     const staleList=jukeRes.data||[];
     _wsData.jukeAlert=staleList.find(s=>s.player_program_id===_wsPPId)||null;
 
     _renderWorkspace();
   }catch(err){
-    console.warn(‘Workspace load error:’,err);
-    _renderWsOffline(‘Could not load workspace data.’);
+    console.warn('Workspace load error:',err);
+    _renderWsOffline('Could not load workspace data.');
   }
 }
 
 function closeWorkspace(){
-  document.getElementById(‘ws-overlay’).classList.remove(‘open’);
-  document.body.style.overflow=’’;
+  document.getElementById('ws-overlay').classList.remove('open');
+  document.body.style.overflow='';
   _wsSchool=null;_wsPPId=null;
 }
 
@@ -5713,17 +5714,17 @@ function _renderWorkspace(){
   _renderJukeBar();
   _renderWarmthDots();
   _renderTasksStrip();
-  document.getElementById(‘ws-body’).innerHTML=_buildStoryFeed();
+  document.getElementById('ws-body').innerHTML=_buildStoryFeed();
   _renderBottomBar();
 }
 
 function _renderJukeBar(){
-  const bar=document.getElementById(‘ws-juke-bar’);
+  const bar=document.getElementById('ws-juke-bar');
   if(_wsData.jukeAlert){
     const d=_wsData.jukeAlert.days_since_contact;
-    document.getElementById(‘ws-juke-msg’).innerHTML=`It’s been <strong style="color:#FF0080;">${d} day${d!==1?’s’:’’}</strong> since your last logged contact.`;
-    bar.classList.add(‘show’);
-  }else{bar.classList.remove(‘show’);}
+    document.getElementById('ws-juke-msg').innerHTML=`It's been <strong style="color:#FF0080;">${d} day${d!==1?'s':''}</strong> since your last logged contact.`;
+    bar.classList.add('show');
+  }else{bar.classList.remove('show');}
 }
 
 function _calcWarmth(){
@@ -5741,38 +5742,38 @@ function _calcWarmth(){
 
 function _renderWarmthDots(){
   const w=_wsData.log.length?_calcWarmth():0;
-  document.getElementById(‘ws-warmth’).innerHTML=
-    [1,2,3,4,5].map(i=>`<span style="width:8px;height:8px;border-radius:50%;background:${i<=w?’#FF0080’:’#E2DCE8’};display:inline-block;"></span>`).join(‘’);
+  document.getElementById('ws-warmth').innerHTML=
+    [1,2,3,4,5].map(i=>`<span style="width:8px;height:8px;border-radius:50%;background:${i<=w?'#FF0080':'#E2DCE8'};display:inline-block;"></span>`).join('');
 }
 
 function _renderTasksStrip(){
-  const strip=document.getElementById(‘ws-tasks-strip’);
+  const strip=document.getElementById('ws-tasks-strip');
   const open=_wsData.tasks.filter(t=>!t.completed);
-  if(!open.length){strip.classList.remove(‘has-tasks’);return;}
+  if(!open.length){strip.classList.remove('has-tasks');return;}
   const today=new Date();today.setHours(0,0,0,0);
-  strip.classList.add(‘has-tasks’);
+  strip.classList.add('has-tasks');
   strip.innerHTML=`<div class="ws-tasks-strip-hd">Open tasks</div>`
     +open.map(t=>{
-      const overdue=t.due_date&&new Date(t.due_date+’T12:00:00’)<today;
+      const overdue=t.due_date&&new Date(t.due_date+'T12:00:00')<today;
       const dueSpan=t.due_date
-        ?` — <span class="${overdue?’ws-task-chip-overdue’:’ws-task-chip-due’}">${overdue?’Overdue’:’Due’} ${new Date(t.due_date+’T12:00:00’).toLocaleDateString(‘en-US’,{month:’short’,day:’numeric’})}</span>`
-        :’’;
+        ?` — <span class="${overdue?'ws-task-chip-overdue':'ws-task-chip-due'}">${overdue?'Overdue':'Due'} ${new Date(t.due_date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
+        :'';
       return`<label class="ws-task-chip"><input type="checkbox" onchange="wsToggleTask(${t.id},true)"><span class="ws-task-chip-text">${t.text}${dueSpan}</span></label>`;
-    }).join(‘’);
+    }).join('');
 }
 
 function _buildStoryFeed(){
   const items=[];
-  _wsData.log.forEach(e=>items.push({kind:’comm’,date:new Date(e.logged_at),data:e}));
-  _wsData.tasks.filter(t=>t.completed).forEach(t=>items.push({kind:’task_done’,date:new Date(t.completed_at||t.created_at),data:t}));
-  _wsData.notes.forEach(n=>items.push({kind:’note’,date:new Date(n.created_at),data:n}));
-  if(_wsData.ppCreatedAt)items.push({kind:’added’,date:new Date(_wsData.ppCreatedAt),data:{}});
+  _wsData.log.forEach(e=>items.push({kind:'comm',date:new Date(e.logged_at),data:e}));
+  _wsData.tasks.filter(t=>t.completed).forEach(t=>items.push({kind:'task_done',date:new Date(t.completed_at||t.created_at),data:t}));
+  _wsData.notes.forEach(n=>items.push({kind:'note',date:new Date(n.created_at),data:n}));
+  if(_wsData.ppCreatedAt)items.push({kind:'added',date:new Date(_wsData.ppCreatedAt),data:{}});
   items.sort((a,b)=>b.date-a.date);
 
   const fmtDate=d=>{
     const diff=Math.floor((new Date()-d)/(1000*60*60*24));
-    if(diff===0)return’Today’;if(diff===1)return’Yesterday’;
-    return d.toLocaleDateString(‘en-US’,{month:’short’,day:’numeric’});
+    if(diff===0)return'Today';if(diff===1)return'Yesterday';
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   };
 
   const forms=`<div style="margin-bottom:12px;">
@@ -5788,7 +5789,7 @@ function _buildStoryFeed(){
       <option value="mail">Mail</option>
     </select>
     <label>Note <span style="opacity:.5;font-size:9px;">(optional)</span></label>
-    <textarea id="ws-log-note" placeholder="What happened? How’d it feel?"></textarea>
+    <textarea id="ws-log-note" placeholder="What happened? How'd it feel?"></textarea>
     <div class="ws-actions-light">
       <button class="ws-btn-pink" onclick="wsAddLog()">Log it</button>
       <button class="ws-btn-muted" onclick="wsHideLogForm()">Cancel</button>
@@ -5807,65 +5808,65 @@ function _buildStoryFeed(){
 
   const tl=items.map((item,i)=>{
     const isLast=i===items.length-1;
-    const line=isLast?’’:’<div class="ws-tl-line"></div>’;
+    const line=isLast?'':'<div class="ws-tl-line"></div>';
     const ds=fmtDate(item.date);
-    if(item.kind===’comm’){
+    if(item.kind==='comm'){
       const e=item.data;
-      const cls=e.type===’phone_call’?’ws-tl-phone’:e.type===’email’?’ws-tl-email’:e.type===’message’?’ws-tl-message’:e.type===’mail’?’ws-tl-mail’:’ws-tl-juke’;
+      const cls=e.type==='phone_call'?'ws-tl-phone':e.type==='email'?'ws-tl-email':e.type==='message'?'ws-tl-message':e.type==='mail'?'ws-tl-mail':'ws-tl-juke';
       return`<div class="ws-tl-entry ${cls}">
-        <div class="ws-tl-left"><div class="ws-tl-dot">${WS_LOG_ICONS[e.type]||’•’}</div>${line}</div>
+        <div class="ws-tl-left"><div class="ws-tl-dot">${WS_LOG_ICONS[e.type]||'•'}</div>${line}</div>
         <div class="ws-tl-right"><div class="ws-tl-meta"><span class="ws-tl-type">${WS_LOG_LABELS[e.type]||e.type}</span><span class="ws-tl-date">${ds}</span></div>
-        <div class="ws-tl-card"><p>${e.note||’Logged.’}</p></div></div></div>`;
+        <div class="ws-tl-card"><p>${e.note||'Logged.'}</p></div></div></div>`;
     }
-    if(item.kind===’task_done’){
+    if(item.kind==='task_done'){
       return`<div class="ws-tl-entry ws-tl-task">
         <div class="ws-tl-left"><div class="ws-tl-dot">✓</div>${line}</div>
         <div class="ws-tl-right"><div class="ws-tl-meta"><span class="ws-tl-type">Task completed</span><span class="ws-tl-date">${ds}</span></div>
         <div class="ws-tl-card"><p>${item.data.text}</p></div></div></div>`;
     }
-    if(item.kind===’note’){
+    if(item.kind==='note'){
       return`<div class="ws-tl-entry ws-tl-note">
         <div class="ws-tl-left"><div class="ws-tl-dot">✎</div>${line}</div>
         <div class="ws-tl-right"><div class="ws-tl-meta"><span class="ws-tl-type">Your note</span><span class="ws-tl-date">${ds}</span></div>
         <div class="ws-tl-card"><p>${item.data.content}</p></div></div></div>`;
     }
-    if(item.kind===’added’){
+    if(item.kind==='added'){
       return`<div class="ws-tl-entry ws-tl-added">
         <div class="ws-tl-left"><div class="ws-tl-dot">★</div>${line}</div>
         <div class="ws-tl-right"><div class="ws-tl-meta"><span class="ws-tl-type">Added to board</span><span class="ws-tl-date">${ds}</span></div>
         <div class="ws-tl-card"><p>Started tracking ${_wsSchool}</p></div></div></div>`;
     }
-    return’’;
-  }).join(‘’);
+    return'';
+  }).join('');
 
   return forms+tl;
 }
 
 function wsShowLogForm(){
-  document.getElementById(‘ws-log-form’).style.display=’block’;
-  document.getElementById(‘ws-log-trigger-btn’).style.display=’none’;
-  document.getElementById(‘ws-juke-bar’).classList.remove(‘show’);
+  document.getElementById('ws-log-form').style.display='block';
+  document.getElementById('ws-log-trigger-btn').style.display='none';
+  document.getElementById('ws-juke-bar').classList.remove('show');
 }
 function wsHideLogForm(){
-  document.getElementById(‘ws-log-form’).style.display=’none’;
-  document.getElementById(‘ws-log-trigger-btn’).style.display=’flex’;
+  document.getElementById('ws-log-form').style.display='none';
+  document.getElementById('ws-log-trigger-btn').style.display='flex';
 }
 function wsShowNoteForm(){
-  document.getElementById(‘ws-note-form’).style.display=’block’;
-  document.getElementById(‘ws-note-trigger-btn’).style.display=’none’;
+  document.getElementById('ws-note-form').style.display='block';
+  document.getElementById('ws-note-trigger-btn').style.display='none';
 }
 function wsHideNoteForm(){
-  document.getElementById(‘ws-note-form’).style.display=’none’;
-  document.getElementById(‘ws-note-trigger-btn’).style.display=’flex’;
+  document.getElementById('ws-note-form').style.display='none';
+  document.getElementById('ws-note-trigger-btn').style.display='flex';
 }
 
 async function wsAddLog(){
   if(!_wsPPId)return;
-  const type=document.getElementById(‘ws-log-type’)?.value||’phone_call’;
-  const note=(document.getElementById(‘ws-log-note’)?.value||’’).trim();
-  const btn=document.querySelector(‘#ws-log-form .ws-btn-pink’);
-  if(btn){btn.disabled=true;btn.textContent=’Saving…’;}
-  const {data,error}=await sb.from(‘program_communications’)
+  const type=document.getElementById('ws-log-type')?.value||'phone_call';
+  const note=(document.getElementById('ws-log-note')?.value||'').trim();
+  const btn=document.querySelector('#ws-log-form .ws-btn-pink');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  const {data,error}=await sb.from('program_communications')
     .insert({player_program_id:_wsPPId,type,note:note||null,logged_at:new Date().toISOString()})
     .select().single();
   if(!error&&data){_wsData.log.unshift(data);_wsData.jukeAlert=null;_renderWorkspace();}
@@ -5873,33 +5874,33 @@ async function wsAddLog(){
 
 async function wsAddNote(){
   if(!_wsPPId)return;
-  const content=(document.getElementById(‘ws-note-text’)?.value||’’).trim();
+  const content=(document.getElementById('ws-note-text')?.value||'').trim();
   if(!content)return;
-  const btn=document.querySelector(‘#ws-note-form .ws-btn-pink’);
-  if(btn){btn.disabled=true;btn.textContent=’Saving…’;}
-  const {data,error}=await sb.from(‘program_notes’)
+  const btn=document.querySelector('#ws-note-form .ws-btn-pink');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  const {data,error}=await sb.from('program_notes')
     .insert({player_program_id:_wsPPId,content}).select().single();
   if(!error&&data){_wsData.notes.unshift(data);_renderWorkspace();}
 }
 
 function _renderBottomBar(){
-  const bar=document.getElementById(‘ws-bottom-bar’);
-  const o=_wsData.offer||{status:’none’};
-  const hasOffer=o.status&&o.status!==’none’;
+  const bar=document.getElementById('ws-bottom-bar');
+  const o=_wsData.offer||{status:'none'};
+  const hasOffer=o.status&&o.status!=='none';
 
   const contactsHtml=_wsData.contacts.length
     ?`<div class="ws-bottom-section-hd">Coaches</div>`
       +_wsData.contacts.map(c=>{
-        const abbr=(c.name||’?’).split(‘ ‘).map(w=>w[0]).join(‘’).slice(0,2).toUpperCase();
-        const email=c.email?`<a href="mailto:${c.email}" style="color:#FF0080;font-size:10px;text-decoration:none;">${c.email}</a>`:’’;
+        const abbr=(c.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const email=c.email?`<a href="mailto:${c.email}" style="color:#FF0080;font-size:10px;text-decoration:none;">${c.email}</a>`:'';
         return`<div class="ws-contact-chip-row">
           <div class="ws-contact-chip-av">${abbr}</div>
           <div class="ws-contact-chip-info">
-            <div class="ws-contact-chip-nm">${c.name}${c.role?` <span style="color:#a09ab0;font-weight:400;">· ${c.role}</span>`:’’}</div>
+            <div class="ws-contact-chip-nm">${c.name}${c.role?` <span style="color:#a09ab0;font-weight:400;">· ${c.role}</span>`:''}</div>
             ${email}
           </div></div>`;
-      }).join(‘’)
-    :’’;
+      }).join('')
+    :'';
 
   bar.innerHTML=contactsHtml
     +`<div class="ws-form-light" id="ws-contact-form" style="display:none;margin-bottom:10px;">
@@ -5913,7 +5914,7 @@ function _renderBottomBar(){
         <button class="ws-btn-pink" onclick="wsAddContact()">Save</button>
         <button class="ws-btn-muted" onclick="wsHideContactForm()">Cancel</button>
       </div></div>
-    <button class="ws-add-light" id="ws-contact-trigger" onclick="wsShowContactForm()" style="margin-top:${_wsData.contacts.length?’6’:’0’}px;">+ Add a coach contact</button>
+    <button class="ws-add-light" id="ws-contact-trigger" onclick="wsShowContactForm()" style="margin-top:${_wsData.contacts.length?'6':'0'}px;">+ Add a coach contact</button>
     <div class="ws-form-light" id="ws-task-form" style="display:none;margin-bottom:10px;">
       <label>Task</label><input id="ws-t-text" placeholder="Submit application, register for camp…">
       <label>Due date <span style="opacity:.5;font-size:9px;">(optional)</span></label>
@@ -5923,66 +5924,66 @@ function _renderBottomBar(){
         <button class="ws-btn-muted" onclick="wsHideTaskForm()">Cancel</button>
       </div></div>
     <button class="ws-add-light" id="ws-task-trigger" onclick="wsShowTaskForm()">+ Add a task</button>
-    <button class="ws-add-light" id="ws-offer-trigger" onclick="wsToggleOffer()" style="${hasOffer?’border-color:rgba(255,0,128,.35);color:#FF0080;’:’’}">
-      ${hasOffer?`Offer: ${WS_OFFER_LABELS[o.status]}`:’+ Track offer / financial aid’}
+    <button class="ws-add-light" id="ws-offer-trigger" onclick="wsToggleOffer()" style="${hasOffer?'border-color:rgba(255,0,128,.35);color:#FF0080;':''}">
+      ${hasOffer?`Offer: ${WS_OFFER_LABELS[o.status]}`:'+ Track offer / financial aid'}
     </button>
     <div id="ws-offer-section" style="display:none;">
       <div class="ws-offer-inner">
         <div class="ws-offer-pills-light">
-          ${WS_OFFER_STATUSES.map(s=>`<button class="ws-offer-pill-light${o.status===s?’ active’:’’}" onclick="wsSetOfferStatus(‘${s}’)">${WS_OFFER_LABELS[s]}</button>`).join(‘’)}
+          ${WS_OFFER_STATUSES.map(s=>`<button class="ws-offer-pill-light${o.status===s?' active':''}" onclick="wsSetOfferStatus('${s}')">${WS_OFFER_LABELS[s]}</button>`).join('')}
         </div>
         <div class="ws-offer-grid-light">
-          ${[[‘scholarship_amount’,’Scholarship/yr’],[‘housing’,’Housing’],[‘books’,’Books’],[‘cost_of_attendance’,’Cost of Attendance’],[‘est_family_contribution’,’Family Contribution’]].map(([k,l])=>`<div class="ws-metric-light">
+          ${[['scholarship_amount','Scholarship/yr'],['housing','Housing'],['books','Books'],['cost_of_attendance','Cost of Attendance'],['est_family_contribution','Family Contribution']].map(([k,l])=>`<div class="ws-metric-light">
             <div class="ws-metric-light-lbl">${l}</div>
-            <input type="text" placeholder="—" value="${o[k]?’$’+parseInt(o[k]).toLocaleString():’’}" onblur="wsUpdateOfferField(‘${k}’,this.value)" onfocus="this.select()">
-          </div>`).join(‘’)}
+            <input type="text" placeholder="—" value="${o[k]?'$'+parseInt(o[k]).toLocaleString():''}" onblur="wsUpdateOfferField('${k}',this.value)" onfocus="this.select()">
+          </div>`).join('')}
         </div>
-        <textarea class="ws-offer-note-light" placeholder="Verbal interest, scholarship timing, any conditions…" onblur="wsUpdateOfferNote(this.value)">${o.notes||’’}</textarea>
+        <textarea class="ws-offer-note-light" placeholder="Verbal interest, scholarship timing, any conditions…" onblur="wsUpdateOfferNote(this.value)">${o.notes||''}</textarea>
       </div>
     </div>`;
 }
 
 function wsShowContactForm(){
-  document.getElementById(‘ws-contact-form’).style.display=’block’;
-  document.getElementById(‘ws-contact-trigger’).style.display=’none’;
+  document.getElementById('ws-contact-form').style.display='block';
+  document.getElementById('ws-contact-trigger').style.display='none';
 }
 function wsHideContactForm(){
-  document.getElementById(‘ws-contact-form’).style.display=’none’;
-  document.getElementById(‘ws-contact-trigger’).style.display=’flex’;
+  document.getElementById('ws-contact-form').style.display='none';
+  document.getElementById('ws-contact-trigger').style.display='flex';
 }
 function wsShowTaskForm(){
-  document.getElementById(‘ws-task-form’).style.display=’block’;
-  document.getElementById(‘ws-task-trigger’).style.display=’none’;
+  document.getElementById('ws-task-form').style.display='block';
+  document.getElementById('ws-task-trigger').style.display='none';
 }
 function wsHideTaskForm(){
-  document.getElementById(‘ws-task-form’).style.display=’none’;
-  document.getElementById(‘ws-task-trigger’).style.display=’flex’;
+  document.getElementById('ws-task-form').style.display='none';
+  document.getElementById('ws-task-trigger').style.display='flex';
 }
 function wsToggleOffer(){
-  const s=document.getElementById(‘ws-offer-section’);
-  const open=s.style.display===’block’;
-  s.style.display=open?’none’:’block’;
-  if(!open)document.getElementById(‘ws-offer-trigger’).style.display=’none’;
+  const s=document.getElementById('ws-offer-section');
+  const open=s.style.display==='block';
+  s.style.display=open?'none':'block';
+  if(!open)document.getElementById('ws-offer-trigger').style.display='none';
 }
 
 async function wsAddContact(){
   if(!_wsPPId)return;
-  const name=(document.getElementById(‘ws-c-name’)?.value||’’).trim();
+  const name=(document.getElementById('ws-c-name')?.value||'').trim();
   if(!name)return;
-  const role=(document.getElementById(‘ws-c-role’)?.value||’’).trim();
-  const email=(document.getElementById(‘ws-c-email’)?.value||’’).trim();
-  const phone=(document.getElementById(‘ws-c-phone’)?.value||’’).trim();
-  const btn=document.querySelector(‘#ws-contact-form .ws-btn-pink’);
-  if(btn){btn.disabled=true;btn.textContent=’Saving…’;}
-  const {data,error}=await sb.from(‘program_contacts’)
+  const role=(document.getElementById('ws-c-role')?.value||'').trim();
+  const email=(document.getElementById('ws-c-email')?.value||'').trim();
+  const phone=(document.getElementById('ws-c-phone')?.value||'').trim();
+  const btn=document.querySelector('#ws-contact-form .ws-btn-pink');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  const {data,error}=await sb.from('program_contacts')
     .insert({player_program_id:_wsPPId,name,role:role||null,email:email||null,phone:phone||null})
     .select().single();
   if(!error&&data){_wsData.contacts.push(data);_renderBottomBar();}
 }
 
 async function wsToggleTask(id,done){
-  const {error}=await sb.from(‘program_tasks’)
-    .update({completed:done,completed_at:done?new Date().toISOString():null}).eq(‘id’,id);
+  const {error}=await sb.from('program_tasks')
+    .update({completed:done,completed_at:done?new Date().toISOString():null}).eq('id',id);
   if(!error){
     const t=_wsData.tasks.find(x=>x.id===id);
     if(t){t.completed=done;t.completed_at=done?new Date().toISOString():null;}
@@ -5992,12 +5993,12 @@ async function wsToggleTask(id,done){
 
 async function wsAddTask(){
   if(!_wsPPId)return;
-  const text=(document.getElementById(‘ws-t-text’)?.value||’’).trim();
+  const text=(document.getElementById('ws-t-text')?.value||'').trim();
   if(!text)return;
-  const due=document.getElementById(‘ws-t-due’)?.value||null;
-  const btn=document.querySelector(‘#ws-task-form .ws-btn-pink’);
-  if(btn){btn.disabled=true;btn.textContent=’Saving…’;}
-  const {data,error}=await sb.from(‘program_tasks’)
+  const due=document.getElementById('ws-t-due')?.value||null;
+  const btn=document.querySelector('#ws-task-form .ws-btn-pink');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  const {data,error}=await sb.from('program_tasks')
     .insert({player_program_id:_wsPPId,text,due_date:due||null})
     .select().single();
   if(!error&&data){_wsData.tasks.push(data);_renderWorkspace();}
@@ -6007,23 +6008,23 @@ async function wsSetOfferStatus(status){
   const update={status,updated_at:new Date().toISOString()};
   let error;
   if(_wsData.offer?.id){
-    ({error}=await sb.from(‘program_offers’).update(update).eq(‘id’,_wsData.offer.id));
+    ({error}=await sb.from('program_offers').update(update).eq('id',_wsData.offer.id));
   }else{
-    const res=await sb.from(‘program_offers’).insert({player_program_id:_wsPPId,...update}).select().single();
+    const res=await sb.from('program_offers').insert({player_program_id:_wsPPId,...update}).select().single();
     error=res.error;if(!error)_wsData.offer=res.data;
   }
   if(!error){_wsData.offer={..._wsData.offer,...update};_renderBottomBar();}
 }
 
 async function wsUpdateOfferField(key,rawVal){
-  const num=parseInt(rawVal.replace(/[$,\s]/g,’’));
+  const num=parseInt(rawVal.replace(/[$,\s]/g,''));
   const val=isNaN(num)?null:num;
   const update={[key]:val,updated_at:new Date().toISOString()};
   let error;
   if(_wsData.offer?.id){
-    ({error}=await sb.from(‘program_offers’).update(update).eq(‘id’,_wsData.offer.id));
+    ({error}=await sb.from('program_offers').update(update).eq('id',_wsData.offer.id));
   }else{
-    const res=await sb.from(‘program_offers’).insert({player_program_id:_wsPPId,status:’none’,...update}).select().single();
+    const res=await sb.from('program_offers').insert({player_program_id:_wsPPId,status:'none',...update}).select().single();
     error=res.error;if(!error)_wsData.offer=res.data;
   }
   if(!error)_wsData.offer={..._wsData.offer,...update};
@@ -6034,9 +6035,9 @@ async function wsUpdateOfferNote(val){
   const update={notes,updated_at:new Date().toISOString()};
   let error;
   if(_wsData.offer?.id){
-    ({error}=await sb.from(‘program_offers’).update(update).eq(‘id’,_wsData.offer.id));
+    ({error}=await sb.from('program_offers').update(update).eq('id',_wsData.offer.id));
   }else{
-    const res=await sb.from(‘program_offers’).insert({player_program_id:_wsPPId,status:’none’,...update}).select().single();
+    const res=await sb.from('program_offers').insert({player_program_id:_wsPPId,status:'none',...update}).select().single();
     error=res.error;if(!error)_wsData.offer=res.data;
   }
   if(!error)_wsData.offer={..._wsData.offer,...update};
@@ -6045,19 +6046,19 @@ async function wsUpdateOfferNote(val){
 async function wsChangeStage(newStage){
   if(!_wsSchool)return;
   statusData[_wsSchool]=newStage;
-  lsSet(‘juke_status’,statusData);
+  lsSet('juke_status',statusData);
   cloudSave();
   const sc=WS_STAGE_COLORS[newStage]||WS_STAGE_COLORS.interested;
-  const av=document.getElementById(‘ws-av’);
+  const av=document.getElementById('ws-av');
   if(av){av.style.background=sc.bg;av.style.color=sc.text;}
   if(sb&&currentUser&&_wsPPId){
-    await sb.from(‘player_programs’).update({stage:newStage,updated_at:new Date().toISOString()}).eq(‘id’,_wsPPId);
+    await sb.from('player_programs').update({stage:newStage,updated_at:new Date().toISOString()}).eq('id',_wsPPId);
   }
-  if(document.getElementById(‘tab-pipeline’)?.classList.contains(‘active’))renderPipeline();
+  if(document.getElementById('tab-pipeline')?.classList.contains('active'))renderPipeline();
 }
 
-function _renderWsOffline(msg=’Sign in to track this school.’){
-  document.getElementById(‘ws-body’).innerHTML=`<div class="ws-empty">${msg}</div>`;
+function _renderWsOffline(msg='Sign in to track this school.'){
+  document.getElementById('ws-body').innerHTML=`<div class="ws-empty">${msg}</div>`;
 }
 
 // ── JUKE LOGIN BANNER ─────────────────────────────────────────────────────────
@@ -6076,7 +6077,7 @@ async function checkJukeLoginAlerts(){
       <div style="width:7px;height:7px;border-radius:50%;background:#FF0080;margin-top:5px;flex-shrink:0;animation:jukePulse 2s infinite;"></div>
       <div style="flex:1;">
         <div style="font-size:12px;font-weight:700;color:#FF0080;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">Juke Reminder</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.5;">It’s been ${top.days_since_contact} days since your last contact with <strong style="color:#fff;">${top.program_name}</strong>.</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.5;">It's been ${top.days_since_contact} days since your last contact with <strong style="color:#fff;">${top.program_name}</strong>.</div>
         ${data.length>1?`<div style="font-size:11px;color:rgba(255,0,128,.6);margin-top:6px;">+${data.length-1} more school${data.length>2?'s':''} need attention</div>`:''}
       </div>
       <button onclick="event.stopPropagation();document.getElementById('juke-login-banner').remove();" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;">×</button>
