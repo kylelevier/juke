@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JUKE — HS Coach Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="../styles/hscoach-portal.css">
+
+</head>
+<body>
+  <script src="../js/features/hscoach-portal-init.js"></script>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hd-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:28px;width:auto;display:block"><defs><linearGradient id="jukeGradHs" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs><path fill="url(#jukeGradHs)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/></svg></div>
+  <div class="hd-div"></div>
+  <div class="hd-slogan">Recruiting <em>her</em> way.</div>
+  <div class="hd-right">
+    <div class="hd-school-chip">
+      <div class="hd-school-logo" id="hd-logo-wrap"><span id="hd-abbr">DS</span></div>
+      <div class="hd-school-name" id="hd-school-short">DeSoto HS</div>
+    </div>
+    <button class="hd-msg-btn" id="hd-msg-btn" title="Messages" onclick="switchHsTab('messages');renderMsgThreadList();updateMsgBadge()">
+      <svg viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="18" height="14" rx="2"/>
+        <polyline points="1,3 10,10 19,3"/>
+      </svg>
+    </button>
+    <button class="coach-signin-btn" id="coach-signin-btn" onclick="openHsCoachAuth()" style="display:none">Sign In</button>
+    <div class="juke-user-chip" id="juke-user-chip" style="display:none"></div>
+  </div>
+</header>
+
+<!-- ── TAB NAV ── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tab-roster" onclick="switchHsTab('roster')">My Roster</button>
+  <button class="tab-btn" id="tab-activity" onclick="switchHsTab('activity')">College Activity</button>
+  <button class="tab-btn" id="tab-outreach" onclick="switchHsTab('outreach')">Outreach Tools</button>
+  <button class="tab-btn" id="tab-hsprofile" onclick="switchHsTab('hsprofile')">My Profile</button>
+  <button class="tab-btn" id="tab-messages" onclick="switchHsTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
+</nav>
+
+<!-- ── HS COACH PROFILE CARD ── -->
+<input type="file" id="banner-input" accept="image/*" style="display:none" onchange="handleBanner(this)"/>
+<input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)"/>
+<div class="coach-card" id="hs-coach-card">
+  <div class="coach-banner" id="coach-banner" onclick="document.getElementById('banner-input').click()">
+    <div class="coach-banner-placeholder" id="coach-banner-ph"><div class="coach-banner-cta">Add Team Banner</div></div>
+    <div class="coach-banner-overlay"><div class="coach-banner-overlay-label">Change Banner</div></div>
+  </div>
+  <div class="coach-identity">
+    <div class="coach-logo-circle" id="coach-logo-circle" onclick="document.getElementById('logo-input').click()">
+      <div class="coach-logo-initial" id="coach-logo-init">D</div>
+      <div class="coach-logo-hint">Edit</div>
+    </div>
+    <div class="coach-info">
+      <div class="coach-name" id="hs-display-name">Coach Marcus Williams</div>
+      <div class="coach-title" id="hs-display-title">Head Flag Football Coach · DeSoto High School</div>
+      <div class="coach-pills">
+        <span class="coach-pill sport" id="hs-pill-sport">Flag Football</span>
+        <span class="coach-pill" id="hs-pill-loc">DeSoto, TX</span>
+        <span class="coach-pill" id="hs-pill-league">6A UIL</span>
+        <span class="coach-pill pro">Pro</span>
+      </div>
+    </div>
+  </div>
+  <div class="coach-stats-row">
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-roster">18</div><div class="coach-stat-lbl">Roster</div></div>
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-seniors">4</div><div class="coach-stat-lbl">Seniors</div></div>
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-interest">6</div><div class="coach-stat-lbl">Getting Interest</div></div>
+    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-endorsed">5</div><div class="coach-stat-lbl">Endorsed</div></div>
+  </div>
+  <div class="coach-bio" id="hs-display-bio">DeSoto Eagles flag football — building the next generation of collegiate athletes. We've sent athletes to D1, D2, and D3 programs across the country. If you're recruiting in Texas, start here.</div>
+</div>
+
+<!-- ── PAGE WRAP ── -->
+<div class="page-wrap">
+
+<!-- ════ MY ROSTER TAB ════ -->
+<div class="tab-content active" id="content-roster">
+  <div class="section-bar">
+    <div class="section-title">My Roster <span style="color:var(--text-dim);font-size:12px;font-style:normal;font-weight:400;letter-spacing:0;text-transform:none" id="roster-count">8 athletes</span></div>
+    <div class="section-actions">
+      <button class="section-btn" onclick="addAthletePrompt()">+ Add Athlete</button>
+      <div class="view-toggle">
+        <button class="vtog active" id="roster-vtog-cards" onclick="setRosterView('cards')" title="Card view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </button>
+        <button class="vtog" id="roster-vtog-table" onclick="setRosterView('table')" title="Table view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <div class="search-input-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="roster-search" placeholder="Search by name…" oninput="renderRoster()"/>
+    </div>
+    <select class="fchip-sel" id="f-year" onchange="renderRoster()">
+      <option value="">All Years</option>
+      <option>2025</option><option>2026</option><option>2027</option><option>2028</option>
+    </select>
+    <select class="fchip-sel" id="f-status" onchange="renderRoster()">
+      <option value="">All Status</option>
+      <option value="none">No Interest</option>
+      <option value="saved">Saved</option>
+      <option value="contacted">Contacted</option>
+      <option value="applied">Applied</option>
+      <option value="committed">Committed</option>
+    </select>
+  </div>
+  <div class="filter-chips" id="roster-pos-chips">
+    <span class="fchip" onclick="toggleRosterPos(this,'QB')">QB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'WR')">WR</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'RB')">RB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'CB')">CB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'S')">S</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'LB')">LB</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'PR')">PR</span>
+    <span class="fchip" onclick="toggleRosterPos(this,'KR')">KR</span>
+  </div>
+  <!-- Card view -->
+  <div class="roster-grid" id="roster-grid"></div>
+  <!-- Table view -->
+  <div class="roster-table-wrap" id="roster-table-wrap" style="display:none">
+    <table class="roster-table" id="roster-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Athlete</th>
+          <th>Positions</th>
+          <th>Year</th>
+          <th>GPA</th>
+          <th>40yd</th>
+          <th>Programs</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="roster-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ COLLEGE ACTIVITY TAB ════ -->
+<div class="tab-content" id="content-activity">
+  <!-- Endorsement Requests Panel -->
+  <div class="end-req-panel" id="end-req-panel" style="display:none">
+    <div class="end-req-panel-hd">
+      <span class="end-req-panel-title">Endorsement Requests</span>
+      <span class="end-req-badge" id="end-req-badge">0 pending</span>
+    </div>
+    <div id="end-req-cards"></div>
+  </div>
+  <div class="section-bar">
+    <div class="section-title">College Activity</div>
+    <div class="section-actions">
+      <div class="view-toggle">
+        <button class="vtog active" id="activity-vtog-cards" onclick="setActivityView('cards')" title="Card view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </button>
+        <button class="vtog" id="activity-vtog-table" onclick="setActivityView('table')" title="Table view">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Card view -->
+  <div class="activity-grid" id="activity-grid"></div>
+  <!-- Table view -->
+  <div class="activity-table-wrap" id="activity-table-wrap" style="display:none">
+    <table class="activity-table">
+      <thead>
+        <tr>
+          <th>Program</th>
+          <th>Division</th>
+          <th>Athlete(s) Viewed</th>
+          <th>Last Activity</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="activity-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ OUTREACH TOOLS TAB ════ -->
+<div class="tab-content" id="content-outreach">
+  <div class="section-bar">
+    <div class="section-title">Outreach Tools</div>
+  </div>
+  <div class="outreach-wrap">
+    <!-- Compose panel -->
+    <div class="outreach-compose">
+      <div class="outreach-compose-hd">Compose Outreach Email</div>
+      <label class="compose-label">To: College Program / Coach</label>
+      <input class="compose-input" id="outreach-to" placeholder="e.g. Northern Arizona University Flag Football">
+      <label class="compose-label">Feature These Athletes</label>
+      <div class="athlete-select-row" id="outreach-athlete-row"></div>
+      <label class="compose-label">Subject</label>
+      <input class="compose-input" id="outreach-subject" placeholder="Player spotlight from DeSoto HS…">
+      <label class="compose-label">Message</label>
+      <textarea class="compose-textarea" id="outreach-body" placeholder="Coach, I wanted to bring a few of my athletes to your attention…"></textarea>
+      <div class="outreach-send-row">
+        <button class="outreach-send-btn" onclick="sendOutreach()">Send Outreach</button>
+        <span class="outreach-msg" id="outreach-msg">Sent!</span>
+      </div>
+      <!-- PRO: Bulk Outreach -->
+      <div style="margin-top:24px">
+        <div class="pro-gate">
+          <div class="pro-gate-label">Pro Feature</div>
+          <div class="pro-gate-title">Bulk Program Outreach</div>
+          <div class="pro-gate-sub">Target multiple college programs at once. Filter by division, conference, location, or scholarship availability — then send a single customized campaign featuring your top athletes.</div>
+          <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
+        </div>
+      </div>
+    </div>
+    <!-- Sidebar: templates + pro gates -->
+    <div class="outreach-sidebar">
+      <div class="template-card">
+        <div class="template-hd">Email Templates</div>
+        <div class="template-item" onclick="applyTemplate('intro')">
+          <div class="template-name">Player Introduction</div>
+          <div class="template-sub">First-contact intro for a single athlete</div>
+        </div>
+        <div class="template-item" onclick="applyTemplate('spotlight')">
+          <div class="template-name">Season Spotlight</div>
+          <div class="template-sub">End-of-season stats + highlight reel</div>
+        </div>
+        <div class="template-item" onclick="applyTemplate('followup')">
+          <div class="template-name">Follow-Up</div>
+          <div class="template-sub">Check in after initial contact</div>
+        </div>
+        <div class="template-item" onclick="applyTemplate('roster')">
+          <div class="template-name">Full Roster Blast</div>
+          <div class="template-sub">Showcase your entire eligible class</div>
+        </div>
+      </div>
+      <div class="pro-gate">
+        <div class="pro-gate-label">Pro Feature</div>
+        <div class="pro-gate-title">Contact List Export</div>
+        <div class="pro-gate-sub">Download verified coach contact info for programs in your target region.</div>
+        <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
+      </div>
+      <div class="pro-gate">
+        <div class="pro-gate-label">Pro Feature</div>
+        <div class="pro-gate-title">Program Targeting</div>
+        <div class="pro-gate-sub">Filter 357+ college programs by division, scholarship, location, and conference. Build the perfect outreach list for each athlete.</div>
+        <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MY PROFILE TAB ════ -->
+<div class="tab-content" id="content-hsprofile">
+  <div class="section-bar"><div class="section-title">My Profile</div></div>
+  <div class="profile-section">
+    <div class="profile-form-grid">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input class="form-input" id="hs-fname" value="Marcus" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input class="form-input" id="hs-lname" value="Williams" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="hs-title" value="Head Flag Football Coach" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">School / Club Name</label>
+        <input class="form-input" id="hs-school" value="DeSoto High School" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input class="form-input" id="hs-city" value="DeSoto" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">State</label>
+        <input class="form-input" id="hs-state" value="TX" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">League / Classification</label>
+        <input class="form-input" id="hs-league" value="6A UIL" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Years Coaching</label>
+        <input class="form-input" id="hs-years" type="number" value="8" oninput="updateHSCard()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="hs-email" type="email" value="m.williams@desotoisd.edu">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" id="hs-phone" type="tel" value="(972) 555-0184">
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">Program Bio</label>
+        <textarea class="form-textarea" id="hs-bio" oninput="updateHSCard()" style="min-height:100px">DeSoto Eagles flag football — building the next generation of collegiate athletes. We've sent athletes to D1, D2, and D3 programs across the country. If you're recruiting in Texas, start here.</textarea>
+      </div>
+    </div>
+    <div class="save-bar">
+      <button class="save-btn" onclick="saveHSProfile()">Save Profile</button>
+      <span class="save-msg" id="hs-save-msg">Saved!</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: MESSAGES                                        -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-messages">
+  <div class="section-hd" style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;">
+    <span class="section-title" style="font-family:'Archivo Condensed',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;color:#fff;">Messages</span>
+    <button class="hd-action" onclick="openNewMsg()" style="font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">+ New Message</button>
+  </div>
+  <div class="msg-wrap" id="msg-wrap">
+    <div class="msg-thread-panel" id="msg-thread-panel">
+      <div class="msg-thread-search">
+        <input type="text" placeholder="Search conversations…" oninput="filterThreads(this.value)" id="msg-search">
+      </div>
+      <div class="msg-thread-list" id="msg-thread-list"></div>
+    </div>
+    <div class="msg-main" id="msg-main">
+      <div class="msg-empty-state" id="msg-empty-state">
+        <div class="msg-empty-icon">💬</div>
+        <div>Select a conversation to start messaging</div>
+      </div>
+      <div style="display:none;flex-direction:column;flex:1;overflow:hidden;" id="msg-convo">
+        <div class="msg-main-header" id="msg-main-header">
+          <button class="back-btn" onclick="closeMsgThread()">&#8249;</button>
+          <div class="msg-header-av type-athlete" id="msg-header-av"></div>
+          <div>
+            <div class="msg-header-name" id="msg-header-name"></div>
+            <div class="msg-header-sub" id="msg-header-sub"></div>
+          </div>
+        </div>
+        <div class="msg-bubbles" id="msg-bubbles"></div>
+        <div class="msg-compose">
+          <textarea class="msg-compose-area" id="msg-compose-area" placeholder="Type a message…" rows="1" onkeydown="msgComposeKeydown(event)" oninput="msgComposeResize(this)"></textarea>
+          <button class="msg-send-btn" onclick="sendMsg()" title="Send">&#8593;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<!-- ── ATHLETE SLIDE-OVER ── -->
+<div class="sp-overlay" id="sp-overlay" onclick="closeSP(event)">
+  <div class="sp-drawer" id="sp-drawer">
+    <div class="sp-hd">
+      <div class="sp-title" id="sp-title">Athlete Profile</div>
+      <button class="sp-close" onclick="closeSPDirect()">✕</button>
+    </div>
+    <div class="sp-body" id="sp-body"></div>
+  </div>
+</div>
+
+<!-- ── ENDORSE MODAL ── -->
+<div class="modal-overlay" id="endorse-overlay" onclick="closeEndorseModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-title" id="endorse-title">Endorse Athlete</div>
+      <button class="modal-close" onclick="closeEndorseModal()">✕</button>
+    </div>
+    <div class="modal-sub" id="endorse-sub">Your endorsement carries weight. College coaches trust HS/club coach vouches — be specific and honest.</div>
+    <div class="endorse-traits" id="endorse-traits">
+      <span class="endorse-trait" onclick="toggleTrait(this)">High Character</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Coachable</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Team Leader</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Work Ethic</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Academics</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Game IQ</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">Athleticism</span>
+      <span class="endorse-trait" onclick="toggleTrait(this)">D1 Potential</span>
+    </div>
+    <textarea class="endorse-textarea" id="endorse-text" placeholder="Write a personal endorsement… (optional)"></textarea>
+    <div class="modal-ft">
+      <button class="modal-cancel" onclick="closeEndorseModal()">Cancel</button>
+      <button class="modal-submit" onclick="submitEndorse()">Submit Endorsement</button>
+    </div>
+  </div>
+</div>
+
+  <script src="../js/features/hscoach-roster.js"></script>
+  <script src="../js/features/hscoach-outreach.js"></script>
+
+
+<!-- HS COACH AUTH MODAL -->
+<div class="coach-auth-modal-overlay" id="hscoach-auth-overlay">
+  <div class="coach-auth-modal">
+    <button class="coach-auth-close" onclick="closeHsCoachAuth()">✕</button>
+
+    <!-- SIGN IN PANEL -->
+    <div id="hscoach-signin-panel">
+      <div class="coach-auth-title">HS/Club Coach Sign In</div>
+      <div class="coach-auth-sub">Sign in to message athletes and college coaches on JUKE.</div>
+      <div class="coach-auth-field">
+        <label>Email</label>
+        <input type="email" id="hscoach-signin-email" placeholder="you@school.edu" autocomplete="email">
+      </div>
+      <div class="coach-auth-field">
+        <label>Password</label>
+        <input type="password" id="hscoach-signin-pw" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="coach-auth-submit" id="hscoach-signin-btn" onclick="hsCoachSignIn()">Sign In</button>
+      <div class="coach-auth-msg" id="hscoach-signin-msg"></div>
+      <div class="coach-auth-toggle">Don't have an account? <a onclick="showHsCoachSignUp()">Sign up</a></div>
+    </div>
+
+    <!-- SIGN UP PANEL -->
+    <div id="hscoach-signup-panel" style="display:none">
+      <div class="coach-auth-title">Create Account</div>
+      <div class="coach-auth-sub">Create your HS/Club Coach account to start recruiting on JUKE.</div>
+      <div class="coach-auth-field">
+        <label>Full Name</label>
+        <input type="text" id="hscoach-signup-name" placeholder="Your Name" autocomplete="name">
+      </div>
+      <div class="coach-auth-field">
+        <label>Email</label>
+        <input type="email" id="hscoach-signup-email" placeholder="you@school.edu" autocomplete="email">
+      </div>
+      <div class="coach-auth-field">
+        <label>Password</label>
+        <input type="password" id="hscoach-signup-pw" placeholder="Min 6 characters" autocomplete="new-password">
+      </div>
+      <div class="coach-auth-field">
+        <label>School / Club Name</label>
+        <input type="text" id="hscoach-signup-org" placeholder="e.g. Lincoln HS Eagles">
+      </div>
+      <button class="coach-auth-submit" id="hscoach-signup-btn" onclick="hsCoachSignUp()">Create Account</button>
+      <div class="coach-auth-msg" id="hscoach-signup-msg"></div>
+      <div class="coach-auth-toggle">Already have an account? <a onclick="showHsCoachSignIn()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+  <script src="../js/features/hscoach-nav.js"></script>
+
+<script>window.JUKE_PORTAL_TYPE='hs_coach';</script>
+<script src="../js/messaging.js"></script>
+
+<!-- ROLE SWITCHER -->
+<div class="role-switcher" id="role-switcher">
+  <div class="role-switcher-menu" id="rs-menu">
+    <div class="rs-menu-hd">Switch portal</div>
+    <a class="rs-menu-item" href="athlete.html">
+      <div class="rs-menu-dot" style="background:linear-gradient(135deg,#FF0080,#7B2FFF)"></div>
+      <div><div class="rs-menu-name">Athlete</div><div class="rs-menu-sub">Recruiting portal</div></div>
+    </a>
+    <a class="rs-menu-item" href="coach.html">
+      <div class="rs-menu-dot" style="background:#7B2FFF"></div>
+      <div><div class="rs-menu-name">College Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
+    </a>
+    <a class="rs-menu-item active" href="hscoach.html">
+      <div class="rs-menu-dot" style="background:#0057FF"></div>
+      <div><div class="rs-menu-name">HS / Club Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
+    </a>
+    <a class="rs-menu-back" href="../index.html">
+      <div class="rs-menu-back-label">&#x2190; Back to launcher</div>
+    </a>
+  </div>
+  <div class="role-switcher-pill" onclick="document.getElementById('rs-menu').classList.toggle('open')">
+    <div class="role-switcher-dot" style="background:#0057FF"></div>
+    <div class="role-switcher-label">HS / Club Coach</div>
+    <div class="role-switcher-caret">&#x25B2;</div>
+  </div>
+</div>
+  <script src="../js/features/hscoach-init2.js"></script>
+</body>
+</html>

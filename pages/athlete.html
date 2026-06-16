@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JUKE — College Recruiting</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,900&family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/finder.css">
+  <link rel="stylesheet" href="../styles/pipeline.css">
+  <link rel="stylesheet" href="../styles/board-detail.css">
+  <link rel="stylesheet" href="../styles/profile.css">
+  <link rel="stylesheet" href="../styles/feed.css">
+  <link rel="stylesheet" href="../styles/messaging.css">
+</head>
+<body>
+<script src="../js/router.js"></script>
+
+<!-- HEADER -->
+<header>
+  <div class="hd-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:30px;width:auto;display:block"><defs><linearGradient id="jukeGradHd" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs><path fill="url(#jukeGradHd)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/></svg></div>
+  <div class="hd-div"></div>
+  <div class="hd-slogan">Recruiting <em>her</em> way.</div>
+  <div class="hd-right">
+    <button class="hd-msg-btn" id="hd-msg-btn" title="Messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()">
+      <svg viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="18" height="14" rx="2"/>
+        <polyline points="1,3 10,10 19,3"/>
+      </svg>
+    </button>
+    <div class="juke-user-chip" id="juke-user-chip" style="display:none"></div>
+  </div>
+</header>
+
+<!-- TABS -->
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tab-feed" onclick="switchTab('feed')">Feed</button>
+  <button class="tab-btn" id="tab-finder" onclick="switchTab('finder')">Programs</button>
+  <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">My Profile</button>
+  <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">My Board</button>
+  <button class="tab-btn" id="tab-messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB 0: ACTIVITY FEED                                   -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="content-feed">
+  <div class="feed-wrap">
+    <div class="feed-stats">
+      <div class="feed-stat-card"><div class="fsc-val" id="feed-views-count">4</div><div class="fsc-lbl">Profile Views This Week</div></div>
+      <div class="feed-stat-card"><div class="fsc-val" id="feed-programs-count">3</div><div class="fsc-lbl">Programs Showing Interest</div></div>
+      <div class="feed-stat-card"><div class="fsc-val" id="feed-unread-count">1</div><div class="fsc-lbl">Unread Messages</div></div>
+    </div>
+    <div class="feed-filters">
+      <button class="feed-filter active" onclick="filterFeed('all',this)">All Activity</button>
+      <button class="feed-filter" onclick="filterFeed('interest',this)">Interest</button>
+      <button class="feed-filter" onclick="filterFeed('action',this)">Action Needed</button>
+      <button class="feed-filter" onclick="filterFeed('tips',this)">Tips &amp; Timeline</button>
+    </div>
+    <div class="feed-list" id="feed-list"></div>
+  </div>
+</div>
+
+<!-- TAB 1: PROGRAM FINDER                                  -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-finder">
+
+  <!-- FIT PROFILE -->
+  <div class="profile-panel">
+    <div class="profile-toggle" onclick="toggleProfile()">
+      <div class="profile-toggle-icon">🎯</div>
+      <div>
+        <div class="profile-toggle-label">Athlete Fit Profile</div>
+        <div class="profile-toggle-sub" id="profile-summary">Set your preferences to see personalized match scores for every school</div>
+      </div>
+      <div class="profile-toggle-arrow" id="profile-arrow">▼</div>
+    </div>
+    <div class="profile-form" id="profile-form">
+      <div class="profile-grid">
+        <div class="pf-group"><div class="pf-label">Preferred Division</div>
+          <select id="pf-div" onchange="recalcFit()"><option value="">Any Division</option><option>Division I</option><option>Division II</option><option>Division III</option></select></div>
+        <div class="pf-group"><div class="pf-label">Governing Body</div>
+          <select id="pf-gov" onchange="recalcFit()"><option value="">Any</option><option>NCAA</option><option>NAIA</option><option>NJCAA</option><option>CCCAA (3C2A)</option><option>USCAA</option></select></div>
+        <div class="pf-group"><div class="pf-label">Varsity or Club</div>
+          <select id="pf-vc" onchange="recalcFit()"><option value="">Either</option><option>Varsity</option><option>Club</option></select></div>
+        <div class="pf-group"><div class="pf-label">Preferred Region</div>
+          <select id="pf-region" onchange="recalcFit()"><option value="">Any Region</option><option>Northeast</option><option>Southeast</option><option>Midwest</option><option>South</option><option>West</option></select></div>
+        <div class="pf-group"><div class="pf-label">Preferred State</div>
+          <select id="pf-state" onchange="recalcFit()"><option value="">Any State</option><option value="AL">AL</option>
+<option value="AR">AR</option>
+<option value="AZ">AZ</option>
+<option value="CA">CA</option>
+<option value="CO">CO</option>
+<option value="CT">CT</option>
+<option value="DC">DC</option>
+<option value="DE">DE</option>
+<option value="FL">FL</option>
+<option value="GA">GA</option>
+<option value="HI">HI</option>
+<option value="IA">IA</option>
+<option value="ID">ID</option>
+<option value="IL">IL</option>
+<option value="IN">IN</option>
+<option value="KS">KS</option>
+<option value="KY">KY</option>
+<option value="LA">LA</option>
+<option value="MA">MA</option>
+<option value="MD">MD</option>
+<option value="ME">ME</option>
+<option value="MI">MI</option>
+<option value="MN">MN</option>
+<option value="MO">MO</option>
+<option value="MS">MS</option>
+<option value="MT">MT</option>
+<option value="NC">NC</option>
+<option value="ND">ND</option>
+<option value="NE">NE</option>
+<option value="NH">NH</option>
+<option value="NJ">NJ</option>
+<option value="NV">NV</option>
+<option value="NY">NY</option>
+<option value="OH">OH</option>
+<option value="OK">OK</option>
+<option value="PA">PA</option>
+<option value="SC">SC</option>
+<option value="SD">SD</option>
+<option value="TN">TN</option>
+<option value="TX">TX</option>
+<option value="VA">VA</option>
+<option value="WI">WI</option>
+<option value="WV">WV</option></select></div>
+        <div class="pf-group"><div class="pf-label">School Type</div>
+          <select id="pf-type" onchange="recalcFit()"><option value="">Any</option><option>Public</option><option>Private</option></select></div>
+        <div class="pf-group"><div class="pf-label">Max Net Price After Aid</div>
+          <select id="pf-net" onchange="recalcFit()"><option value="">No Limit</option><option value="10000">Under $10,000</option><option value="15000">Under $15,000</option><option value="20000">Under $20,000</option><option value="25000">Under $25,000</option><option value="30000">Under $30,000</option><option value="40000">Under $40,000</option></select></div>
+        <div class="pf-group"><div class="pf-label">Religious Preference</div>
+          <select id="pf-rel" onchange="recalcFit()"><option value="">No Preference</option><option value="secular">Secular / Non-denominational</option><option value="catholic">Catholic</option><option value="protestant">Protestant / Christian</option><option value="baptist">Baptist</option><option value="methodist">Methodist</option><option value="lutheran">Lutheran</option><option value="adventist">Seventh-day Adventist</option></select></div>
+        <div class="pf-group"><div class="pf-label">HBCU Preference</div>
+          <select id="pf-hbcu" onchange="recalcFit()"><option value="">No Preference</option><option value="yes">HBCU Schools Only</option></select></div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary" onclick="recalcFit();applyFilters()">Apply Profile</button>
+        <button class="btn btn-outline" onclick="clearProfile()">Clear Profile</button>
+        <div class="fit-legend">
+          <div class="fit-legend-item"><span class="fit-dot" style="background:#6dcf9e"></span>Strong Match (≥70%)</div>
+          <div class="fit-legend-item"><span class="fit-dot" style="background:var(--columbia)"></span>Good Match (40–69%)</div>
+          <div class="fit-legend-item"><span class="fit-dot" style="background:var(--gray-light)"></span>Low Match (&lt;40%)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- FILTERS -->
+  <div class="filters-bar-slim">
+    <div class="fsb-search">
+      <svg class="fsb-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="f-search" class="fsb-input" placeholder="Search schools, states, conferences…" oninput="applyFilters()"/>
+    </div>
+    <button class="fsb-filter-btn" id="fsb-toggle-btn" onclick="toggleFilterPanel()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      Filters
+      <span class="fsb-count" id="fsb-count" style="display:none">0</span>
+    </button>
+    <button class="fsb-csv-btn" onclick="exportCSV()" title="Export CSV">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+  </div>
+
+  <!-- FILTER PANEL -->
+  <div class="filter-panel" id="filter-panel" style="display:none">
+    <div class="filter-panel-grid">
+      <div class="fg"><div class="fg-lbl">Governing Body</div>
+        <select id="f-gov" onchange="applyFilters();updateFilterCount()"><option value="">All Bodies</option><option>NCAA</option><option>NAIA</option><option>NJCAA</option><option>CCCAA (3C2A)</option><option>USCAA</option><option>NCCAA</option><option>Non-Affiliated</option></select></div>
+      <div class="fg"><div class="fg-lbl">Division</div>
+        <select id="f-div" onchange="applyFilters();updateFilterCount()"><option value="">All Divisions</option><option>Division I</option><option>Division II</option><option>Division III</option></select></div>
+      <div class="fg"><div class="fg-lbl">Program Type</div>
+        <select id="f-vc" onchange="applyFilters();updateFilterCount()"><option value="">Varsity &amp; Club</option><option>Varsity</option><option>Club</option></select></div>
+      <div class="fg"><div class="fg-lbl">Region</div>
+        <select id="f-region" onchange="applyFilters();updateFilterCount()"><option value="">All Regions</option><option>Northeast</option><option>Southeast</option><option>Midwest</option><option>South</option><option>West</option></select></div>
+      <div class="fg"><div class="fg-lbl">State</div>
+        <select id="f-state" onchange="applyFilters();updateFilterCount()"><option value="">All States</option><option value="AL">AL</option><option value="AR">AR</option><option value="AZ">AZ</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DC">DC</option><option value="DE">DE</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="IA">IA</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="MA">MA</option><option value="MD">MD</option><option value="ME">ME</option><option value="MI">MI</option><option value="MN">MN</option><option value="MO">MO</option><option value="MS">MS</option><option value="MT">MT</option><option value="NC">NC</option><option value="ND">ND</option><option value="NE">NE</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NV">NV</option><option value="NY">NY</option><option value="OH">OH</option><option value="OK">OK</option><option value="PA">PA</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="VA">VA</option><option value="WI">WI</option><option value="WV">WV</option></select></div>
+      <div class="fg"><div class="fg-lbl">HBCU</div>
+        <select id="f-hbcu" onchange="applyFilters();updateFilterCount()"><option value="">All Schools</option><option value="Yes">HBCU Only</option></select></div>
+    </div>
+    <div class="filter-panel-ft">
+      <button class="btn btn-outline" onclick="resetFilters();updateFilterCount()">Reset All</button>
+    </div>
+  </div>
+
+  <!-- RESULTS BAR -->
+  <div class="results-bar">
+    <div class="results-count"><span id="match-count">362</span> programs &nbsp;·&nbsp; <span id="compare-count-inline" style="color:var(--text-dim)">0 in compare</span></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-table" onclick="setView('table')">☰ Table</button>
+        <button class="view-btn" id="btn-cards" onclick="setView('cards')">⊞ Cards</button>
+      </div>
+      <button class="btn btn-ghost" id="compare-open-btn" onclick="openCompareModal()" style="display:none">Compare Selected</button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div id="view-table" class="table-wrap">
+    <table>
+      <thead><tr>
+        <th onclick="sortBy('_fit')">Fit <span class="sort-arr">↕</span></th>
+        <th onclick="sortBy('School')">School <span class="sort-arr">↕</span></th>
+        <th onclick="sortBy('State')">State <span class="sort-arr">↕</span></th>
+        <th onclick="sortBy('Division')">Level <span class="sort-arr">↕</span></th>
+        <th onclick="sortBy('Varsity or Club')">Program <span class="sort-arr">↕</span></th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- CARDS -->
+  <div id="view-cards" style="display:none">
+    <div class="cards-grid" id="cards-body"></div>
+  </div>
+
+  <!-- EMPTY -->
+  <div id="empty-state" class="empty-state" style="display:none">
+    <div class="empty-icon">🏈</div>
+    <h3>No Programs Found</h3>
+    <p>Try adjusting your filters or profile.</p>
+  </div>
+
+</div><!-- end tab-finder -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- MY PROFILE TAB                                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-profile">
+<div class="mp-page">
+
+  <!-- ── ATHLETE TRADING CARD ── -->
+  <div class="athlete-card">
+    <input type="file" id="banner-file-input" accept="image/*" style="display:none" onchange="handleBannerUpload(this)"/>
+    <input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+    <!-- Cover / Banner photo -->
+    <div class="athlete-banner-zone" id="athlete-banner-zone" onclick="document.getElementById('banner-file-input').click()" title="Upload cover photo">
+      <div class="athlete-banner-placeholder" id="athlete-banner-placeholder">
+        <div class="athlete-banner-cta">Add Cover Photo</div>
+      </div>
+      <div class="athlete-banner-overlay"><div class="athlete-banner-overlay-label">Change Cover</div></div>
+    </div>
+    <!-- Identity row: circle avatar + name -->
+    <div class="athlete-identity-row">
+      <div class="athlete-avatar-circle" id="athlete-avatar-circle" onclick="document.getElementById('avatar-file-input').click()" title="Upload your photo">
+        <div class="athlete-avatar-initials" id="athlete-avatar-initials">?</div>
+        <div class="athlete-avatar-hint">Edit</div>
+        <div class="athlete-verified" id="athlete-verified" title="Profile complete">&#10003;</div>
+      </div>
+      <div class="athlete-name-block">
+        <div class="athlete-display-name placeholder" id="athlete-display-name">Your Name</div>
+        <div class="athlete-tagline" id="athlete-tagline">Complete your profile to get started</div>
+        <div class="athlete-pos-row" id="athlete-pos-row"></div>
+        <div class="athlete-meas-line" id="athlete-meas-line"></div>
+      </div>
+    </div>
+    <!-- Committed banner -->
+    <div class="committed-banner" id="committed-banner">
+      <div class="committed-banner-logo-placeholder" id="committed-logo-wrap"></div>
+      <div class="committed-banner-text">
+        <div class="committed-banner-label">Committed</div>
+        <div class="committed-banner-school" id="committed-school-name"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Offer strip sits between card and stats row -->
+  <div class="offer-strip" id="offer-strip"></div>
+  <div class="athlete-pipeline-bar" id="athlete-pipeline-bar">Add schools to your board to get started</div>
+
+  <!-- ── PROFILE VIEW / EDIT ── -->
+  <div class="pv-edit-bar" id="pv-edit-bar">
+    <div class="pv-completeness">
+      <div class="pvc-header"><span class="pvc-label">Profile Strength</span><span class="pvc-pct" id="pvc-pct">—</span></div>
+      <div class="pvc-bar-track"><div class="pvc-bar-fill" id="pvc-bar-fill" style="width:0%"></div></div>
+      <div class="pvc-nudge" id="pvc-nudge">Complete your profile to show up in coach searches</div>
+    </div>
+    <button class="pv-edit-btn" onclick="openProfileEdit()">Edit Profile</button>
+  </div>
+  <div id="profile-view" class="dpc-wrap"></div>
+
+  <div id="profile-edit" style="display:none">
+    <div class="pv-back-bar">
+      <button class="pv-back-btn" onclick="closeProfileEdit()">← View Profile</button>
+      <span class="pv-edit-label">Edit Profile</span>
+    </div>
+
+  <!-- ── WIZARD STEP INDICATOR ── -->
+  <div class="wiz-header">
+    <div class="wiz-steps">
+      <button class="wiz-step active" id="wiz-btn-1" onclick="goStep(1)">
+        <span class="wiz-num">1</span>
+        <span class="wiz-lbl">Identity</span>
+      </button>
+      <div class="wiz-connector"></div>
+      <button class="wiz-step" id="wiz-btn-2" onclick="goStep(2)">
+        <span class="wiz-num">2</span>
+        <span class="wiz-lbl">Film</span>
+      </button>
+      <div class="wiz-connector"></div>
+      <button class="wiz-step" id="wiz-btn-3" onclick="goStep(3)">
+        <span class="wiz-num">3</span>
+        <span class="wiz-lbl">Academics</span>
+      </button>
+      <div class="wiz-connector"></div>
+      <button class="wiz-step" id="wiz-btn-4" onclick="goStep(4)">
+        <span class="wiz-num">4</span>
+        <span class="wiz-lbl">Your Story</span>
+      </button>
+      <div class="wiz-connector"></div>
+      <button class="wiz-step" id="wiz-btn-5" onclick="goStep(5)">
+        <span class="wiz-num">5</span>
+        <span class="wiz-lbl">Endorsements</span>
+      </button>
+    </div>
+    <div class="wiz-save-badge" id="save-indicator">✓ Auto-saved</div>
+  </div>
+
+  <!-- ══ STEP 1: IDENTITY ══ -->
+  <div class="wiz-step-content active" id="wiz-content-1">
+    <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
+      <div class="wiz-section-hd"><span class="wiz-section-title">The first thing a coach sees. Make it unmistakably you.</span></div>
+      <!-- Photo uploads -->
+      <input type="file" id="wiz-banner-input" accept="image/*" style="display:none" onchange="handleBannerUpload(this)"/>
+      <input type="file" id="wiz-avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+      <div class="wiz-photo-section">
+        <div class="wiz-photo-banner-zone" id="wiz-photo-banner" onclick="document.getElementById('wiz-banner-input').click()">
+          <div class="wiz-photo-banner-ph" id="wiz-photo-banner-ph">+ Add Cover Photo</div>
+          <div class="wiz-photo-banner-ov">Change Cover</div>
+        </div>
+        <div class="wiz-photo-av" id="wiz-photo-av" onclick="document.getElementById('wiz-avatar-input').click()">
+          <span class="wiz-photo-av-init" id="wiz-photo-av-init">?</span>
+          <div class="wiz-photo-av-ov">📷</div>
+        </div>
+        <div class="wiz-photo-hint">Tap to set your cover photo and headshot</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">First Name</div><input class="form-input" id="p-fname" placeholder="First name" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Last Name</div><input class="form-input" id="p-lname" placeholder="Last name" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Graduation Year</div>
+          <select class="form-select" id="p-gradyr" onchange="saveProfile();profileUpdate()">
+            <option value="">Select year</option>
+            <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option>
+          </select></div>
+        <div class="form-group"><div class="form-label">City, State</div><input class="form-input" id="p-city" placeholder="Dallas, TX" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">High School / Club Team</div><input class="form-input" id="p-school" placeholder="Lincoln HS / JUKE Elite" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Email</div><input class="form-input" id="p-email" placeholder="your@email.com" type="email" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Cell Phone</div><input class="form-input" id="p-phone" placeholder="(555) 123-4567" oninput="profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Parent / Guardian</div><input class="form-input" id="p-parent" placeholder="Name · (555) 000-0000" oninput="profileUpdate()"/></div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Position(s) — select all that apply</span></div>
+      <div class="pos-grid" id="pos-grid">
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="QB"/>QB</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="WR"/>WR</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="RB"/>RB</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="C"/>Center</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="OL"/>OL</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="Rusher"/>Rusher</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="CB"/>CB</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="S"/>Safety</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="LB"/>LB</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="Utility"/>Utility</label>
+      </div>
+    </div>
+    <div class="wiz-nav"><button class="btn btn-primary" onclick="goStep(2)">Next: Film →</button></div>
+  </div>
+
+  <!-- ══ STEP 2: FILM ══ -->
+  <div class="wiz-step-content" id="wiz-content-2">
+    <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
+      <div class="wiz-section-hd"><span class="wiz-section-title">Film is the first thing a coach opens. Add your reel before anything else.</span></div>
+      <div class="wiz-film-hero">
+        <div class="form-label">★ Highlight Reel — Most Important Field on This Entire Profile</div>
+        <input class="form-input" id="p-highlight" placeholder="https://www.hudl.com/v/..." oninput="profileUpdate()" style="margin-top:6px;"/>
+        <div class="wiz-film-hero-sub">Paste your Hudl, Vimeo, or YouTube link. This is the first button a coach sees on your card.</div>
+      </div>
+      <div class="form-group"><div class="form-label">Game Film URL (optional)</div><input class="form-input" id="p-gamefilm" placeholder="https://www.hudl.com/v/..." oninput="profileUpdate()"/></div>
+      <div class="form-group"><div class="form-label">Full Recruiting Profile URL (optional)</div><input class="form-input" id="p-profileurl" placeholder="https://..." oninput="profileUpdate()"/></div>
+      <details class="film-tip-box" style="margin:10px 0 20px;">
+        <summary>💡 What coaches want to see in your film <span class="ftb-caret">▸</span></summary>
+        <div class="ftb-body">
+          <div class="ftb-grid">
+            <div class="ftb-item"><span class="ftb-icon">🎯</span><div><strong>Route running</strong> — Show full routes from snap to separation. Coaches watch feet, not just hands.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🔄</span><div><strong>Variety</strong> — Different plays and different looks. Don't show the same route 5 times.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🏆</span><div><strong>Competitive moments</strong> — Playoffs and close games beat garbage time every time.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">⚡</span><div><strong>Speed in context</strong> — Beating a defender matters more than running in open space.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🎬</span><div><strong>Length</strong> — 2–3 minute highlight reel is ideal. Coaches lose interest after 4 minutes.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">📅</span><div><strong>Keep it current</strong> — Update every season. Film from 2+ years ago gets discounted fast.</div></div>
+          </div>
+        </div>
+      </details>
+      <div class="wiz-section-hd" style="margin-top:4px"><span class="wiz-section-title">Measurables</span></div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Height</div><input class="form-input" id="p-height" placeholder='5&apos;7"' oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Weight (lbs)</div><input class="form-input" id="p-weight" placeholder="145" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">40-Yard Dash</div><input class="form-input" id="p-forty" placeholder="4.8s" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Vertical Jump</div><input class="form-input" id="p-vertical" placeholder='24"' oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Broad Jump</div><input class="form-input" id="p-broad" placeholder='7&apos;2"' oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">5-10-5 Shuttle</div><input class="form-input" id="p-shuttle" placeholder="4.4s" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+    </div>
+    <div class="wiz-nav">
+      <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Next: Academics →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: ACADEMICS ══ -->
+  <div class="wiz-step-content" id="wiz-content-3">
+    <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
+      <div class="wiz-section-hd"><span class="wiz-section-title">When coaches have two equal athletes, the one with stronger grades gets the call.</span></div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">GPA (Unweighted)</div><input class="form-input" id="p-gpa" placeholder="3.8" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">SAT Score</div><input class="form-input" id="p-sat" placeholder="1280" oninput="profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">ACT Score</div><input class="form-input" id="p-act" placeholder="28" oninput="profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Intended Major</div><input class="form-input" id="p-major" placeholder="Kinesiology" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+      <div class="form-group" style="margin-top:4px"><div class="form-label">Academic Honors</div><input class="form-input" id="p-honors" placeholder="NHS, AP Scholar, Honor Roll" oninput="profileUpdate()"/></div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Division Interest</span></div>
+      <div class="div-chips" id="div-chips">
+        <label class="pos-chip" onclick="toggleDiv(this)"><input type="checkbox" value="D1"/>D1</label>
+        <label class="pos-chip" onclick="toggleDiv(this)"><input type="checkbox" value="D2"/>D2</label>
+        <label class="pos-chip" onclick="toggleDiv(this)"><input type="checkbox" value="D3"/>D3</label>
+        <label class="pos-chip" onclick="toggleDiv(this)"><input type="checkbox" value="NAIA"/>NAIA</label>
+        <label class="pos-chip" onclick="toggleDiv(this)"><input type="checkbox" value="Open"/>Open / Any</label>
+      </div>
+    </div>
+    <div class="wiz-nav">
+      <button class="btn btn-outline" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Next: Your Story →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4: YOUR STORY ══ -->
+  <div class="wiz-step-content" id="wiz-content-4">
+    <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
+      <div class="wiz-section-hd"><span class="wiz-section-title">Coaches recruit character and fit, not just athleticism. This is where you become a person.</span></div>
+      <div class="form-group">
+        <div class="form-label" style="margin-bottom:4px;">Your Recruiting Headline</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;">One to three sentences. Coaches spend 8 seconds on a profile. Lead with who you are, prove it with stats, and end with what makes you rare. <strong style="color:var(--text);">Generic gets scrolled past.</strong></div>
+        <div class="bio-builder">
+
+          <!-- Formula templates -->
+          <div>
+            <div class="bio-formula-label">Start with a formula — click to use</div>
+            <div class="bio-formula-chips">
+              <div class="bio-formula-chip" onclick="bioApplyFormula('stats')">
+                <div class="bfc-name">Stats-Led</div>
+                <div class="bfc-ex">"[Role]. [Stat 1], [Stat 2]. [What makes you rare]."</div>
+              </div>
+              <div class="bio-formula-chip" onclick="bioApplyFormula('identity')">
+                <div class="bfc-name">Identity-Led</div>
+                <div class="bfc-ex">"[Position identity] with [key trait]. [Proof]."</div>
+              </div>
+              <div class="bio-formula-chip" onclick="bioApplyFormula('fit')">
+                <div class="bfc-name">Program Fit</div>
+                <div class="bfc-ex">"Competing for a [D1/D2] spot. [Stats]. [What I bring]."</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Textarea -->
+          <div class="bio-textarea-wrap">
+            <textarea class="form-textarea" id="p-intro" rows="3" placeholder="e.g. Dual-threat QB with D1 upside. 24 TDs, 4 INTs last season. Committed football IQ and a 3.9 GPA." oninput="saveProfile();profileUpdate();bioUpdate()" maxlength="280"></textarea>
+            <span class="bio-char-count" id="bio-char-count">0 / 280</span>
+          </div>
+
+          <!-- Keyword chips -->
+          <div class="bio-kw-section">
+            <div class="bio-formula-label">Keywords — click to add</div>
+            <div class="bio-kw-row">
+              <span class="bio-kw-label">Identity</span>
+              <div class="bio-kw-chips">
+                <span class="bio-kw-chip" onclick="bioAddKw('Dual-threat')">Dual-threat</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Lockdown corner')">Lockdown corner</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Slot specialist')">Slot specialist</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Deep threat')">Deep threat</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Field general')">Field general</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Swiss Army')">Swiss Army</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Playmaker')">Playmaker</span>
+              </div>
+            </div>
+            <div class="bio-kw-row">
+              <span class="bio-kw-label">Athletic</span>
+              <div class="bio-kw-chips">
+                <span class="bio-kw-chip" onclick="bioAddKw('D1 upside')">D1 upside</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('track speed')">Track speed</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('elite athleticism')">Elite athleticism</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('explosive')">Explosive</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('closing speed')">Closing speed</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('vertical threat')">Vertical threat</span>
+              </div>
+            </div>
+            <div class="bio-kw-row">
+              <span class="bio-kw-label">Character</span>
+              <div class="bio-kw-chips">
+                <span class="bio-kw-chip" onclick="bioAddKw('football IQ')">Football IQ</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('high IQ')">High IQ</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('coachable')">Coachable</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('film junkie')">Film junkie</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('captain')">Captain</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('composed under pressure')">Composed</span>
+              </div>
+            </div>
+            <div class="bio-kw-row">
+              <span class="bio-kw-label">Academic</span>
+              <div class="bio-kw-chips">
+                <span class="bio-kw-chip" onclick="bioAddKw('honor roll')">Honor roll</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('AP coursework')">AP coursework</span>
+                <span class="bio-kw-chip" onclick="bioAddKw('Academic All-State')">Academic All-State</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live preview -->
+          <div class="bio-preview">
+            <div class="bio-preview-label">How coaches see it</div>
+            <div class="bio-preview-text empty" id="bio-preview-text">Start typing above to preview your headline…</div>
+          </div>
+
+        </div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">How You Compete — Three Words</span></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Three words a coach or teammate would use to describe you on the field. These show up directly on your profile card.</div>
+      <div class="wiz-three-words">
+        <div class="form-group"><input class="form-input" id="p-word1" placeholder="e.g. Competitive" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><input class="form-input" id="p-word2" placeholder="e.g. Coachable" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><input class="form-input" id="p-word3" placeholder="e.g. Leader" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Other Sports You Play or Have Played</span></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Multi-sport athletes bring instincts and athleticism single-sport players often lack. Coaches notice — it signals you're a real athlete.</div>
+      <div class="wiz-sport-row">
+        <div class="form-group"><div class="form-label">Sport</div><input class="form-input" id="p-sport1" placeholder="Soccer" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Position / Level</div><input class="form-input" id="p-sport1pos" placeholder="MF · Varsity" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+      <div class="wiz-sport-row">
+        <div class="form-group"><div class="form-label">Sport</div><input class="form-input" id="p-sport2" placeholder="Basketball" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Position / Level</div><input class="form-input" id="p-sport2pos" placeholder="PG · Varsity" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Season Stats</span></div>
+      <div style="margin-bottom:12px">
+        <div class="form-label" style="margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;">Offensive</div>
+        <div class="stats-grid">
+          <div class="stat-input-group"><div class="stat-input-label">Games</div><input class="stat-input form-input" id="s-gp" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Completions</div><input class="stat-input form-input" id="s-comp" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Attempts</div><input class="stat-input form-input" id="s-att" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Pass TDs</div><input class="stat-input form-input" id="s-ptd" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Pass Yds</div><input class="stat-input form-input" id="s-pyds" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">INTs Thrown</div><input class="stat-input form-input" id="s-int" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Receptions</div><input class="stat-input form-input" id="s-rec" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Rec Yds</div><input class="stat-input form-input" id="s-ryds" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Rec TDs</div><input class="stat-input form-input" id="s-rtd" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Rush Yds</div><input class="stat-input form-input" id="s-ruyds" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Rush TDs</div><input class="stat-input form-input" id="s-rutd" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+        </div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;">Defensive</div>
+        <div class="stats-grid">
+          <div class="stat-input-group"><div class="stat-input-label">Flags Pulled</div><input class="stat-input form-input" id="s-flags" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">INTs</div><input class="stat-input form-input" id="s-def-int" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Sacks</div><input class="stat-input form-input" id="s-sacks" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="stat-input-group"><div class="stat-input-label">Def TDs</div><input class="stat-input form-input" id="s-dtd" placeholder="0" type="number" min="0" oninput="saveProfile();profileUpdate()"/></div>
+        </div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:28px"><span class="wiz-section-title">Awards &amp; Honors</span></div>
+      <div class="awards-list" id="awards-list"></div>
+      <button class="add-row-btn" onclick="addAward()">+ Add Award</button>
+    </div>
+    <div class="wiz-nav">
+      <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(5)">Next: Endorsements →</button>
+    </div>
+  </div><!-- end wiz-content-4 -->
+
+  <!-- ══ STEP 5: ENDORSEMENTS ══ -->
+  <div class="wiz-step-content" id="wiz-content-5">
+    <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
+      <div class="wiz-section-hd"><span class="wiz-section-title">A coach endorsement is the strongest trust signal in the system. One word from them changes everything.</span></div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">When a coach adds a text endorsement, a <strong style="color:#00A050">✓ Coach Verified</strong> badge appears on your profile card. College coaches weigh this heavily — it means someone in the game vouches for you.</div>
+      <div id="end-cards-list"></div>
+      <div class="end-request-form">
+        <div class="end-form-title">Request an endorsement from your HS or club coach</div>
+        <div class="end-form-grid">
+          <div class="end-form-group">
+            <label class="end-form-label">Coach's Name *</label>
+            <input class="end-form-input" id="end-req-name" placeholder="Coach Johnson">
+          </div>
+          <div class="end-form-group">
+            <label class="end-form-label">School / Club</label>
+            <input class="end-form-input" id="end-req-school" placeholder="DeSoto HS">
+          </div>
+          <div class="end-form-group">
+            <label class="end-form-label">Title</label>
+            <input class="end-form-input" id="end-req-title" placeholder="Head Coach">
+          </div>
+        </div>
+        <div class="end-form-group" style="margin-bottom:0">
+          <label class="end-form-label">Personal note to your coach (optional)</label>
+          <textarea class="end-form-textarea" id="end-req-note" placeholder="Coach, I'm in the recruiting process and would really appreciate a few words from you…"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;">
+          <button class="end-send-btn" onclick="submitEndorsementRequest()">Send Request</button>
+          <span id="end-req-success" style="display:none;font-size:11px;color:#00C040;font-weight:600">✓ Request sent!</span>
+        </div>
+      </div>
+      <!-- Publish toggle -->
+      <div class="publish-toggle-row" style="margin-top:32px">
+        <div class="publish-toggle-label">
+          Make my profile discoverable to coaches
+          <small>Share your profile with college coaches. Requires sign-in.</small>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="publish-toggle" onchange="handlePublishToggle()"/>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="publish-live-pill draft" id="publish-pill">Draft</span>
+      </div>
+    </div>
+    <div class="wiz-nav">
+      <button class="btn btn-outline" onclick="goStep(4)">← Back</button>
+      <button class="btn btn-primary" onclick="closeProfileEdit()">View My Profile →</button>
+    </div>
+  </div><!-- end wiz-content-5 -->
+  </div><!-- end profile-edit -->
+
+</div><!-- end mp-page -->
+</div><!-- end tab-profile -->
+<!-- MY BOARD TAB -->
+<div class="tab-content" id="content-pipeline">
+  <div style="max-width:980px;margin:0 auto;padding:20px 0 40px;">
+    <div class="milestone-rail-wrap" id="milestone-rail-wrap">
+      <div class="milestone-rail" id="milestone-rail"></div>
+    </div>
+    <div style="padding:0 20px">
+    <div class="pipeline-summary-strip" id="pipeline-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;"></div>
+    <div class="pipeline-board" id="pipeline-cols" style="display:flex;gap:12px;overflow-x:auto;align-items:flex-start;padding-bottom:20px;-webkit-overflow-scrolling:touch;"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: MESSAGES                                        -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-messages">
+  <div class="section-hd" style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;">
+    <span class="section-title" style="font-family:'Archivo Condensed',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;color:#fff;">Messages</span>
+    <button class="hd-action" onclick="openNewMsg()" style="font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">+ New Message</button>
+  </div>
+  <div class="msg-wrap" id="msg-wrap">
+    <div class="msg-thread-panel" id="msg-thread-panel">
+      <div class="msg-thread-search">
+        <input type="text" placeholder="Search conversations…" oninput="filterThreads(this.value)" id="msg-search">
+      </div>
+      <div class="msg-thread-list" id="msg-thread-list"></div>
+    </div>
+    <div class="msg-main" id="msg-main">
+      <div class="msg-empty-state" id="msg-empty-state">
+        <div class="msg-empty-icon">💬</div>
+        <div>Select a conversation to start messaging</div>
+      </div>
+      <div style="display:none;flex-direction:column;flex:1;overflow:hidden;" id="msg-convo">
+        <div class="msg-main-header" id="msg-main-header">
+          <button class="back-btn" onclick="closeMsgThread()">&#8249;</button>
+          <div class="msg-header-av type-athlete" id="msg-header-av"></div>
+          <div>
+            <div class="msg-header-name" id="msg-header-name"></div>
+            <div class="msg-header-sub" id="msg-header-sub"></div>
+          </div>
+        </div>
+        <div class="msg-bubbles" id="msg-bubbles"></div>
+        <div class="msg-compose">
+          <textarea class="msg-compose-area" id="msg-compose-area" placeholder="Type a message…" rows="1" onkeydown="msgComposeKeydown(event)" oninput="msgComposeResize(this)"></textarea>
+          <button class="msg-send-btn" onclick="sendMsg()" title="Send">&#8593;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</script>
+
+<!-- COMPARE BAR -->
+<div class="compare-bar" id="compare-bar">
+  <div class="compare-label">Comparing</div>
+  <div id="compare-chips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+  <button class="btn btn-primary" style="margin-left:auto" onclick="openCompareModal()">View Side-by-Side</button>
+  <button class="btn btn-outline" onclick="clearCompare()">Clear</button>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="modal-overlay" id="compare-modal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">Side-by-Side Comparison</div><button class="modal-close" onclick="closeCompareModal()">✕</button></div>
+    <div style="overflow-x:auto;padding:20px;"><div id="compare-content"></div></div>
+  </div>
+</div>
+
+<!-- PROGRAM PROFILE SLIDE-OVER -->
+<div class="pp-overlay" id="pp-overlay" onclick="closeProgramProfile(event)">
+  <div class="pp-drawer" id="pp-drawer">
+    <div class="pp-topbar">
+      <button class="pp-back" onclick="closeProgramProfile()">‹</button>
+      <div class="pp-topbar-title" id="pp-topbar-title">Program Profile</div>
+      <button class="pp-offer-btn" id="pp-offer-btn" onclick="ppToggleOffer()">Offered</button>
+      <button class="pp-pipeline-btn" id="pp-pipeline-btn" onclick="ppTogglePipeline()">+ My Board</button>
+    </div>
+    <div id="pp-body"><!-- rendered by JS --></div>
+  </div>
+</div>
+
+
+<!-- SCHOOL WORKSPACE DRAWER -->
+<div class="ws-overlay" id="ws-overlay" onclick="if(event.target===this)closeWorkspace()">
+  <div class="ws-drawer" id="ws-drawer">
+    <div class="ws-inner">
+      <div class="ws-topbar">
+        <button class="ws-back" onclick="closeWorkspace()">&#8249;</button>
+        <div class="ws-school-av" id="ws-av"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="ws-school-name" id="ws-name"></div>
+          <select class="ws-stage-select" id="ws-stage-select" onchange="wsChangeStage(this.value)"></select>
+        </div>
+        <div id="ws-warmth" style="display:flex;gap:3px;align-items:center;flex-shrink:0;"></div>
+      </div>
+      <div class="ws-juke-bar" id="ws-juke-bar">
+        <div class="ws-juke-dot"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="ws-juke-msg" id="ws-juke-msg"></div>
+          <div class="ws-juke-label">Juke &middot; Follow-up reminder</div>
+        </div>
+        <button class="ws-juke-log-btn" onclick="wsShowLogForm()">Log it</button>
+      </div>
+      <div class="ws-tasks-strip" id="ws-tasks-strip"></div>
+      <div class="ws-body" id="ws-body"></div>
+      <div class="ws-bottom-bar" id="ws-bottom-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HIGHLIGHT MODAL -->
+<div class="admin-modal" id="hl-modal" style="display:none" onclick="if(event.target===this)closeHlModal()">
+  <div class="admin-box" style="max-width:480px">
+    <div class="admin-hd">
+      <div class="admin-title" id="hl-modal-title">Highlight</div>
+      <button class="modal-close" onclick="closeHlModal()">✕</button>
+    </div>
+    <div class="admin-body" id="hl-modal-body" style="padding:20px"></div>
+  </div>
+</div>
+
+<!-- STATUS POPOVER -->
+<div class="status-popover" id="status-popover">
+  <button class="sp-option" onclick="spSelect('saved')"><div class="sp-pill sp-pill-interested">Saved</div></button>
+  <button class="sp-option" onclick="spSelect('contacted')"><div class="sp-pill sp-pill-contacted">Contacted</div></button>
+  <button class="sp-option" onclick="spSelect('applied')"><div class="sp-pill sp-pill-applied">Applied</div></button>
+  <button class="sp-option" onclick="spSelect('committed')"><div class="sp-pill sp-pill-committed">Committed</div></button>
+  <div class="sp-remove"><button class="sp-option" onclick="spSelect('none')"><div class="sp-pill sp-pill-remove">✕ Remove</div></button></div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="admin-modal" id="admin-modal">
+  <div class="admin-box">
+    <div class="admin-hd"><div class="admin-title">⚙ Coach Admin Panel</div><button class="modal-close" onclick="closeAdmin()">✕</button></div>
+    <div class="admin-body">
+      <div id="admin-login-form">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Enter the JUKE staff password to manage school notes and recruiting links.</div>
+        <div style="display:flex;gap:8px;">
+          <input type="password" class="admin-input" id="admin-pw-input" placeholder="Staff password…" onkeydown="if(event.key==='Enter')checkAdminPw()" style="flex:1"/>
+          <button class="btn btn-primary" onclick="checkAdminPw()">Unlock</button>
+        </div>
+        <div id="admin-pw-err" style="color:var(--red);font-size:12px;margin-top:8px;display:none">Incorrect password.</div>
+      </div>
+      <div id="admin-panel" style="display:none">
+        <input type="text" class="admin-input" id="admin-search-input" placeholder="Search schools…" oninput="renderAdminList()" style="width:100%;margin-bottom:14px;"/>
+        <div id="admin-school-list"></div>
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
+          <button class="btn btn-outline" onclick="exportAdminData()">Export JSON</button>
+          <button class="btn btn-primary" onclick="saveAllAdmin()">Save All &amp; Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:18px;width:auto;display:block"><defs><linearGradient id="jukeGradFt" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs><path fill="url(#jukeGradFt)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/></svg>
+    <div class="footer-text" style="font-family:'Instrument Serif',serif;font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;">Recruiting <em style="font-style:italic;">her</em> way.</div>
+  </div>
+  <div class="footer-disc">Data from collegiateflagfootball.com, IPEDS & College Scorecard. Cost/aid figures are 2023–24 estimates. Verify recruiting links on each school's official athletics site.</div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="auth-modal-overlay" id="auth-modal-overlay" onclick="closeAuthModal(event)">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuthModal()">×</button>
+    <div id="auth-panel-signin">
+      <div class="auth-modal-title">Sign In</div>
+      <div class="auth-modal-sub">Save your profile, pipeline, and preferences across all your devices.</div>
+      <div class="auth-field"><label>Email</label><input type="email" id="auth-email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"></div>
+      <div class="auth-msg" id="auth-msg"></div>
+      <button class="auth-submit" id="auth-submit-btn" onclick="handleSignIn()">Sign In</button>
+      <div class="auth-toggle">Don't have an account? <a onclick="showSignUp()">Create one</a></div>
+    </div>
+    <div id="auth-panel-signup" style="display:none">
+      <div class="auth-modal-title">Create Account</div>
+      <div class="auth-modal-sub">Your data stays private — only you can access your profile and pipeline.</div>
+      <div class="auth-field"><label>Email</label><input type="email" id="auth-email-up" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="auth-password-up" placeholder="Min 6 characters" autocomplete="new-password"></div>
+      <div class="auth-msg" id="auth-msg-up"></div>
+      <button class="auth-submit" id="auth-submit-up-btn" onclick="handleSignUp()">Create Account</button>
+      <div class="auth-toggle">Already have an account? <a onclick="showSignIn()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+<script>window.JUKE_PORTAL_TYPE='athlete';</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/pipeline.js"></script>
+  <script src="../js/features/fit-score.js"></script>
+  <script src="../js/finder.js"></script>
+  <script src="../js/program-finder.js"></script>
+  <script src="../js/features/activity-feed.js"></script>
+  <script src="../js/features/workspace.js"></script>
+  <script src="../js/features/board-detail.js"></script>
+  <script src="../js/features/profile-edit.js"></script>
+  <script src="../js/features/profile-view.js"></script>
+  <script src="../js/features/outreach.js"></script>
+  <script src="../js/coach-portal.js"></script>
+  <script src="../js/messaging.js"></script>
+</body>
+</html>
