@@ -146,9 +146,10 @@
         <button class="btn btn-primary" onclick="recalcFit();applyFilters()">Apply Profile</button>
         <button class="btn btn-outline" onclick="clearProfile()">Clear Profile</button>
         <div class="fit-legend">
-          <div class="fit-legend-item"><span class="fit-dot" style="background:#6dcf9e"></span>Strong Match (≥70%)</div>
-          <div class="fit-legend-item"><span class="fit-dot" style="background:var(--columbia)"></span>Good Match (40–69%)</div>
-          <div class="fit-legend-item"><span class="fit-dot" style="background:var(--gray-light)"></span>Low Match (&lt;40%)</div>
+          <div class="fit-legend-item"><span class="fit-dot" style="background:#166534"></span>Strong Fit (≥75)</div>
+          <div class="fit-legend-item"><span class="fit-dot" style="background:#0c447c"></span>Good Fit (55–74)</div>
+          <div class="fit-legend-item"><span class="fit-dot" style="background:#854d0e"></span>Possible Fit (35–54)</div>
+          <div class="fit-legend-item"><span class="fit-dot" style="background:var(--text-dim)"></span>Weak Fit (&lt;35)</div>
         </div>
       </div>
     </div>
@@ -829,10 +830,16 @@
   </div>
 </div>
 <script>window.JUKE_PORTAL_TYPE='athlete';</script>
+  <!-- 1. Config + data layer (lsGet/lsSet, globals, RAW, scorecard) -->
   <script src="../js/config.js"></script>
-  <script src="../js/auth.js"></script>
+  <script src="../js/data-raw.js"></script>
+  <script src="../js/data-scorecard.js"></script>
+  <script src="../js/data-school-urls.js"></script>
   <script src="../js/data.js"></script>
+  <!-- 2. Auth + shared UI -->
+  <script src="../js/auth.js"></script>
   <script src="../js/ui.js"></script>
+  <!-- 3. Feature modules -->
   <script src="../js/pipeline.js"></script>
   <script src="../js/features/fit-score.js"></script>
   <script src="../js/finder.js"></script>

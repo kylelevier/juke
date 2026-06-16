@@ -40,6 +40,15 @@ function clearProfile(){
   ['pf-div','pf-gov','pf-vc','pf-region','pf-state','pf-type','pf-net','pf-rel','pf-hbcu'].forEach(id=>document.getElementById(id).value='');
   recalcFit();applyFilters();
 }
+// Called by _syncFromCloud (auth.js) after loading saved preferences from Supabase
+function _applyFitPrefs(prefs){
+  if(!prefs)return;
+  Object.entries(prefs).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el)el.value=val;
+  });
+  recalcFit();applyFilters();
+}
 function getFit(r){return fitScores[r.School+'|'+r.State]??-1;}
 
 // ── FILTERS ─────────────────────────────────────────────

@@ -553,4 +553,3 @@ async function checkJukeLoginAlerts(){
   }catch(e){}
 }
 
-</script>

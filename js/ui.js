@@ -70,8 +70,6 @@ function fitBadge(s){
   if(s>=35)return'<span class="fit-badge fit-low">Possible Fit</span>';
   return'<span class="fit-badge fit-weak">Weak Fit</span>';
 }
-function statusHtml(school){
-
 function showToast(msg){
   let t = document.getElementById('juke-toast');
   if(!t){ t = document.createElement('div'); t.id='juke-toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1D1D1F;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;'; document.body.appendChild(t); }
@@ -81,12 +79,11 @@ function showToast(msg){
   t._t = setTimeout(()=>t.style.opacity='0', 2000);
 }
 
-
-  function _initials(name) {
-    return String(name || 'U')
-      .split(/\s+/)
-      .map(function(w){ return w[0] || ''; })
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
-  }
+function _initials(name) {
+  return String(name || 'U')
+    .split(/\s+/)
+    .map(function(w){ return w[0] || ''; })
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}

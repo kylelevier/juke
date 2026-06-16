@@ -1,3 +1,24 @@
+// ── LOCAL STORAGE HELPERS ────────────────────────────────────
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return{}}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+// ── PERSISTED APP STATE ──────────────────────────────────────
+let statusData   = lsGet('juke_status');
+let adminNotes   = lsGet('juke_notes');
+let adminForms   = lsGet('juke_forms');
+let costOverrides= lsGet('juke_cost');
+let offersData   = lsGet('juke_offers');
+
+// ── FINDER STATE ─────────────────────────────────────────────
+let fitScores    = {};
+let filtered     = [];
+let sortCol      = '_fit';
+let sortAsc      = false;
+let view         = 'table';
+let compareSet   = new Set();
+let adminUnlocked= false;
+const ADMIN_PW   = 'juke2027';
+
 // ── PIPELINE DRAG STATE ──────────────────────────────────────
 let _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
 let playerData=lsGet('juke_player');
