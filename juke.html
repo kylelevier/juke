@@ -500,6 +500,37 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:20px
   .tab-nav{padding:0 14px;}
   .pipeline-cols{flex-direction:column!important;gap:0!important;}
   .pipeline-col{min-width:unset!important;width:100%!important;margin-bottom:12px;}
+  /* Board: tighter padding so cards use full width */
+  .pipeline-page{padding:14px;}
+  /* Board stats: smaller on mobile */
+  .pipeline-summary{gap:6px;}
+  .pipeline-stat{min-width:55px;padding:8px 10px;}
+  .pipeline-stat-num{font-size:18px;}
+  /* Touch targets: status pills need more tap area */
+  .status-pill{padding:7px 12px;}
+  .btn{padding:10px 18px;}
+  /* Card action text: legible at 100% column width */
+  .pc-action-text{font-size:12px;}
+}
+@media(max-width:500px){
+  /* Header: hide decorative copy to prevent overflow at narrow width */
+  .hd-slogan,.hd-sub{display:none;}
+  /* Wizard profile steps: numbers only, labels are too wide at 390px */
+  .wiz-lbl{display:none;}
+  .wiz-step{padding:5px 4px;}
+  .wiz-connector{width:8px;}
+  .wiz-header{padding:10px 12px;}
+  /* Finder: hide CSV export — secondary action, not needed on phone */
+  .fsb-csv-btn{display:none;}
+  /* Finder: search bar gets more room */
+  .filters-bar-slim{padding:10px 14px;gap:6px;}
+  /* Onboarding card: tighter on small screens */
+  .onboarding-card{padding:24px 18px;margin:20px auto;}
+  /* Program signals: chips can shrink further */
+  .pp-sig-chip{min-width:60px;padding:6px 4px;}
+  .pp-sig-val{font-size:12px;}
+  /* Board header: stack pipeline title and summary */
+  .pipeline-header{flex-direction:column;align-items:flex-start;gap:8px;}
 }
 
 /* ── PIPELINE TAB ── */
@@ -803,6 +834,34 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
 .pp-map-wrap{height:160px;overflow:hidden;position:relative;border-top:1px solid var(--border);}
 #pp-map{height:100%;width:100%;}
 #pp-map .leaflet-tile-pane{filter:grayscale(1) brightness(1.08) contrast(0.88);}
+/* ── MEANING LAYER ── */
+.pp-context-note{font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--columbia-bd);}
+.pp-section-sub{font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.5;}
+.pp-why-note{display:flex;gap:10px;align-items:flex-start;background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:10px;padding:12px;margin-bottom:10px;font-size:13px;color:var(--text);line-height:1.5;}
+.pp-why-note-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.pp-next-actions{display:flex;flex-direction:column;gap:8px;}
+.pp-next-action-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);text-decoration:none;transition:border-color .15s;line-height:1.4;}
+a.pp-next-action-item:hover{border-color:var(--columbia-bd);color:var(--columbia);}
+.pp-next-item-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.pp-next-note{color:var(--text-muted);font-style:italic;}
+.card-fit-tag{display:inline-block;background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:20px;padding:2px 9px;font-size:10px;color:var(--columbia);font-weight:600;margin-right:4px;margin-bottom:3px;}
+.card-fit-reason{margin-bottom:8px;}
+.board-empty-hint{text-align:center;padding:40px 24px;color:var(--text-muted);}
+.board-empty-hint-icon{font-size:32px;margin-bottom:10px;opacity:.4;}
+.board-empty-hint-title{font-family:'Archivo Condensed',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:6px;}
+.board-empty-hint-sub{font-size:13px;line-height:1.55;max-width:320px;margin:0 auto;}
+/* ── ONBOARDING CARD ── */
+.onboarding-card{position:relative;max-width:380px;margin:40px auto;background:var(--surface);border:1px solid var(--columbia-bd);border-radius:16px;padding:32px 28px;text-align:center;box-shadow:0 4px 24px rgba(0,87,255,.08);}
+.onboarding-dismiss{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;color:var(--text-muted);cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px;}
+.onboarding-dismiss:hover{background:var(--surface2);color:var(--text);}
+.onboarding-icon{font-size:32px;margin-bottom:12px;}
+.onboarding-title{font-family:'Archivo Condensed',sans-serif;font-size:24px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.04em;color:var(--text);margin-bottom:20px;line-height:1.1;}
+.onboarding-title span{color:var(--columbia);}
+.onboarding-steps{display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:24px;}
+.onboarding-step{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text);line-height:1.4;}
+.onboarding-step-n{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--columbia);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.onboarding-cta{width:100%;padding:12px 20px;background:var(--columbia);color:#fff;border:none;border-radius:10px;font-family:'Archivo Condensed',sans-serif;font-size:15px;font-weight:700;font-style:italic;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:opacity .15s;}
+.onboarding-cta:hover{opacity:.88;}
 
 /* Status popover */
 .status-popover{position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border-mid);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 2px 6px rgba(0,0,0,.08);padding:8px;min-width:160px;display:none;}
@@ -1432,6 +1491,28 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
 .ws-offer-note-light:focus{outline:none;border-color:rgba(255,0,128,.4);}
 /* Empty */
 .ws-empty{text-align:center;padding:28px 16px;color:#b8b0c8;font-size:13px;line-height:1.6;}
+/* ── NEXT ACTION BOX ── */
+.ws-next-action{background:rgba(255,0,128,.07);border:1.5px solid rgba(255,0,128,.22);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
+.ws-na-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FF0080;margin-bottom:5px;}
+.ws-na-text{font-size:13px;font-weight:600;color:#1c1928;line-height:1.45;}
+.ws-na-edit{width:100%;min-height:58px;font-size:13px;background:rgba(255,255,255,.8);border:1px solid rgba(255,0,128,.3);border-radius:8px;padding:8px 10px;font-family:inherit;line-height:1.45;resize:none;box-sizing:border-box;margin-top:8px;color:#1c1928;}
+.ws-na-edit:focus{outline:none;border-color:#FF0080;}
+.ws-na-footer{display:flex;align-items:center;gap:12px;margin-top:8px;}
+.ws-na-edit-btn{font-size:11px;color:#FF0080;background:none;border:none;cursor:pointer;padding:0;font-weight:600;font-family:inherit;}
+.ws-na-clear-btn{font-size:11px;color:#c0b8cc;background:none;border:none;cursor:pointer;padding:0;font-family:inherit;}
+/* ── IMPORTANT LINKS ROW ── */
+.ws-links-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.ws-link-btn{display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid rgba(255,0,128,.28);color:#cc0066;background:rgba(255,0,128,.05);transition:border-color .12s,background .12s;font-family:inherit;cursor:pointer;}
+.ws-link-btn:hover{border-color:rgba(255,0,128,.55);background:rgba(255,0,128,.09);}
+.ws-link-btn.ws-link-coach{border-color:rgba(123,47,255,.28);color:#6020c0;background:rgba(123,47,255,.05);}
+.ws-link-btn.ws-link-coach:hover{border-color:rgba(123,47,255,.55);background:rgba(123,47,255,.09);}
+/* ── RECENT ACTIVITY SUMMARY ── */
+.ws-recent-bar{background:#FFFFFF;border:1px solid #EDE8F2;border-radius:10px;padding:9px 12px;margin-bottom:12px;display:flex;flex-direction:column;gap:6px;}
+.ws-recent-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#5c5874;}
+.ws-recent-icon{font-size:11px;width:18px;text-align:center;flex-shrink:0;color:#a090b8;}
+/* ── LOG BUTTONS ROW ── */
+.ws-log-btns{display:flex;gap:8px;margin-bottom:12px;}
+.ws-log-btns .ws-add-light{flex:1;margin-bottom:0;justify-content:center;}
 @media(max-width:480px){.ws-drawer{width:100vw;padding:8px;}.ws-inner{border-radius:12px;}}
 </style>
 
@@ -1661,8 +1742,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
   <!-- EMPTY -->
   <div id="empty-state" class="empty-state" style="display:none">
     <div class="empty-icon">🏈</div>
-    <h3>No Programs Found</h3>
-    <p>Try adjusting your filters or profile.</p>
+    <h3>No Programs Match</h3>
+    <p>Try removing one filter at a time — fewer selections usually shows more results. Or clear all filters to browse every program and start fresh.</p>
   </div>
 
 </div><!-- end tab-finder -->
@@ -1753,7 +1834,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
       <div class="wiz-connector"></div>
       <button class="wiz-step" id="wiz-btn-5" onclick="goStep(5)">
         <span class="wiz-num">5</span>
-        <span class="wiz-lbl">Endorsements</span>
+        <span class="wiz-lbl">Recommendations</span>
       </button>
     </div>
     <div class="wiz-save-badge" id="save-indicator">✓ Auto-saved</div>
@@ -2012,18 +2093,18 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
     </div>
     <div class="wiz-nav">
       <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
-      <button class="btn btn-primary" onclick="goStep(5)">Next: Endorsements →</button>
+      <button class="btn btn-primary" onclick="goStep(5)">Next: Recommendations →</button>
     </div>
   </div><!-- end wiz-content-4 -->
 
   <!-- ══ STEP 5: ENDORSEMENTS ══ -->
   <div class="wiz-step-content" id="wiz-content-5">
     <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
-      <div class="wiz-section-hd"><span class="wiz-section-title">A coach endorsement is the strongest trust signal in the system. One word from them changes everything.</span></div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">When a coach adds a text endorsement, a <strong style="color:#00A050">✓ Coach Verified</strong> badge appears on your profile card. College coaches weigh this heavily — it means someone in the game vouches for you.</div>
+      <div class="wiz-section-hd"><span class="wiz-section-title">A coach recommendation is the strongest trust signal in the system. One word from them changes everything.</span></div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">When a coach adds a recommendation, a <strong style="color:#00A050">✓ Coach Verified</strong> badge appears on your profile card. College coaches weigh this heavily — it means someone in the game vouches for you.</div>
       <div id="end-cards-list"></div>
       <div class="end-request-form">
-        <div class="end-form-title">Request an endorsement from your HS or club coach</div>
+        <div class="end-form-title">Request a recommendation from your HS or club coach</div>
         <div class="end-form-grid">
           <div class="end-form-group">
             <label class="end-form-label">Coach's Name *</label>
@@ -2102,7 +2183,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
     <div class="msg-main" id="msg-main">
       <div class="msg-empty-state" id="msg-empty-state">
         <div class="msg-empty-icon">💬</div>
-        <div>Select a conversation to start messaging</div>
+        <div style="font-weight:600;margin-bottom:6px;color:var(--text)">No conversation open</div>
+        <div style="font-size:12px;color:var(--text-muted);text-align:center;max-width:220px;line-height:1.6">Pick one from the left, or tap <strong>+ New</strong> to reach out to a coach.</div>
       </div>
       <div style="display:none;flex-direction:column;flex:1;overflow:hidden;" id="msg-convo">
         <div class="msg-main-header" id="msg-main-header">
@@ -2158,17 +2240,17 @@ function cnReadMore(btn){
 
 <!-- COMPARE MODAL -->
 <div class="modal-overlay" id="compare-modal">
-  <div class="modal">
-    <div class="modal-hd"><div class="modal-title">Side-by-Side Comparison</div><button class="modal-close" onclick="closeCompareModal()">✕</button></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="compare-modal-title">
+    <div class="modal-hd"><div class="modal-title" id="compare-modal-title">Side-by-Side Comparison</div><button class="modal-close" aria-label="Close" onclick="closeCompareModal()">✕</button></div>
     <div style="overflow-x:auto;padding:20px;"><div id="compare-content"></div></div>
   </div>
 </div>
 
 <!-- PROGRAM PROFILE SLIDE-OVER -->
 <div class="pp-overlay" id="pp-overlay" onclick="closeProgramProfile(event)">
-  <div class="pp-drawer" id="pp-drawer">
+  <div class="pp-drawer" id="pp-drawer" role="dialog" aria-modal="true" aria-labelledby="pp-topbar-title">
     <div class="pp-topbar">
-      <button class="pp-back" onclick="closeProgramProfile()">‹</button>
+      <button class="pp-back" aria-label="Close" onclick="closeProgramProfile()">‹</button>
       <div class="pp-topbar-title" id="pp-topbar-title">Program Profile</div>
       <button class="pp-offer-btn" id="pp-offer-btn" onclick="ppToggleOffer()">Offered</button>
       <button class="pp-pipeline-btn" id="pp-pipeline-btn" onclick="ppTogglePipeline()">+ My Board</button>
@@ -2180,10 +2262,10 @@ function cnReadMore(btn){
 
 <!-- SCHOOL WORKSPACE DRAWER -->
 <div class="ws-overlay" id="ws-overlay" onclick="if(event.target===this)closeWorkspace()">
-  <div class="ws-drawer" id="ws-drawer">
+  <div class="ws-drawer" id="ws-drawer" role="dialog" aria-modal="true" aria-labelledby="ws-name">
     <div class="ws-inner">
       <div class="ws-topbar">
-        <button class="ws-back" onclick="closeWorkspace()">&#8249;</button>
+        <button class="ws-back" aria-label="Close" onclick="closeWorkspace()">&#8249;</button>
         <div class="ws-school-av" id="ws-av"></div>
         <div style="flex:1;min-width:0;">
           <div class="ws-school-name" id="ws-name"></div>
@@ -2208,10 +2290,10 @@ function cnReadMore(btn){
 
 <!-- HIGHLIGHT MODAL -->
 <div class="admin-modal" id="hl-modal" style="display:none" onclick="if(event.target===this)closeHlModal()">
-  <div class="admin-box" style="max-width:480px">
+  <div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="hl-modal-title" style="max-width:480px">
     <div class="admin-hd">
       <div class="admin-title" id="hl-modal-title">Highlight</div>
-      <button class="modal-close" onclick="closeHlModal()">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeHlModal()">✕</button>
     </div>
     <div class="admin-body" id="hl-modal-body" style="padding:20px"></div>
   </div>
@@ -2228,8 +2310,8 @@ function cnReadMore(btn){
 
 <!-- ADMIN MODAL -->
 <div class="admin-modal" id="admin-modal">
-  <div class="admin-box">
-    <div class="admin-hd"><div class="admin-title">⚙ Coach Admin Panel</div><button class="modal-close" onclick="closeAdmin()">✕</button></div>
+  <div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+    <div class="admin-hd"><div class="admin-title" id="admin-modal-title">⚙ Coach Admin Panel</div><button class="modal-close" aria-label="Close" onclick="closeAdmin()">✕</button></div>
     <div class="admin-body">
       <div id="admin-login-form">
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Enter the JUKE staff password to manage school notes and recruiting links.</div>
@@ -2285,24 +2367,100 @@ if(sb){
 }
 
 // ── AUTH UI ──────────────────────────────────────────────
+let _activeDialog = null;
+let _dialogReturnFocus = null;
+
+function _dialogFocusable(root){
+  if(!root) return [];
+  return Array.from(root.querySelectorAll('a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'))
+    .filter(function(el){return !!(el.offsetWidth||el.offsetHeight||el.getClientRects().length);});
+}
+function _dialogPanel(root){
+  return root && (root.matches('[role="dialog"]') ? root : root.querySelector('[role="dialog"]'));
+}
+function _focusDialog(root){
+  const panel = _dialogPanel(root);
+  const first = _dialogFocusable(panel || root)[0] || panel || root;
+  if(first && typeof first.focus === 'function'){
+    if(first === panel && !first.hasAttribute('tabindex')) first.setAttribute('tabindex','-1');
+    setTimeout(function(){first.focus();},30);
+  }
+}
+function _dialogOpened(root){
+  if(!root) return;
+  _dialogReturnFocus = document.activeElement;
+  _activeDialog = root;
+  _focusDialog(root);
+}
+function _dialogClosed(root){
+  if(root && _activeDialog !== root) return;
+  const returnFocus = _dialogReturnFocus;
+  _activeDialog = null;
+  _dialogReturnFocus = null;
+  if(returnFocus && typeof returnFocus.focus === 'function' && document.contains(returnFocus)){
+    setTimeout(function(){returnFocus.focus();},30);
+  }
+}
+function _visibleDialog(){
+  const candidates = [
+    {root:document.getElementById('auth-modal-overlay'), close:function(){closeAuthModal();}},
+    {root:document.getElementById('hl-modal'), close:function(){closeHlModal();}},
+    {root:document.getElementById('admin-modal'), close:function(){closeAdmin();}},
+    {root:document.getElementById('ws-overlay'), close:function(){closeWorkspace();}},
+    {root:document.getElementById('pp-overlay'), close:function(){closeProgramProfile();}},
+    {root:document.getElementById('compare-modal'), close:function(){closeCompareModal();}},
+  ];
+  for(let i=candidates.length-1;i>=0;i--){
+    const item = candidates[i], el = item.root;
+    if(!el) continue;
+    const cs = getComputedStyle(el);
+    if((el.classList.contains('open')||el.classList.contains('visible')||cs.display!=='none') && cs.visibility!=='hidden' && cs.pointerEvents!=='none'){
+      return item;
+    }
+  }
+  return null;
+}
+document.addEventListener('keydown',function(event){
+  const active = _activeDialog || (_visibleDialog() && _visibleDialog().root);
+  if(!active) return;
+  if(event.key === 'Escape'){
+    const visible = _visibleDialog();
+    if(visible){event.preventDefault();visible.close();}
+    return;
+  }
+  if(event.key !== 'Tab') return;
+  const panel = _dialogPanel(active);
+  const focusables = _dialogFocusable(panel || active);
+  if(!focusables.length){event.preventDefault();_focusDialog(active);return;}
+  const first = focusables[0], last = focusables[focusables.length-1];
+  if(event.shiftKey && document.activeElement === first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey && document.activeElement === last){event.preventDefault();first.focus();}
+});
+
 function openAuthModal(mode){
   if(mode==='signout'){_doSignOut();return;}
-  document.getElementById('auth-modal-overlay').classList.add('open');
+  const modal=document.getElementById('auth-modal-overlay');
+  modal.classList.add('open');
   showSignIn();
+  _dialogOpened(modal);
 }
 function closeAuthModal(e){
   if(e&&e.target!==document.getElementById('auth-modal-overlay'))return;
-  document.getElementById('auth-modal-overlay').classList.remove('open');
+  const modal=document.getElementById('auth-modal-overlay');
+  modal.classList.remove('open');
+  _dialogClosed(modal);
 }
 function showSignIn(){
   document.getElementById('auth-panel-signin').style.display='';
   document.getElementById('auth-panel-signup').style.display='none';
   document.getElementById('auth-msg').className='auth-msg';
+  document.querySelector('#auth-modal-overlay [role="dialog"]').setAttribute('aria-labelledby','auth-signin-title');
 }
 function showSignUp(){
   document.getElementById('auth-panel-signin').style.display='none';
   document.getElementById('auth-panel-signup').style.display='';
   document.getElementById('auth-msg-up').className='auth-msg';
+  document.querySelector('#auth-modal-overlay [role="dialog"]').setAttribute('aria-labelledby','auth-signup-title');
 }
 function _updateAuthUI(){
   const signedin=!!currentUser;
@@ -2327,7 +2485,7 @@ async function handleSignIn(){
   const {error}=await sb.auth.signInWithPassword({email,password:pw});
   btn.disabled=false;btn.textContent='Sign In';
   if(error){msg.textContent=error.message;msg.className='auth-msg error';}
-  else{document.getElementById('auth-modal-overlay').classList.remove('open');}
+  else{closeAuthModal();}
 }
 async function handleSignUp(){
   if(!sb){alert('Supabase not configured — add your URL and key to the file.');return;}
@@ -2640,11 +2798,11 @@ function buildFeed(){
   endorsements.forEach(function(end, i){
     if(end.status==='endorsed')
       items.push({id:_id++, type:'milestone', time: end.submittedAt||'Recently', pri:8,
-        primary:'Coach '+end.coachName+' submitted an endorsement ✓',
-        secondary:end.coachSchool+' · A verified coach endorsement is now showing on your profile card — this is the strongest trust signal in the system.'});
+        primary:'Coach '+end.coachName+' submitted a recommendation ✓',
+        secondary:end.coachSchool+' · A coach recommendation is now on your profile card — this is the strongest trust signal in the system.'});
     else if(end.status==='pending')
       items.push({id:_id++, type:'timeline', time: end.requestedAt||'Recently', pri:22+i,
-        primary:'Endorsement request sent to Coach '+end.coachName,
+        primary:'Recommendation request sent to Coach '+end.coachName,
         secondary:end.coachSchool+' · Pending response. Coaches typically reply within 1–2 weeks.'});
   });
 
@@ -2727,7 +2885,7 @@ function renderFeed(){
   var pred = FEED_FILTER_MAP[_activeFeedFilter]||FEED_FILTER_MAP.all;
   var items = buildFeed().filter(pred);
   if(!items.length){
-    el.innerHTML='<div class="feed-empty">Nothing here yet — check back as you build your profile.</div>';
+    el.innerHTML='<div class="feed-empty">Your feed will come alive as you save programs and build your profile. Start by heading to Programs and saving a few schools.</div>';
     return;
   }
   el.innerHTML = items.map(feedItemHTML).join('');
@@ -2759,7 +2917,49 @@ const PIPELINE_STAGES=[
   {key:'closed',              label:'Closed',              color:'#6B7280'},
 ];
 
-
+const NEXT_ACTION_BY_STAGE={
+  saved:      'Review this program and decide if it belongs on your list.',
+  contacting: 'Send an intro email or complete the recruiting form.',
+  applied:    'Check your application status and follow up.',
+  offered:    'Compare offer details and talk with your family.',
+  committed:  'Confirm next steps with the coach.'
+};
+function _stageToActionKey(s){
+  if(['dream_schools','interested','top_choices'].includes(s)) return 'saved';
+  if(['contact_made','active_conversation','visit_planned'].includes(s)) return 'contacting';
+  if(s==='offer_received') return 'offered';
+  return s;
+}
+const STAGE_DESC={
+  dream_schools:'Programs worth exploring.',
+  interested:'Programs on your radar.',
+  contact_made:"Schools you've reached out to.",
+  active_conversation:'Conversations with coaches.',
+  visit_planned:'Visits scheduled or planned.',
+  applied:'Applications in progress.',
+  offer_received:'Opportunities to compare.',
+  top_choices:'Your strongest options.',
+  committed:'Your next chapter.',
+  closed:'Programs no longer in play.'
+};
+function _makeBoardProfileChip(){
+  const d=lsGet('juke_player');
+  let score=0;
+  if(d.fname&&d.lname)score+=10;
+  if(d.gradyr)score+=5;
+  if((d.positions||d._positions||[]).length)score+=10;
+  if(d.height)score+=5;
+  if(d.gpa)score+=10;
+  if(d.highlight)score+=25;
+  if(d.intro)score+=15;
+  if(d.gp)score+=10;
+  if(d.school)score+=5;
+  if(d.sat||d.act)score+=5;
+  score=Math.min(100,score);
+  const col=score<40?'#FF4D4D':score<70?'#FF9800':'var(--columbia)';
+  const tip=score===100?'Profile complete ✓':score>50?'Keep going — coaches are checking':'Start your profile so coaches can find you';
+  return`<div class="pipeline-stat board-profile-chip" onclick="switchTab('profile')" title="${tip}"><div class="pipeline-stat-num" style="color:${col};font-size:16px">${score}%</div><div class="pipeline-stat-lbl">Profile</div></div>`;
+}
 
 // ── Photo uploads (banner + avatar) ──────────────────────────────────────────
 function handleBannerUpload(input){
@@ -3042,6 +3242,11 @@ function _pdUp(e){
   }
 }
 
+function _dismissOnboarding(){
+  lsSet('juke_onboarding_seen',true);
+  renderPipeline();
+}
+
 function renderPipeline(){
   renderMilestoneRail();
   const schoolsByStage={};
@@ -3051,24 +3256,59 @@ function renderPipeline(){
   });
   const total=Object.values(schoolsByStage).flat().length;
 
-  document.getElementById('pipeline-summary').innerHTML=`
-    <div class="pipeline-stat"><div class="pipeline-stat-num">${total}</div><div class="pipeline-stat-lbl">Total</div></div>
-    ${PIPELINE_STAGES.map(s=>`<div class="pipeline-stat"><div class="pipeline-stat-num" style="color:${s.color}">${schoolsByStage[s.key].length}</div><div class="pipeline-stat-lbl">${s.label}</div></div>`).join('')}
-  `;
-
   const colsEl=document.getElementById('pipeline-cols');
+
+  if(total===0){
+    document.getElementById('pipeline-summary').innerHTML='';
+    if(!lsGet('juke_onboarding_seen')){
+      colsEl.innerHTML=`<div class="onboarding-card">
+        <button class="onboarding-dismiss" onclick="_dismissOnboarding()" title="Dismiss">×</button>
+        <div class="onboarding-icon">🏈</div>
+        <div class="onboarding-title">Welcome to <span>Juke</span></div>
+        <div class="onboarding-steps">
+          <div class="onboarding-step"><span class="onboarding-step-n">1</span><span>Find programs that fit you</span></div>
+          <div class="onboarding-step"><span class="onboarding-step-n">2</span><span>Save them to your Board</span></div>
+          <div class="onboarding-step"><span class="onboarding-step-n">3</span><span>Track your next recruiting step</span></div>
+          <div class="onboarding-step"><span class="onboarding-step-n">4</span><span>Connect with coaches</span></div>
+        </div>
+        <button class="onboarding-cta" onclick="_dismissOnboarding();switchTab('finder')">Explore Programs →</button>
+      </div>`;
+    } else {
+      colsEl.innerHTML=`<div class="board-empty-hint">
+        <div class="board-empty-hint-icon">🏈</div>
+        <div class="board-empty-hint-title">Your board is just getting started</div>
+        <div class="board-empty-hint-sub">Head to Programs and save 3–5 schools that feel like a fit. They'll show up here so you can track where things stand.</div>
+      </div>`;
+    }
+    return;
+  }
+
+  const _sv=schoolsByStage.dream_schools.length+schoolsByStage.interested.length+schoolsByStage.top_choices.length;
+  const _cv=schoolsByStage.contact_made.length+schoolsByStage.active_conversation.length+schoolsByStage.visit_planned.length;
+  const _av=schoolsByStage.applied.length;
+  const _ov=schoolsByStage.offer_received.length;
+  const _mv=schoolsByStage.committed.length;
+  document.getElementById('pipeline-summary').innerHTML=[
+    _sv?`<div class="pipeline-stat"><div class="pipeline-stat-num">${_sv}</div><div class="pipeline-stat-lbl">Saved</div></div>`:'',
+    _cv?`<div class="pipeline-stat" style="border-color:rgba(123,47,255,.25)"><div class="pipeline-stat-num" style="color:#7B2FFF">${_cv}</div><div class="pipeline-stat-lbl">Contacted</div></div>`:'',
+    _av?`<div class="pipeline-stat" style="border-color:rgba(255,69,0,.25)"><div class="pipeline-stat-num" style="color:#FF4500">${_av}</div><div class="pipeline-stat-lbl">Applied</div></div>`:'',
+    _ov?`<div class="pipeline-stat board-cmd-gold"><div class="pipeline-stat-num" style="color:#a07a00">${_ov}</div><div class="pipeline-stat-lbl">Offered</div></div>`:'',
+    _mv?`<div class="pipeline-stat" style="border-color:rgba(0,224,80,.25)"><div class="pipeline-stat-num" style="color:#00E050">${_mv}</div><div class="pipeline-stat-lbl">Committed</div></div>`:'',
+    _makeBoardProfileChip()
+  ].join('');
+
   colsEl.innerHTML='';
   PIPELINE_STAGES.forEach(stage=>{
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
     const col=document.createElement('div');
     col.className='pipeline-col';
-    col.innerHTML=`<div class="pipeline-col-hd"><span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span><span class="pipeline-col-count">${schools.length}</span></div>`;
+    col.innerHTML=`<div class="pipeline-col-hd"><div class="pipeline-col-hd-text"><span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span><div class="pipeline-col-sub">${STAGE_DESC[stage.key]||''}</div></div><span class="pipeline-col-count">${schools.length}</span></div>`;
     const body=document.createElement('div');
     body.className='pipeline-col-body';
     body.dataset.stage=stage.key;
     if(!schools.length){
       const ph=document.createElement('div');
-      ph.className='pipeline-empty-col';ph.textContent='Drop cards here';
+      ph.className='pipeline-empty-col';ph.textContent='Drag a school here';
       body.appendChild(ph);
     } else {
       schools.forEach(r=>body.appendChild(buildPipelineCard(r,stage.key)));
@@ -3083,7 +3323,14 @@ function buildPipelineCard(r,stageKey){
   card.className=`pipeline-card status-${stageKey}`;
   card.dataset.school=r.School;
 
-  const hd=document.createElement('div');hd.className='pipeline-card-hd';
+  // 1. NEXT ACTION — most prominent element
+  const actionText=NEXT_ACTION_BY_STAGE[_stageToActionKey(stageKey)]||'Review where things stand with this program.';
+  const actionBox=document.createElement('div');
+  actionBox.className='pc-action-box'+(stageKey==='closed'?' pc-action-empty':'');
+  actionBox.innerHTML=`<div class="pc-action-label">Next Action</div><div class="pc-action-text">${actionText}</div>`;
+
+  // 2. SCHOOL NAME + LOGO
+  const hd=document.createElement('div');hd.className='pipeline-card-hd';hd.style.marginTop='8px';
   const handle=document.createElement('span');
   handle.className='pipeline-drag-handle';handle.title='Drag to move';handle.textContent='⠿';
   const logoWrap=_logoPlaceholder(r.School);logoWrap.dataset.logo=r.School;
@@ -3091,6 +3338,11 @@ function buildPipelineCard(r,stageKey){
   hdText.innerHTML=`<div class="pipeline-card-name">${r.School}</div>${offersData[r.School]?'<span class="pipeline-card-offer-badge">Offered</span>':''}<div class="pipeline-card-meta">${r.State||''} · ${r.Region||''}</div>`;
   hd.appendChild(handle);hd.appendChild(logoWrap);hd.appendChild(hdText);
 
+  // 3. FIT / CONTEXT TAGS
+  const tags=document.createElement('div');tags.className='pipeline-card-tags';
+  tags.innerHTML=`${divTag(r['Governing Body'],r['Division'])}${vcTag(r['Varsity or Club'])}${r.HBCU==='Yes'?'<span class="tag tag-hbcu">HBCU</span>':''}`;
+
+  // 4. COST + FIT BADGE — secondary, bottom
   const row=document.createElement('div');row.className='pipeline-card-row';row.style.marginTop='8px';
   const netSpan=document.createElement('span');
   netSpan.className='pipeline-card-net';
@@ -3120,10 +3372,8 @@ function buildPipelineCard(r,stageKey){
   });
   row.appendChild(netSpan);
   if(getFit(r)>=0){const tmp=document.createElement('span');tmp.innerHTML=fitBadge(getFit(r));while(tmp.firstChild)row.appendChild(tmp.firstChild);}
-  const tags=document.createElement('div');tags.className='pipeline-card-tags';
-  tags.innerHTML=`${divTag(r['Governing Body'],r['Division'])}${vcTag(r['Varsity or Club'])}${r.HBCU==='Yes'?'<span class="tag tag-hbcu">HBCU</span>':''}`;
 
-  card.appendChild(hd);card.appendChild(row);card.appendChild(tags);
+  card.appendChild(actionBox);card.appendChild(hd);card.appendChild(tags);card.appendChild(row);
   fetchSchoolLogo(r.School,logoWrap);
 
   // Drag: mousedown starts the drag
@@ -3690,8 +3940,25 @@ function fitBadge(s){
 }
 function statusHtml(school){
   const s=statusData[school]||'none';
-  const L={none:'+ Track',interested:'Interested',contacted:'Contacted',applied:'Applied',committed:'Committed'};
+  const L={none:'Save to Board',interested:'Saved',contacted:'Contacted',applied:'Applied',committed:'Committed'};
   return`<span class="status-pill status-${s}" onclick="event.stopPropagation();openStatusPopover('${esc(school)}',this)">${L[s]}</span>`;
+}
+function _getFitTags(r){
+  const tags=[];
+  const div=document.getElementById('pf-div')?.value;
+  const gov=document.getElementById('pf-gov')?.value;
+  const vc=document.getElementById('pf-vc')?.value;
+  const region=document.getElementById('pf-region')?.value;
+  const state=document.getElementById('pf-state')?.value;
+  const hbcu=document.getElementById('pf-hbcu')?.value;
+  if(div&&r['Division']===div)tags.push(r['Division']);
+  else if(gov&&r['Governing Body']===gov)tags.push(r['Governing Body']);
+  if(vc&&r['Varsity or Club']===vc)tags.push(r['Varsity or Club']);
+  if(state&&r['State']===state)tags.push('In your state');
+  else if(region&&r['Region']===region)tags.push(r['Region']);
+  if(hbcu==='yes'&&r['HBCU']==='Yes')tags.push('HBCU');
+  if(!tags.length&&r['Scholarship Available (Y/N/Partial)']==='Yes')tags.push('Scholarships available');
+  return[...new Set(tags)].slice(0,2);
 }
 let _spSchool = null;
 
@@ -3777,7 +4044,7 @@ function ppToggleOffer(){
   }
 }
 function getForm(s){return adminForms[s]||RAW.find(r=>r.School===s)?.['Athlete Interest / Recruiting Form']||'';}
-function recruitHtml(s){const u=getForm(s);if(!u||u==='See school athletics website')return'<span class="recruit-na">—</span>';return`<a class="recruit-link" href="${u}" target="_blank" rel="noopener">Visit ↗</a>`;}
+function recruitHtml(s){const u=getForm(s);if(!u||u==='See school athletics website')return'';return`<a class="recruit-link" href="${u}" target="_blank" rel="noopener">Recruiting Form ↗</a>`;}
 function esc(s){return s.replace(/'/g,"\'");}
 
 // ── COMPARE ─────────────────────────────────────────────
@@ -3804,9 +4071,15 @@ function openCompareModal(){
   h+=`<div class="cmp-row-label">Recruiting Form</div>`;schools.forEach(s=>{h+=`<div class="cmp-row-val">${recruitHtml(s.School)}</div>`;});
   h+=`</div>`;
   document.getElementById('compare-content').innerHTML=h;
-  document.getElementById('compare-modal').classList.add('visible');
+  const modal=document.getElementById('compare-modal');
+  modal.classList.add('visible');
+  _dialogOpened(modal);
 }
-function closeCompareModal(){document.getElementById('compare-modal').classList.remove('visible');}
+function closeCompareModal(){
+  const modal=document.getElementById('compare-modal');
+  modal.classList.remove('visible');
+  _dialogClosed(modal);
+}
 
 // ── RENDER ──────────────────────────────────────────────
 function render(){
@@ -3878,6 +4151,8 @@ function renderCards(){
     const statusClass=st!=='none'?` has-status-${st}`:'';
     const conf=r['Flag Football Conference']||'';
     const meta=[r.State,r.Region,conf].filter(Boolean).join(' · ');
+    const fitTags=fit>=0?_getFitTags(r):[];
+    const fitTagsHtml=fitTags.length?`<div class="card-fit-reason">${fitTags.map(t=>`<span class="card-fit-tag">${t}</span>`).join('')}</div>`:'';
     return`<div class="school-card${statusClass}" onclick="openProgramProfile('${esc(r.School)}')">
       <div class="card-hd">
         <div class="card-logo-wrap" data-logo="${r.School}"><div class="card-logo-initials">🏈</div></div>
@@ -3887,12 +4162,13 @@ function renderCards(){
         </div>
         ${fit>=0?fitBadge(fit):''}
       </div>
+      ${fitTagsHtml}
       <div class="card-fact-row">${cardFactRow(r)}</div>
       ${note?`<div class="card-note"><span style="flex-shrink:0">📌</span><span>${note}</span></div>`:''}
       <div class="card-ft">
         <div class="card-actions">
           ${statusHtml(r.School)}${recruitHtml(r.School)}
-          <button class="btn ${ic?'btn-primary':'btn-ghost'}" style="padding:3px 8px;font-size:10px" onclick="toggleCompare('${esc(r.School)}')">${ic?'✓':'+ Cmp'}</button>
+          <button class="btn ${ic?'btn-primary':'btn-ghost'}" style="padding:3px 8px;font-size:10px" onclick="event.stopPropagation();toggleCompare('${esc(r.School)}')">${ic?'✓ Compare':'Compare'}</button>
         </div>
       </div>
     </div>`;
@@ -3909,13 +4185,19 @@ function exportCSV(){
 
 // ── ADMIN ────────────────────────────────────────────────
 function openAdmin(){
-  document.getElementById('admin-modal').classList.add('visible');
+  const modal=document.getElementById('admin-modal');
+  modal.classList.add('visible');
   document.getElementById('admin-login-form').style.display=adminUnlocked?'none':'block';
   document.getElementById('admin-panel').style.display=adminUnlocked?'block':'none';
   if(adminUnlocked)renderAdminList();
   else setTimeout(()=>document.getElementById('admin-pw-input').focus(),100);
+  _dialogOpened(modal);
 }
-function closeAdmin(){document.getElementById('admin-modal').classList.remove('visible');}
+function closeAdmin(){
+  const modal=document.getElementById('admin-modal');
+  modal.classList.remove('visible');
+  _dialogClosed(modal);
+}
 function checkAdminPw(){
   if(document.getElementById('admin-pw-input').value===ADMIN_PW){
     adminUnlocked=true;
@@ -4489,11 +4771,15 @@ function hlOpen(type){
   }
 
   modal.style.display = 'flex';
+  _dialogOpened(modal);
 }
 
 function closeHlModal(){
   const m = document.getElementById('hl-modal');
-  if(m) m.style.display = 'none';
+  if(m){
+    m.style.display = 'none';
+    _dialogClosed(m);
+  }
 }
 
 function updateAthleteHeader(){
@@ -4506,7 +4792,7 @@ function updateAthleteHeader(){
   const pipeBar = el('athlete-pipeline-bar');
   if(pipeBar){
     if(tracked === 0){
-      pipeBar.innerHTML = 'Add schools to your pipeline to get started';
+      pipeBar.innerHTML = 'Add schools to your board to get started';
     } else if(committed > 0){
       pipeBar.innerHTML = 'Committed · <strong>'+tracked+'</strong> program'+(tracked!==1?'s':'')+' tracked';
     } else {
@@ -5280,11 +5566,16 @@ function openProgramProfile(schoolName){
 
   // ── Recruiting form button ──
   const rl=r['Athlete Interest / Recruiting Form']||'';
-  const recruitBtn=rl.startsWith('http')
-    ?`<a class="pp-recruit-link" href="${rl}" target="_blank" rel="noopener">View Recruiting Form &#x2197;</a>`
-    :`<button class="pp-recruit-link disabled" disabled>No recruiting form on file</button>`;
-
   const notesHtml=r.Notes?`<div class="pp-notes">${r.Notes}</div>`:'';
+
+  // ── "Why This School?" section ──
+  const _coachNote=adminNotes[schoolName]||'';
+  const _whyParts=[];
+  if(_coachNote) _whyParts.push(`<div class="pp-why-note"><span class="pp-why-note-icon">📌</span><div>${_coachNote}</div></div>`);
+  if(fit>=70&&fit>=0) _whyParts.push(`<div class="pp-context-note">Your preferences are a strong match for this program — this school lines up with several of the criteria you set.</div>`);
+  else if(fit>=50&&fit>=0) _whyParts.push(`<div class="pp-context-note">This program matches several of your preferences. Worth a closer look.</div>`);
+  if(r.HBCU==='Yes') _whyParts.push(`<div class="pp-context-note" style="border-left-color:#166534;">This is a Historically Black College or University (HBCU).</div>`);
+  const whySection=_whyParts.length?'<div class="pp-section"><div class="pp-section-title">Why This School?</div>'+_whyParts.join('')+'</div>':'';
 
   // ── Financial zone ──
   const fmt$=n=>'$'+Math.round(n).toLocaleString();
@@ -5292,61 +5583,65 @@ function openProgramProfile(schoolName){
   const aidRaw=parseInt((r['Avg Financial Aid Award']||'').replace(/[$,]/g,''))||0;
   const trueAnnual=costRaw&&aidRaw?costRaw-aidRaw:null;
 
-  const costCallout=trueAnnual?`<div class="pp-cost-callout"><div class="pp-cost-label">True Annual Family Cost</div><div class="pp-cost-amount">${fmt$(trueAnnual)}</div><div class="pp-cost-sub">Est. COA minus avg financial aid award</div></div>`:'';
+  const costCallout=trueAnnual?`<div class="pp-cost-callout"><div class="pp-cost-label">Cost Snapshot</div><div class="pp-cost-amount">${fmt$(trueAnnual)}</div><div class="pp-cost-sub">Estimated annual cost after average aid — your number will vary by income and merit</div></div>`:'';
 
-  const incomeBands=sc?`<div class="pp-income-hd">Net Price by Family Income</div><div class="pp-income-table"><div class="pp-income-row"><span class="pp-income-lbl">Under $30k / yr</span><span class="pp-income-val">${fmt$(sc.netPrice.u30k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$30k – $48k</span><span class="pp-income-val">${fmt$(sc.netPrice._3048k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$48k – $75k</span><span class="pp-income-val">${fmt$(sc.netPrice._4875k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$75k – $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._75110k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">Over $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._110kp)}/yr</span></div></div>`:''
+  const incomeBands=sc?`<div class="pp-income-hd">What Families Actually Pay (by Income)</div><div class="pp-income-table"><div class="pp-income-row"><span class="pp-income-lbl">Under $30k / yr</span><span class="pp-income-val">${fmt$(sc.netPrice.u30k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$30k – $48k</span><span class="pp-income-val">${fmt$(sc.netPrice._3048k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$48k – $75k</span><span class="pp-income-val">${fmt$(sc.netPrice._4875k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$75k – $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._75110k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">Over $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._110kp)}/yr</span></div></div>`:''
 
   const scNote='<div class="pp-sc-note">&#128196; Estimated from College Scorecard data. Your actual cost will vary by income, merit, and athletic aid.</div>';
 
   const finSection='<div class="pp-section">'
     +'<div class="pp-section-title">Can I Afford It?</div>'
+    +'<div class="pp-section-sub">Financial aid can change the cost significantly — these are starting estimates, not final numbers.</div>'
     +costCallout
-    +(costRaw?`<div class="pp-row"><span class="pp-lbl">Cost of Attendance</span><span class="pp-val">${fmt$(costRaw)}/yr</span></div>`:'')
-    +(aidRaw?`<div class="pp-row"><span class="pp-lbl">Avg Financial Aid Award</span><span class="pp-val">${fmt$(aidRaw)}</span></div>`:'')
+    +(costRaw?`<div class="pp-row"><span class="pp-lbl">Full Cost of Attendance</span><span class="pp-val">${fmt$(costRaw)}/yr</span></div>`:'')
+    +(aidRaw?`<div class="pp-row"><span class="pp-lbl">Average Aid Package</span><span class="pp-val">${fmt$(aidRaw)}</span></div>`:'')
     +incomeBands
-    +(sc?`<div class="pp-row" style="margin-top:10px"><span class="pp-lbl">Students Receiving Aid</span><span class="pp-val">${sc.pctAid}%</span></div>`:'')
-    +(sc?`<div class="pp-row"><span class="pp-lbl">Avg Debt at Graduation</span><span class="pp-val">${fmt$(sc.avgDebt)}</span></div>`:'')
-    +(sc?`<div class="pp-row"><span class="pp-lbl">Median Earnings (2yr out)</span><span class="pp-val">${fmt$(sc.medEarnings)}/yr</span></div>`:'')
+    +(sc?`<div class="pp-row" style="margin-top:10px"><span class="pp-lbl">Students Who Get Aid</span><span class="pp-val">${sc.pctAid}%</span></div>`:'')
+    +(sc?`<div class="pp-row"><span class="pp-lbl">Avg Student Debt</span><span class="pp-val">${fmt$(sc.avgDebt)}</span></div>`:'')
     +(sc?scNote:'')
     +'</div>';
 
   // ── Academic Fit zone ──
+  let _admContext='';
+  if(rmlLabel==='Likely') _admContext='<div class="pp-context-note">Your academic profile appears to be a strong fit for this school\'s admitted student range.</div>';
+  else if(rmlLabel==='Match') _admContext='<div class="pp-context-note">Your profile is in range — this school admits a solid portion of applicants.</div>';
+  else if(rmlLabel==='Reach') _admContext='<div class="pp-context-note">This school is selective. A strong application and coach support can make a real difference.</div>';
+
   const acadSection=sc?'<div class="pp-section">'
-    +'<div class="pp-section-title">Will I Get In?</div>'
-    +`<div class="pp-row"><span class="pp-lbl">Admission Rate</span><span class="pp-val">${sc.admRate}%${rmlLabel?' &mdash; <strong>'+rmlLabel+'</strong>':''}</span></div>`
-    +`<div class="pp-row"><span class="pp-lbl">Avg GPA Range</span><span class="pp-val">${sc.gpaRange}</span></div>`
+    +'<div class="pp-section-title">Can I Get In?</div>'
+    +_admContext
+    +`<div class="pp-row"><span class="pp-lbl">Admissions Fit</span><span class="pp-val">${sc.admRate}% admitted${rmlLabel?' &mdash; <strong>'+rmlLabel+'</strong>':''}</span></div>`
+    +`<div class="pp-row"><span class="pp-lbl">GPA Range</span><span class="pp-val">${sc.gpaRange}</span></div>`
     +`<div class="pp-row"><span class="pp-lbl">SAT Middle 50%</span><span class="pp-val">${sc.satRange}</span></div>`
     +scNote
     +'</div>':'';
 
-  // ── Retention & Graduation zone ──
-  const retSection=sc?'<div class="pp-section">'
-    +'<div class="pp-section-title">Will I Stay?</div>'
-    +'<div class="pp-stat-grid">'
-    +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.retention}%</div><div class="pp-stat-tile-lbl">1st-Year Retention</div></div>`
-    +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad4}%</div><div class="pp-stat-tile-lbl">4-Year Grad Rate</div></div>`
-    +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad6}%</div><div class="pp-stat-tile-lbl">6-Year Grad Rate</div></div>`
-    +'</div>'
-    +scNote
-    +'</div>':'';
-
-  // ── Campus Life zone ──
+  // ── Life zone: campus + retention merged ──
   const enrRaw=parseInt((r['School Size (Enrollment)']||'').replace(/,/g,''))||0;
   const szLbl=enrRaw>=25000?'Very Large':enrRaw>=10000?'Large':enrRaw>=3000?'Medium':enrRaw>0?'Small':'';
-  const enrRow=enrRaw?`<div class="pp-row"><span class="pp-lbl">Enrollment</span><span class="pp-val">${enrRaw.toLocaleString()}${szLbl?' ('+szLbl+')':''}</span></div>`:'';
-  const locRow=sc?`<div class="pp-row"><span class="pp-lbl">Campus Setting</span><span class="pp-val">${sc.location}</span></div>`:'';
+  const enrRow=enrRaw?`<div class="pp-row"><span class="pp-lbl">Campus Size</span><span class="pp-val">${enrRaw.toLocaleString()} students${szLbl?' ('+szLbl+')':''}</span></div>`:'';
+  const locRow=sc?`<div class="pp-row"><span class="pp-lbl">Location</span><span class="pp-val">${sc.location}</span></div>`:'';
   const genRow=sc?`<div class="pp-row"><span class="pp-lbl">Student Body</span><span class="pp-val">${sc.womenPct}% women</span></div>`:'';
   const relRow=r['Religious Affiliation']?`<div class="pp-row"><span class="pp-lbl">Affiliation</span><span class="pp-val">${r['Religious Affiliation']}</span></div>`:'';
   const hbcuRow2=r.HBCU==='Yes'?`<div class="pp-row"><span class="pp-lbl">HBCU</span><span class="pp-val">Yes</span></div>`:'';
-  const campusSection=(enrRow||locRow||genRow||relRow||hbcuRow2)?'<div class="pp-section"><div class="pp-section-title">Will I Fit?</div>'+enrRow+locRow+genRow+relRow+hbcuRow2+'</div>':'';
-
-  // ── Outcomes zone ──
-  const outSection=sc?'<div class="pp-section">'
-    +'<div class="pp-section-title">What Comes Next?</div>'
-    +`<div class="pp-row"><span class="pp-lbl">Employment Rate</span><span class="pp-val">${sc.empRate}%</span></div>`
-    +`<div class="pp-row"><span class="pp-lbl">Graduate School Rate</span><span class="pp-val">${sc.gradSchool}%</span></div>`
-    +scNote
+  const lifeSection=(sc||enrRow||locRow||genRow||relRow||hbcuRow2)?'<div class="pp-section">'
+    +'<div class="pp-section-title">Will I Like It Here?</div>'
+    +enrRow+locRow+genRow+relRow+hbcuRow2
+    +(sc?'<div class="pp-stat-grid" style="margin-top:12px">'
+      +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.retention}%</div><div class="pp-stat-tile-lbl">Students Stay</div></div>`
+      +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad4}%</div><div class="pp-stat-tile-lbl">Graduate in 4 Yrs</div></div>`
+      +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad6}%</div><div class="pp-stat-tile-lbl">Graduate in 6 Yrs</div></div>`
+      +'</div>'+scNote:'')
     +'</div>':'';
+
+  // ── "What Should I Do Next?" section ──
+  const _inPipeNow=statusData[schoolName]&&statusData[schoolName]!=='none';
+  const _nextItems=[];
+  if(!_inPipeNow) _nextItems.push(`<div class="pp-next-action-item pp-next-note"><span class="pp-next-item-icon">📌</span>Save this school to your board to track your recruiting progress.</div>`);
+  if(rl.startsWith('http')) _nextItems.push(`<a class="pp-next-action-item" href="${rl}" target="_blank" rel="noopener"><span class="pp-next-item-icon">📋</span>Fill out the recruiting interest form</a>`);
+  if(coach&&coach.email) _nextItems.push(`<a class="pp-next-action-item" href="mailto:${coach.email}"><span class="pp-next-item-icon">✉️</span>Email ${coach.name||'the coach'} to introduce yourself</a>`);
+  if(SCHOOL_URLS&&SCHOOL_URLS[schoolName]) _nextItems.push(`<a class="pp-next-action-item" href="${SCHOOL_URLS[schoolName]}" target="_blank" rel="noopener"><span class="pp-next-item-icon">🏟️</span>Visit the athletics website</a>`);
+  const nextSection=_nextItems.length?'<div class="pp-section"><div class="pp-section-title">What Should I Do Next?</div><div class="pp-next-actions">'+_nextItems.join('')+'</div></div>':'';
 
   // ── Div / VC / Type badges ──
   const divBadge=divTag(r['Governing Body'],r['Division']);
@@ -5365,24 +5660,23 @@ function openProgramProfile(schoolName){
     +sigHtml
     +'<div class="pp-status-row" id="pp-status-row"></div>'
     +'<div class="pp-map-wrap"><div id="pp-map"></div></div>'
+    +whySection
     +'<div class="pp-section">'
-    +'<div class="pp-section-title">Athletic Opportunity</div>'
+    +'<div class="pp-section-title">Can I Play Here?</div>'
     +'<div class="pp-badges">'+divBadge+vcBadge+typeBadge+hbcuBadge+'</div>'
     +'<div class="pp-row"><span class="pp-lbl">Conference</span><span class="pp-val">'+(r['Flag Football Conference']||'Independent')+'</span></div>'
     +'<div class="pp-row"><span class="pp-lbl">Scholarships</span><span class="pp-val" style="font-size:11px;max-width:65%">'+(r['Scholarship Available (Y/N/Partial)']||'&mdash;')+'</span></div>'
     +notesHtml
     +coachHtml
-    +recruitBtn
     +'</div>'
+    +acadSection
+    +finSection
+    +lifeSection
+    +nextSection
     +'<div class="pp-section">'
     +'<div class="pp-section-title">My Notes</div>'
     +`<textarea class="pp-user-notes" placeholder="Add notes about this program…" oninput="ppSaveNote(this.value)">${(adminNotes[schoolName]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>`
     +'</div>'
-    +finSection
-    +acadSection
-    +retSection
-    +campusSection
-    +outSection
     +'<div style="height:32px"></div>';
 
   document.getElementById('pp-topbar-title').textContent=r.School;
@@ -5404,16 +5698,20 @@ function openProgramProfile(schoolName){
 
   setTimeout(function(){ppInitMap(schoolName,r.State);},80);
 
-  document.getElementById('pp-overlay').classList.add('open');
+  const overlay=document.getElementById('pp-overlay');
+  overlay.classList.add('open');
   document.body.style.overflow='hidden';
+  _dialogOpened(overlay);
 }
 
 function closeProgramProfile(e){
   if(e && e.target !== document.getElementById('pp-overlay')) return;
-  document.getElementById('pp-overlay').classList.remove('open');
+  const overlay=document.getElementById('pp-overlay');
+  overlay.classList.remove('open');
   document.body.style.overflow = '';
   _ppCurrent = null;
   ppDestroyMap();
+  _dialogClosed(overlay);
 }
 let _ppMap=null;
 
@@ -5657,8 +5955,10 @@ async function openSchoolWorkspace(schoolName){
   document.getElementById('ws-tasks-strip').classList.remove('has-tasks');
   document.getElementById('ws-body').innerHTML='<div class="ws-empty">Loading…</div>';
   document.getElementById('ws-bottom-bar').innerHTML='';
-  document.getElementById('ws-overlay').classList.add('open');
+  const overlay=document.getElementById('ws-overlay');
+  overlay.classList.add('open');
   document.body.style.overflow='hidden';
+  _dialogOpened(overlay);
 
   if(!sb||!currentUser){_renderWsOffline();return;}
 
@@ -5705,9 +6005,11 @@ async function openSchoolWorkspace(schoolName){
 }
 
 function closeWorkspace(){
-  document.getElementById('ws-overlay').classList.remove('open');
+  const overlay=document.getElementById('ws-overlay');
+  overlay.classList.remove('open');
   document.body.style.overflow='';
   _wsSchool=null;_wsPPId=null;
+  _dialogClosed(overlay);
 }
 
 function _renderWorkspace(){
@@ -5763,6 +6065,32 @@ function _renderTasksStrip(){
 }
 
 function _buildStoryFeed(){
+  const curStage=statusData[_wsSchool]||'dream_schools';
+  const defaultAction=NEXT_ACTION_BY_STAGE[_stageToActionKey(curStage)]||'Review where things stand with this program.';
+  const customActions=lsGet('juke_ws_next_actions');
+  const customAction=customActions[_wsSchool]||'';
+  const displayAction=customAction||defaultAction;
+
+  // 1. NEXT ACTION (most prominent — always visible first)
+  const nextActionHtml=`<div class="ws-next-action">
+    <div class="ws-na-label">Next Action</div>
+    <div class="ws-na-text" id="ws-na-text">${displayAction}</div>
+    <textarea class="ws-na-edit" id="ws-na-edit" placeholder="Write your own next step…" style="display:none">${customAction}</textarea>
+    <div class="ws-na-footer">
+      <button class="ws-na-edit-btn" id="ws-na-edit-btn" onclick="_wsEditAction()">${customAction?'✎ Edit':'+ Customize'}</button>
+      ${customAction?`<button class="ws-na-clear-btn" onclick="_wsClearAction()">Reset to default</button>`:''}
+    </div>
+  </div>`;
+
+  // 2. IMPORTANT LINKS
+  const formUrl=getForm(_wsSchool);
+  const coachEmail=(_wsData.contacts||[]).find(c=>c.email)?.email;
+  const links=[];
+  if(formUrl)links.push(`<a class="ws-link-btn" href="${formUrl}" target="_blank" rel="noopener">Recruiting Form ↗</a>`);
+  if(coachEmail)links.push(`<a class="ws-link-btn ws-link-coach" href="mailto:${coachEmail}">Coach Contact ↗</a>`);
+  const linksHtml=links.length?`<div class="ws-links-row">${links.join('')}</div>`:'';
+
+  // 3. STORY FEED items
   const items=[];
   _wsData.log.forEach(e=>items.push({kind:'comm',date:new Date(e.logged_at),data:e}));
   _wsData.tasks.filter(t=>t.completed).forEach(t=>items.push({kind:'task_done',date:new Date(t.completed_at||t.created_at),data:t}));
@@ -5776,9 +6104,18 @@ function _buildStoryFeed(){
     return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   };
 
-  const forms=`<div style="margin-bottom:12px;">
-    <button class="ws-add-light" id="ws-log-trigger-btn" onclick="wsShowLogForm()">+ Log an interaction</button>
-    <button class="ws-add-light" id="ws-note-trigger-btn" onclick="wsShowNoteForm()" style="border-color:#E8DCF0;color:#9a78b8;margin-bottom:0;">+ Add a reflection</button>
+  // 4. RECENT ACTIVITY summary (only if data exists)
+  const lastContact=items.find(i=>i.kind==='comm');
+  const lastNote=items.find(i=>i.kind==='note');
+  const recentParts=[];
+  if(lastContact)recentParts.push(`<div class="ws-recent-item"><span class="ws-recent-icon">◎</span><span>Last contact: <strong>${fmtDate(lastContact.date)}</strong></span></div>`);
+  if(lastNote)recentParts.push(`<div class="ws-recent-item"><span class="ws-recent-icon">✎</span><span>Last note: <strong>${fmtDate(lastNote.date)}</strong></span></div>`);
+  const recentHtml=recentParts.length?`<div class="ws-recent-bar">${recentParts.join('')}</div>`:'';
+
+  // 5. LOG / NOTE FORMS
+  const forms=`<div class="ws-log-btns">
+    <button class="ws-add-light" id="ws-log-trigger-btn" onclick="wsShowLogForm()">+ Log a contact</button>
+    <button class="ws-add-light" id="ws-note-trigger-btn" onclick="wsShowNoteForm()" style="border-color:#E8DCF0;color:#9a78b8;">+ Add a note</button>
   </div>
   <div class="ws-form-light" id="ws-log-form" style="display:none;">
     <label>Type</label>
@@ -5796,15 +6133,15 @@ function _buildStoryFeed(){
     </div>
   </div>
   <div class="ws-form-light" id="ws-note-form" style="display:none;">
-    <label>Your reflection</label>
-    <textarea id="ws-note-text" placeholder="Campus vibe, coaching style, team culture, your gut feeling…"></textarea>
+    <label>Your note</label>
+    <textarea id="ws-note-text" placeholder="Campus vibe, coaching style, your gut feeling…"></textarea>
     <div class="ws-actions-light">
       <button class="ws-btn-pink" onclick="wsAddNote()">Save</button>
       <button class="ws-btn-muted" onclick="wsHideNoteForm()">Cancel</button>
     </div>
   </div>`;
 
-  if(!items.length)return forms+`<div class="ws-empty">Your story with ${_wsSchool} starts here.</div>`;
+  if(!items.length)return nextActionHtml+linksHtml+forms+`<div class="ws-empty">Your story with ${_wsSchool} starts here.</div>`;
 
   const tl=items.map((item,i)=>{
     const isLast=i===items.length-1;
@@ -5839,7 +6176,33 @@ function _buildStoryFeed(){
     return'';
   }).join('');
 
-  return forms+tl;
+  return nextActionHtml+linksHtml+recentHtml+forms+tl;
+}
+
+function _wsEditAction(){
+  const textEl=document.getElementById('ws-na-text');
+  const editEl=document.getElementById('ws-na-edit');
+  const btn=document.getElementById('ws-na-edit-btn');
+  if(!editEl)return;
+  if(editEl.style.display==='none'){
+    editEl.style.display='block';
+    textEl.style.display='none';
+    btn.textContent='Save';
+    editEl.focus();
+    editEl.setSelectionRange(editEl.value.length,editEl.value.length);
+  }else{
+    const val=editEl.value.trim();
+    const ca=lsGet('juke_ws_next_actions');
+    if(val){ca[_wsSchool]=val;}else{delete ca[_wsSchool];}
+    lsSet('juke_ws_next_actions',ca);
+    _renderWorkspace();
+  }
+}
+function _wsClearAction(){
+  const ca=lsGet('juke_ws_next_actions');
+  delete ca[_wsSchool];
+  lsSet('juke_ws_next_actions',ca);
+  _renderWorkspace();
 }
 
 function wsShowLogForm(){
@@ -6058,7 +6421,20 @@ async function wsChangeStage(newStage){
 }
 
 function _renderWsOffline(msg='Sign in to track this school.'){
-  document.getElementById('ws-body').innerHTML=`<div class="ws-empty">${msg}</div>`;
+  const curStage=statusData[_wsSchool]||'dream_schools';
+  const defaultAction=NEXT_ACTION_BY_STAGE[_stageToActionKey(curStage)]||'Review where things stand with this program.';
+  const ca=lsGet('juke_ws_next_actions');
+  const displayAction=ca[_wsSchool]||defaultAction;
+  const formUrl=getForm(_wsSchool);
+  const linksHtml=formUrl?`<div class="ws-links-row"><a class="ws-link-btn" href="${formUrl}" target="_blank" rel="noopener">Recruiting Form ↗</a></div>`:'';
+  document.getElementById('ws-body').innerHTML=`
+    <div class="ws-next-action" style="margin-top:4px">
+      <div class="ws-na-label">Next Action</div>
+      <div class="ws-na-text">${displayAction}</div>
+    </div>
+    ${linksHtml}
+    <div class="ws-empty">${msg}</div>`;
+  document.getElementById('ws-bottom-bar').innerHTML='';
 }
 
 // ── JUKE LOGIN BANNER ─────────────────────────────────────────────────────────
@@ -6093,10 +6469,10 @@ async function checkJukeLoginAlerts(){
 
 <!-- AUTH MODAL -->
 <div class="auth-modal-overlay" id="auth-modal-overlay" onclick="closeAuthModal(event)">
-  <div class="auth-modal">
-    <button class="auth-close" onclick="closeAuthModal()">×</button>
+  <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-signin-title">
+    <button class="auth-close" aria-label="Close" onclick="closeAuthModal()">×</button>
     <div id="auth-panel-signin">
-      <div class="auth-modal-title">Sign In</div>
+      <div class="auth-modal-title" id="auth-signin-title">Sign In</div>
       <div class="auth-modal-sub">Save your profile, pipeline, and preferences across all your devices.</div>
       <div class="auth-field"><label>Email</label><input type="email" id="auth-email" placeholder="you@email.com" autocomplete="email"></div>
       <div class="auth-field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"></div>
@@ -6105,7 +6481,7 @@ async function checkJukeLoginAlerts(){
       <div class="auth-toggle">Don't have an account? <a onclick="showSignUp()">Create one</a></div>
     </div>
     <div id="auth-panel-signup" style="display:none">
-      <div class="auth-modal-title">Create Account</div>
+      <div class="auth-modal-title" id="auth-signup-title">Create Account</div>
       <div class="auth-modal-sub">Your data stays private — only you can access your profile and pipeline.</div>
       <div class="auth-field"><label>Email</label><input type="email" id="auth-email-up" placeholder="you@email.com" autocomplete="email"></div>
       <div class="auth-field"><label>Password</label><input type="password" id="auth-password-up" placeholder="Min 6 characters" autocomplete="new-password"></div>

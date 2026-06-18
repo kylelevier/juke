@@ -20,12 +20,16 @@ function showSignUp(){
 }
 function _updateAuthUI(){
   const signedin=!!currentUser;
-  document.getElementById('auth-signin-btn').style.display=signedin?'none':'';
-  document.getElementById('auth-user-chip').style.display=signedin?'flex':'none';
-  if(signedin) document.getElementById('auth-email-display').textContent=currentUser.email;
+  const signInBtn=document.getElementById('auth-signin-btn');
+  const userChip=document.getElementById('auth-user-chip');
+  const emailDisplay=document.getElementById('auth-email-display');
+  if(signInBtn) signInBtn.style.display=signedin?'none':'';
+  if(userChip)  userChip.style.display=signedin?'flex':'none';
+  if(emailDisplay&&signedin) emailDisplay.textContent=currentUser.email;
 }
 function _showSyncBadge(){
   const b=document.getElementById('cloud-sync-badge');
+  if(!b)return;
   b.classList.add('show');
   setTimeout(()=>b.classList.remove('show'),2000);
 }

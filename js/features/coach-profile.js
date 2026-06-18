@@ -15,6 +15,7 @@ function openAthlete(id){
   if(!a) return;
   const stage = getPipelineStage(id);
   const note = coachNotes[id]||'';
+  const nextAction = coachNextActions[id]||'';
   // Check for athlete avatar from juke portal (demo athlete id 2 = Destiny)
   const avatarSrc = (id===2) ? (localStorage.getItem('juke_avatar')||'') : '';
   const avContent = avatarSrc
@@ -79,6 +80,18 @@ function openAthlete(id){
       </div>
     </div>
     <div class="sp-section">
+      <div class="sp-section-title">Next Action</div>
+      <input class="sp-na-input" id="sp-next-action"
+        placeholder="Watch film, send message, schedule visit…"
+        value="${nextAction.replace(/"/g,'&quot;')}"
+        oninput="_saveNextAction(${id},this.value)"/>
+      <div class="sp-na-examples">
+        ${['Watch film','Send message','Schedule visit','Request transcript','Make offer'].map(ex=>
+          `<button class="sp-na-ex" onclick="document.getElementById('sp-next-action').value='${ex}';_saveNextAction(${id},'${ex}')">${ex}</button>`
+        ).join('')}
+      </div>
+    </div>
+    <div class="sp-section">
       <div class="sp-section-title">Boards</div>
       ${coachBoards.length
         ? `<div class="sp-tag-row">${coachBoards.map(b=>`<span class="sp-tag-chip${athleteInBoard(id,b.id)?' in-board':''}" onclick="toggleAthleteBoard(${id},${b.id})">${athleteInBoard(id,b.id)?'✓ ':''} ${b.name}</span>`).join('')}</div>`
@@ -87,7 +100,7 @@ function openAthlete(id){
     </div>
     <div class="sp-section">
       <div class="sp-section-title">Notes</div>
-      <textarea class="sp-note-area" id="sp-note" onchange="saveNote(${id},this.value)" placeholder="Add recruiting notes…">${note}</textarea>
+      <textarea class="sp-note-area" id="sp-note" oninput="saveNote(${id},this.value)" placeholder="Add recruiting notes…">${note}</textarea>
     </div>
     <div class="sp-actions">
       <button class="sp-action-btn primary" onclick="openMsgFromOutside('athlete_'+id)">Message</button>
@@ -98,13 +111,7 @@ function openAthlete(id){
 }
 
 function setStage(id, stageKey){
-  for(const s of COACH_PIPELINE_STAGES){
-    coachPipeline[s.key] = (coachPipeline[s.key]||[]).filter(x=>x!==id);
-  }
-  if(stageKey) (coachPipeline[stageKey]=coachPipeline[stageKey]||[]).push(id);
-  lss('pipeline',coachPipeline);
-  filterAthletes();
-  updateHeaderStats();
+  _setStageKey(id, stageKey); // writes activity, persists, re-renders board
   openAthlete(id);
 }
 
@@ -116,7 +123,24 @@ function removeFromPipeline(id){
   openAthlete(id);
 }
 
-function saveNote(id, val){ coachNotes[id]=val; lss('notes',coachNotes); }
+function saveNote(id, val){
+  coachNotes[id] = val;
+  lss('notes', coachNotes);
+  if(val.trim()){
+    coachLastActivity[id] = {ts:Date.now(), type:'note', text:val.slice(0,80)};
+    lss('last_activity', coachLastActivity);
+  }
+}
+
+function _saveNextAction(id, val){
+  const v = val.trim();
+  if(v) coachNextActions[id] = v; else delete coachNextActions[id];
+  lss('next_actions', coachNextActions);
+  coachLastActivity[id] = {ts:Date.now(), type:'action', text:v};
+  lss('last_activity', coachLastActivity);
+  // Refresh board card if pipeline tab is visible
+  if(document.getElementById('content-pipeline')?.classList.contains('active')) renderPipeline();
+}
 
 function closeSP(e){
   if(e&&e.target!==document.getElementById('sp-overlay'))return;
@@ -133,7 +157,6 @@ function updateHeaderStats(){
   const el = id=>document.getElementById(id);
   if(el('cs-pipeline')) el('cs-pipeline').textContent = total;
   if(el('cs-committed')) el('cs-committed').textContent = committed;
-  if(el('cs-seasons')) el('cs-seasons').textContent = coachProfile.seasons||'—';
 }
 
 function updateCoachCard(){

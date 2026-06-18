@@ -128,7 +128,8 @@ td.note-cell{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:
 .card-fact-row{font-size:11px;color:var(--text-muted);margin-bottom:10px;display:flex;flex-wrap:wrap;align-items:center;gap:0;}
 .card-fact-sep{margin:0 5px;color:var(--border-mid);}
 .card-fact-div{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text);}
-.card-fact-price{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--text);}
+.card-fact-price{font-size:11px;font-weight:400;color:var(--text-muted);}
+.card-fact-sch{font-size:11px;font-weight:600;color:var(--green);}
 .card-note{background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--columbia);font-style:italic;line-height:1.5;display:flex;gap:6px;align-items:flex-start;}
 .card-ft{border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:flex-end;align-items:center;gap:6px;}
 .card-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}

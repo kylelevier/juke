@@ -36,46 +36,13 @@
 
 <!-- ── TAB NAV ── -->
 <nav class="tab-nav">
-  <button class="tab-btn active" id="tab-feed" onclick="switchTab('feed')">Feed</button>
+  <button class="tab-btn active" id="tab-feed" onclick="switchTab('feed')">Today</button>
   <button class="tab-btn" id="tab-search" onclick="switchTab('search')">Prospects</button>
-  <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">My Pipeline</button>
-  <button class="tab-btn" id="tab-analytics" onclick="switchTab('analytics')">Analytics</button>
+  <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">Board</button>
+  <button class="tab-btn" id="tab-analytics" onclick="switchTab('analytics')">Activity</button>
   <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">My Profile</button>
   <button class="tab-btn" id="tab-messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
 </nav>
-
-<!-- ── COACH PROFILE CARD ── -->
-<input type="file" id="banner-input" accept="image/*" style="display:none" onchange="handleBanner(this)"/>
-<input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)"/>
-<div class="coach-card" id="coach-card">
-  <div class="coach-banner" id="coach-banner" onclick="document.getElementById('banner-input').click()">
-    <div class="coach-banner-placeholder" id="coach-banner-ph"><div class="coach-banner-cta">Add Program Banner</div></div>
-    <div class="coach-banner-overlay"><div class="coach-banner-overlay-label">Change Banner</div></div>
-  </div>
-  <div class="coach-identity">
-    <div class="coach-logo-circle" id="coach-logo-circle" onclick="document.getElementById('logo-input').click()">
-      <div class="coach-logo-initial" id="coach-logo-init">N</div>
-      <div class="coach-logo-hint">Edit</div>
-    </div>
-    <div class="coach-info">
-      <div class="coach-name" id="coach-display-name">Coach Sarah Mitchell</div>
-      <div class="coach-title" id="coach-display-title">Head Flag Football Coach · Northern Arizona University</div>
-      <div class="coach-pills">
-        <span class="coach-pill div" id="coach-pill-div">NCAA D1</span>
-        <span class="coach-pill" id="coach-pill-conf">Big Sky Conference</span>
-        <span class="coach-pill" id="coach-pill-loc">Flagstaff, AZ</span>
-        <span class="coach-pill pro">Pro</span>
-      </div>
-    </div>
-  </div>
-  <div class="coach-stats-row">
-    <div class="coach-stat"><div class="coach-stat-num" id="cs-seasons">5</div><div class="coach-stat-lbl">Seasons</div></div>
-    <div class="coach-stat"><div class="coach-stat-num" id="cs-pipeline">8</div><div class="coach-stat-lbl">In Pipeline</div></div>
-    <div class="coach-stat"><div class="coach-stat-num" id="cs-committed">3</div><div class="coach-stat-lbl">Committed</div></div>
-    <div class="coach-stat"><div class="coach-stat-num" id="cs-views">142</div><div class="coach-stat-lbl">Profile Views</div></div>
-  </div>
-  <div class="coach-bio" id="coach-display-bio">Building a program that develops champions on and off the field. NAU Flag Football is a fast-growing D1 program with a commitment to academic excellence and athletic development. We are actively recruiting skilled playmakers for the 2025–26 roster.</div>
-</div>
 
 <!-- ── PAGE WRAP ── -->
 <div class="page-wrap">
@@ -83,19 +50,28 @@
 <!-- ── SEARCH TAB ── -->
 <!-- ══ FEED TAB ══ -->
 <div class="tab-content active" id="content-feed">
-  <div class="feed-wrap">
-    <div class="feed-stats">
-      <div class="feed-stat-card"><div class="fsc-val" id="cf-new-count">8</div><div class="fsc-lbl">New Prospects This Week</div></div>
-      <div class="feed-stat-card"><div class="fsc-val" id="cf-pipeline-count">0</div><div class="fsc-lbl">Athletes in Pipeline</div></div>
-      <div class="feed-stat-card"><div class="fsc-val" id="cf-msg-count">2</div><div class="fsc-lbl">Unread Messages</div></div>
+  <div class="workspace-shell">
+    <div class="workspace-hero">
+      <div>
+        <div class="workspace-eyebrow">Today</div>
+        <h1 class="workspace-title">Recruiting Workspace</h1>
+        <div class="workspace-sub">Focus on athletes who need attention, open actions, and recent movement.</div>
+      </div>
+      <button class="workspace-board-btn" onclick="switchTab('pipeline')">Open Board</button>
     </div>
-    <div class="feed-filters">
-      <button class="feed-filter active" onclick="filterCoachFeed('all',this)">All Activity</button>
-      <button class="feed-filter" onclick="filterCoachFeed('prospect',this)">New Prospects</button>
-      <button class="feed-filter" onclick="filterCoachFeed('action',this)">Action Needed</button>
-      <button class="feed-filter" onclick="filterCoachFeed('tips',this)">Recruiting Tips</button>
+    <div class="feed-list" id="coach-feed-list">
+      <div class="feed-loading">Loading recruiting workspace...</div>
     </div>
-    <div class="feed-list" id="coach-feed-list"></div>
+    <div class="today-board-card">
+      <div class="today-board-hd">
+        <div>
+          <div class="today-board-title">Board Summary</div>
+          <div class="today-board-sub">Current recruiting pipeline by stage</div>
+        </div>
+        <button class="td-see-all" onclick="switchTab('pipeline')">View Board</button>
+      </div>
+      <div class="today-stage-grid" id="today-stage-grid"></div>
+    </div>
   </div>
 </div>
 
@@ -180,8 +156,10 @@
 <!-- ── PIPELINE TAB ── -->
 <div class="tab-content" id="content-pipeline">
   <div class="section-bar">
-    <div class="section-title">My Pipeline</div>
-    <button class="section-action" onclick="newBoard()">+ New Board</button>
+    <div>
+      <div class="section-title">Recruiting Board</div>
+      <div class="section-subtitle">Move athletes through your recruiting workflow.</div>
+    </div>
   </div>
   <div class="board-filter-row" id="board-filter-row"></div>
   <div class="pipeline-wrap" id="pipeline-wrap"></div>
@@ -189,15 +167,9 @@
 
 <!-- ── ANALYTICS TAB ── -->
 <div class="tab-content" id="content-analytics">
-  <div class="section-bar"><div class="section-title">Program Analytics</div></div>
+  <div class="section-bar"><div class="section-title">Activity</div></div>
   <div class="analytics-wrap">
     <div class="analytics-stats" id="analytics-stats"></div>
-    <div class="pro-gate">
-      <div class="pro-gate-label">Pro Feature</div>
-      <div class="pro-gate-title">Athlete Engagement Reports</div>
-      <div class="pro-gate-sub">See exactly which athletes viewed your program, how long they spent, and whether they added you to their pipeline. Upgrade to unlock full analytics.</div>
-      <button class="pro-gate-btn">Upgrade to Pro — $299/mo</button>
-    </div>
     <div class="an-table" id="an-table">
       <div class="an-table-hd"><div class="an-table-title">Recent Activity</div></div>
     </div>
@@ -207,6 +179,34 @@
 <!-- ── PROFILE TAB ── -->
 <div class="tab-content" id="content-profile">
   <div class="section-bar"><div class="section-title">Profile Settings</div></div>
+  <input type="file" id="banner-input" accept="image/*" style="display:none" onchange="handleBanner(this)"/>
+  <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)"/>
+  <div class="coach-card" id="coach-card">
+    <div class="coach-banner" id="coach-banner" onclick="document.getElementById('banner-input').click()">
+      <div class="coach-banner-placeholder" id="coach-banner-ph"><div class="coach-banner-cta">Add Program Banner</div></div>
+      <div class="coach-banner-overlay"><div class="coach-banner-overlay-label">Change Banner</div></div>
+    </div>
+    <div class="coach-identity">
+      <div class="coach-logo-circle" id="coach-logo-circle" onclick="document.getElementById('logo-input').click()">
+        <div class="coach-logo-initial" id="coach-logo-init">N</div>
+        <div class="coach-logo-hint">Edit</div>
+      </div>
+      <div class="coach-info">
+        <div class="coach-name" id="coach-display-name">Coach Sarah Mitchell</div>
+        <div class="coach-title" id="coach-display-title">Head Flag Football Coach · Northern Arizona University</div>
+        <div class="coach-pills">
+          <span class="coach-pill div" id="coach-pill-div">NCAA D1</span>
+          <span class="coach-pill" id="coach-pill-conf">Big Sky Conference</span>
+          <span class="coach-pill" id="coach-pill-loc">Flagstaff, AZ</span>
+        </div>
+      </div>
+    </div>
+    <div class="coach-stats-row">
+      <div class="coach-stat"><div class="coach-stat-num" id="cs-pipeline">0</div><div class="coach-stat-lbl">On Board</div></div>
+      <div class="coach-stat"><div class="coach-stat-num" id="cs-committed">0</div><div class="coach-stat-lbl">Committed</div></div>
+    </div>
+    <div class="coach-bio" id="coach-display-bio">Building a program that develops champions on and off the field. NAU Flag Football is a fast-growing D1 program with a commitment to academic excellence and athletic development. We are actively recruiting skilled playmakers for the 2025–26 roster.</div>
+  </div>
   <div class="profile-form-wrap">
     <div class="form-group"><div class="form-label">Coach Name</div><input class="form-input" id="p-name" placeholder="First Last" oninput="profileUpdate()"/></div>
     <div class="form-group"><div class="form-label">Title</div><input class="form-input" id="p-title" placeholder="Head Coach, OC, DC…" oninput="profileUpdate()"/></div>
@@ -283,8 +283,8 @@
 </div>
 
   <script src="../js/features/coach-roster.js"></script>
-  <script src="../js/features/coach-profile.js"></script>
   <script src="../js/features/coach-feed.js"></script>
+  <script src="../js/features/coach-profile.js"></script>
 
 
 <!-- ── AUTH MODAL (college coach portal) ─────────────────────── -->

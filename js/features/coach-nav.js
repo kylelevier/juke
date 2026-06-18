@@ -18,6 +18,15 @@ function _updateCoachAuthUI() {
   var signinBtn = document.getElementById('coach-signin-btn');
   if (!chip || !signinBtn) return;
 
+  var localAuth = {};
+  try { localAuth = JSON.parse(localStorage.getItem('juke_auth') || '{}'); } catch(e) {}
+
+  if (!currentUser && localAuth.name) {
+    signinBtn.style.display = 'none';
+    if (!chip.innerHTML) chip.style.display = 'none';
+    return;
+  }
+
   if (!currentUser) {
     chip.style.display    = 'none';
     chip.innerHTML        = '';
@@ -28,8 +37,7 @@ function _updateCoachAuthUI() {
   signinBtn.style.display = 'none';
   chip.style.display = 'flex';
 
-  var auth = {};
-  try { auth = JSON.parse(localStorage.getItem('juke_auth') || '{}'); } catch(e) {}
+  var auth = localAuth || {};
   var name    = auth.name || currentUser.email || 'Coach';
   var org     = (auth.profiles && auth.profiles[0] && auth.profiles[0].org) || '';
   var initials = name.split(/\s+/).map(function(w){ return w[0]||''; }).join('').slice(0,2).toUpperCase();

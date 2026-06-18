@@ -68,160 +68,255 @@ function switchProfile(profileId){
     location.href=portals[p.type]||'login.html';
   }catch(e){}
 }
-// ── COACH FEED ────────────────────────────────────────────
-const CF_ICON = {
-  new_athlete:'🏃‍♀️', pipeline:'📊', message:'💬',
-  nudge:'⚡', tip:'💡', calendar:'📅', milestone:'🏆'
-};
-const CF_ICON_CLASS = {
-  new_athlete:'fi-icon-new', pipeline:'fi-icon-pipeline', message:'fi-icon-message',
-  nudge:'fi-icon-nudge', tip:'fi-icon-tip', calendar:'fi-icon-calendar', milestone:'fi-icon-milestone'
-};
-const CF_FILTER_MAP = {
-  all:      ()=>true,
-  prospect: i=>['new_athlete','milestone'].includes(i.type),
-  action:   i=>i.type==='nudge',
-  tips:     i=>['tip','calendar'].includes(i.type),
-};
 
-function buildCoachFeed(){
-  const items = [];
-  let _id = 1;
+// ── SHARED HELPERS ────────────────────────────────────────────────────────────
+function getAllEndorsements(){try{return JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){return[];}}
 
-  // Read real data — coachPipeline is {stageName:[athleteId,...]}
-  const cp = coachPipeline || {};
-  const allPipelineIds = COACH_PIPELINE_STAGES.flatMap(s=>cp[s.key]||[]);
-  const pipeCount = new Set(allPipelineIds).size;
-  const hasBio = !!(coachProfile&&coachProfile.bio&&coachProfile.bio.trim()
-    && coachProfile.bio !== 'Building a program that develops champions on and off the field. NAU Flag Football is a fast-growing D1 program with a commitment to academic excellence and athletic development. We are actively recruiting skilled playmakers for the 2025–26 roster.');
-  const athleteBioSet = (()=>{try{const p=JSON.parse(localStorage.getItem('juke_player'));return !!(p&&p.intro&&p.intro.trim());}catch(e){return false;}})();
-
-  // Update stats tile
-  const pipeEl = document.getElementById('cf-pipeline-count');
-  if(pipeEl) pipeEl.textContent = pipeCount;
-
-  // ── NUDGES (Action Needed) ──
-  if(!hasBio)
-    items.push({id:_id++, type:'nudge', time:'Today', pri:1,
-      primary:'Your program bio is missing',
-      secondary:'Athletes evaluate your program before they respond. A compelling bio — your philosophy, what you\'re building, who you want — increases reply rates significantly.',
-      action:{label:'Complete Profile →', tab:'profile'}});
-
-  const visitIds = cp['visit']||[];
-  if(visitIds.length){
-    const a = ATHLETES.find(x=>x.id===visitIds[0]);
-    if(a) items.push({id:_id++, type:'nudge', time:'1d ago', pri:2,
-      primary:a.name+' has a visit scheduled — stay in front of her',
-      secondary:'Coaches who communicate consistently between visit and decision win more commitments. A quick check-in goes a long way.',
-      action:{label:'View Profile →', athleteId:a.id}});
-  }
-
-  const identifiedIds = cp['identified']||[];
-  if(identifiedIds.length >= 2)
-    items.push({id:_id++, type:'nudge', time:'2d ago', pri:3,
-      primary:identifiedIds.length+' athletes on your Identified list with no follow-up',
-      secondary:'Identified athletes are waiting to hear from you. Moving them to Contacted is a 30-second task that opens the relationship.',
-      action:{label:'View Pipeline →', tab:'pipeline'}});
-
-  // ── PIPELINE UPDATES ──
-  if(athleteBioSet){
-    const a = ATHLETES.find(x=>x.id===2);
-    if(a&&pipeline.includes('2')) items.push({id:_id++, type:'pipeline', time:'3h ago', pri:5,
-      primary:a.name+' updated her recruiting headline',
-      secondary:'She\'s actively working her profile. Worth a quick view — athletes who invest in their profile are serious prospects.',
-      action:{label:'View Profile →', athleteId:2}});
-  }
-
-  items.push({id:_id++, type:'pipeline', time:'1d ago', pri:6,
-    primary:'Maya Thornton (2026 CB/S, Inglewood CA) added game film',
-    secondary:'4.44 speed · 12 INTs last season · SoCal Defensive POY. Film just posted — first-mover advantage.',
-    action:{label:'View Profile →', athleteId:3}});
-
-  // ── NEW PROSPECTS ──
-  items.push({id:_id++, type:'new_athlete', time:'Today', pri:8,
-    primary:'Nia Washington (2027 QB, Charlotte NC) just joined JUKE',
-    secondary:'Top-ranked 2027 prospect. 5\'10" · 4.0 GPA · Strong arm with exceptional football IQ. Wide open for contact.',
-    action:{label:'View Profile →', athleteId:8}});
-
-  items.push({id:_id++, type:'new_athlete', time:'2h ago', pri:9,
-    primary:'Camryn Wells has a 100% complete profile — film, bio, measurables',
-    secondary:'2026 WR/PR from Dallas TX. 4.38 speed, 1,240 rec yards. Actively seeking D1 programs. This is a live prospect.',
-    action:{label:'View Profile →', athleteId:1}});
-
-  items.push({id:_id++, type:'new_athlete', time:'1d ago', pri:10,
-    primary:'3 new skill-position prospects match your D1 criteria this week',
-    secondary:'Filter by position and division in Prospects to see the full list.',
-    action:{label:'Search Now →', tab:'search'}});
-
-  // ── MILESTONE ──
-  if(pipeCount >= 1 && !localStorage.getItem('cf_milestone_first')){
-    localStorage.setItem('cf_milestone_first','1');
-    items.push({id:_id++, type:'milestone', time:'Recently', pri:4,
-      primary:'Your recruiting pipeline is live',
-      secondary:'Every athlete you add moves through a structured stage: Identified → Contacted → Visit → Offer → Committed. Consistency here is what separates programs that land their class.'});
-  }
-
-  // ── RECRUITING TIPS ──
-  items.push(
-    {id:_id++, type:'tip', time:'3d ago', pri:20,
-      primary:'The best coaches respond to film within 48 hours',
-      secondary:'Response speed is one of the strongest signals of genuine interest. Athletes talk to each other — your reputation for attentiveness travels.'},
-    {id:_id++, type:'calendar', time:'4d ago', pri:21,
-      primary:'NCAA Contact Rule: D1 coaches may not initiate contact before Sept 1 of a recruit\'s junior year',
-      secondary:'Athletes can reach out to you at any time. A complete JUKE profile gives them a reason to — make sure yours is filled in.'},
-    {id:_id++, type:'tip', time:'1w ago', pri:22,
-      primary:'Class of 2026 offer window is open — programs are moving fast',
-      secondary:'The most competitive D1 programs issue offers between January–April of junior year. Know where your targets stand before the window closes.'},
-    {id:_id++, type:'calendar', time:'1w ago', pri:23,
-      primary:'Flag football recruiting timelines are compressing',
-      secondary:'Athletes who\'ve been through traditional sports recruiting expect structured, consistent communication. A defined process — from first contact to offer — wins the room.'},
-    {id:_id++, type:'tip', time:'2w ago', pri:24,
-      primary:'Academics close more offers than most coaches realize',
-      secondary:'When two athletes are athletically comparable, programs almost always take the one who can stay eligible. Lead with academics in your messaging — it signals program culture.'}
-  );
-
-  items.sort((a,b)=>a.pri-b.pri);
-  return items;
-}
-
-function coachFeedItemHTML(item){
-  let actionHTML = '';
-  if(item.action){
-    let onclick = '';
-    if(item.action.tab)      onclick = `switchTab('${item.action.tab}')`;
-    else if(item.action.athleteId) onclick = `openAthlete(${item.action.athleteId})`;
-    actionHTML = `<div class="fi-action-row"><button class="fi-action-btn" onclick="${onclick}">${item.action.label}</button></div>`;
-  }
-  return `<div class="feed-item" data-type="${item.type}">
-    <div class="fi-icon-wrap ${CF_ICON_CLASS[item.type]}">${CF_ICON[item.type]}</div>
-    <div class="fi-body">
-      <div class="fi-primary">${item.primary}</div>
-      <div class="fi-secondary">${item.secondary}</div>
-      ${actionHTML}
-    </div>
-    <div class="fi-time">${item.time}</div>
-  </div>`;
-}
-
-var _activeCFFilter = 'all';
-function filterCoachFeed(filter, btn){
-  _activeCFFilter = filter;
-  document.querySelectorAll('.feed-filter').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderCoachFeed();
-}
-
+// ── TODAY DASHBOARD ───────────────────────────────────────────────────────────
 function renderCoachFeed(){
   const list = document.getElementById('coach-feed-list');
   if(!list) return;
-  const items = buildCoachFeed();
-  const fn = CF_FILTER_MAP[_activeCFFilter]||CF_FILTER_MAP.all;
-  const filtered = items.filter(fn);
-  list.innerHTML = filtered.length
-    ? filtered.map(coachFeedItemHTML).join('')
-    : '<div class="feed-empty">No items in this category right now.</div>';
+
+  const allIds = COACH_PIPELINE_STAGES.flatMap(s=>coachPipeline[s.key]||[]);
+  _renderTodayBoardSummary();
+
+  // ── Next Actions ──
+  const withActions = allIds
+    .filter(id=>coachNextActions[id])
+    .map(id=>({id, a:ATHLETES.find(x=>x.id===id), na:coachNextActions[id]}))
+    .filter(x=>x.a);
+
+  // ── Follow-Up Needed: in Contacting or Recruiting, no activity in 3 days ──
+  const followUpIds = [...(coachPipeline.contacting||[]), ...(coachPipeline.recruiting||[])]
+    .filter(id=>{
+      const la = coachLastActivity[id];
+      return !la || (Date.now()-la.ts) > 3*24*60*60*1000;
+    });
+  const followUp = followUpIds.map(id=>({id, a:ATHLETES.find(x=>x.id===id)})).filter(x=>x.a);
+
+  // ── Recommendations ──
+  const recs = getAllEndorsements().filter(e=>e.status==='endorsed');
+
+  // ── New prospects (not yet on board) ──
+  const newProspects = ATHLETES.filter(a=>!allIds.includes(a.id)).slice(0,3);
+
+  let html = '';
+
+  // Section: Next Actions
+  if(withActions.length){
+    html += _tdSection(
+      `Next Actions <span class="td-count">${withActions.length}</span>`,
+      null,
+      withActions.map(({id, a, na})=>{
+        const stage = getPipelineStage(id);
+        return `<div class="feed-item td-item" onclick="openAthlete(${id})">
+          <div class="fi-icon-wrap td-av-wrap">${_av(a.name)}</div>
+          <div class="fi-body">
+            <div class="fi-primary">${a.name}</div>
+            <div class="fi-secondary td-action-text">→ ${na}</div>
+          </div>
+          ${stage?`<span class="td-stage-chip" style="color:${stage.color};border-color:${stage.color}33;background:${stage.color}0f">${stage.label}</span>`:''}
+        </div>`;
+      }).join('')
+    );
+  }
+
+  // Section: Follow-Up Needed
+  if(followUp.length){
+    html += _tdSection(
+      `Follow-Up Needed <span class="td-count td-count-warn">${followUp.length}</span>`,
+      'No activity in 3+ days',
+      followUp.map(({id, a})=>{
+        const la = coachLastActivity[id];
+        const laText = la ? _relTime(la.ts) : 'No contact yet';
+        return `<div class="feed-item td-item" onclick="openAthlete(${id})">
+          <div class="fi-icon-wrap td-av-wrap">${_av(a.name)}</div>
+          <div class="fi-body">
+            <div class="fi-primary">${a.name} <span class="td-pos">${a.pos[0]} · '${String(a.year).slice(2)}</span></div>
+            <div class="fi-secondary">Last contact: ${laText}</div>
+          </div>
+          <button class="td-quick-btn" onclick="event.stopPropagation();openAthlete(${id})">Follow Up</button>
+        </div>`;
+      }).join('')
+    );
+  }
+
+  // Section: Recommendations
+  if(recs.length){
+    html += _tdSection(
+      'New Recommendations',
+      null,
+      recs.map(e=>{
+        const a = ATHLETES.find(x=>x.name.toLowerCase()===e.athleteName.toLowerCase());
+        return `<div class="feed-item td-item" ${a?`onclick="openAthlete(${a.id})"`:''}>
+          <div class="fi-icon-wrap fi-icon-milestone">⭐</div>
+          <div class="fi-body">
+            <div class="fi-primary">${e.athleteName}</div>
+            <div class="fi-secondary">From ${e.coachName}${e.coachSchool?' · '+e.coachSchool:''}</div>
+            <div class="fi-secondary" style="font-style:italic;margin-top:3px">"${e.endorsementText.slice(0,90)}…"</div>
+          </div>
+        </div>`;
+      }).join('')
+    );
+  }
+
+  // Section: Recent Activity
+  const recentRows = _buildActivityRows().slice(0,4);
+  if(recentRows.length){
+    html += _tdSection(
+      'Recent Activity',
+      null,
+      recentRows.map(r=>`<div class="feed-item td-item">
+        <div class="fi-icon-wrap td-av-wrap">${_av(r.name)}</div>
+        <div class="fi-body">
+          <div class="fi-primary">${r.name}</div>
+          <div class="fi-secondary">${r.action}</div>
+        </div>
+        <div class="td-time">${r.time}</div>
+      </div>`).join(''),
+      `<button class="td-see-all" onclick="switchTab('analytics')">View Activity</button>`
+    );
+  }
+
+  // Section: New Prospects
+  if(newProspects.length){
+    html += _tdSection(
+      'New Prospects',
+      null,
+      newProspects.map(a=>`<div class="feed-item td-item" onclick="openAthlete(${a.id})">
+        <div class="fi-icon-wrap fi-icon-new">🏃‍♀️</div>
+        <div class="fi-body">
+          <div class="fi-primary">${a.name} <span class="td-pos">${a.pos[0]} · '${String(a.year).slice(2)} · ${a.state}</span></div>
+          <div class="fi-secondary">GPA ${a.gpa} · 40yd ${a.forty} · ${a.school}</div>
+        </div>
+        <button class="td-quick-btn td-add-btn" onclick="event.stopPropagation();_quickAddBoard(${a.id})">+ Board</button>
+      </div>`).join(''),
+      `<button class="td-see-all" onclick="switchTab('search')">See All Prospects →</button>`
+    );
+  }
+
+  if(!html){
+    html = `<div class="feed-empty" style="padding:48px 0">
+      <div style="font-size:32px;margin-bottom:12px">✓</div>
+      <div style="font-weight:600;margin-bottom:6px">All caught up</div>
+      <div style="font-size:12px;color:var(--text-dim)">Add athletes to your board and set next actions to track priorities here.</div>
+      <button class="fi-action-btn" style="margin-top:16px" onclick="switchTab('search')">Find Athletes →</button>
+    </div>`;
+  }
+
+  list.innerHTML = html;
+}
+
+function _renderTodayBoardSummary(){
+  const grid = document.getElementById('today-stage-grid');
+  if(!grid) return;
+  grid.innerHTML = COACH_PIPELINE_STAGES.map(s=>{
+    const count = (coachPipeline[s.key]||[]).length;
+    return `<button class="today-stage" onclick="switchTab('pipeline')">
+      <span class="today-stage-dot" style="background:${s.color}"></span>
+      <span class="today-stage-name">${s.label}</span>
+      <span class="today-stage-count">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function _tdSection(title, sub, bodyHtml, footerHtml=''){
+  return `<div class="td-section">
+    <div class="td-section-hd">
+      <div class="td-section-title">${title}</div>
+      ${sub?`<div class="td-section-sub">${sub}</div>`:''}
+    </div>
+    ${bodyHtml}
+    ${footerHtml}
+  </div>`;
+}
+
+function _av(name){
+  const inits = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return `<div class="td-av">${inits}</div>`;
+}
+
+function _quickAddBoard(id){
+  if(!coachPipeline.identified) coachPipeline.identified=[];
+  if(!coachPipeline.identified.includes(id)) coachPipeline.identified.push(id);
+  lss('pipeline', coachPipeline);
+  updateHeaderStats();
+  filterAthletes();
+  renderCoachFeed();
+}
+
+// ── ACTIVITY FEED (Analytics tab) ────────────────────────────────────────────
+function renderActivityFeed(){
+  // Stats row — reuse existing an-stat CSS
+  const allIds = COACH_PIPELINE_STAGES.flatMap(s=>coachPipeline[s.key]||[]);
+  const committed = (coachPipeline.committed||[]).length;
+  const statsEl = document.getElementById('analytics-stats');
+  if(statsEl) statsEl.innerHTML = [
+    {num:allIds.length,  lbl:'On Board',         delta:''},
+    {num:committed,      lbl:'Committed',         delta:''},
+    {num:Object.keys(coachNextActions).length,    lbl:'With Next Action', delta:''},
+    {num:Object.keys(coachNotes).filter(k=>coachNotes[k]?.trim()).length, lbl:'With Notes', delta:''},
+  ].map(s=>`<div class="an-stat">
+    <div class="an-stat-num">${s.num}</div>
+    <div class="an-stat-lbl">${s.lbl}</div>
+    ${s.delta?`<div class="an-stat-delta">${s.delta}</div>`:''}
+  </div>`).join('');
+
+  // Activity rows — real + demo events, newest first
+  const rows = _buildActivityRows();
+  const tableEl = document.getElementById('an-table');
+  if(!tableEl) return;
+  tableEl.innerHTML = `
+    <div class="an-table-hd"><div class="an-table-title">Recent Activity</div></div>
+    ${rows.length
+      ? rows.map(r=>`<div class="an-row">
+          <div class="board-av" style="flex-shrink:0;width:32px;height:32px;font-size:12px">
+            ${r.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+          </div>
+          <div class="an-row-name">${r.name}<br><span class="an-row-meta">${r.action}</span></div>
+          <div style="flex-shrink:0;text-align:right">
+            ${r.badge?`<div class="an-row-badge" style="color:${r.color};background:${r.color}18;border:1px solid ${r.color}44">${r.badge}</div>`:''}
+            <div class="an-row-meta" style="margin-top:3px">${r.time}</div>
+          </div>
+        </div>`).join('')
+      : '<div style="padding:24px;text-align:center;font-size:12px;color:var(--text-dim)">No activity yet — start recruiting to see updates here.</div>'
+    }`;
+}
+
+function _buildActivityRows(){
+  const rows = [];
+
+  // Real activity from coachLastActivity
+  Object.entries(coachLastActivity).forEach(([id, la])=>{
+    const a = ATHLETES.find(x=>x.id===parseInt(id));
+    if(!a||!la) return;
+    const stage = COACH_PIPELINE_STAGES.find(s=>s.key===(la.text||'').toLowerCase().replace(/ /g,''));
+    const color = stage?.color || '#888';
+    if(la.type==='stage'){
+      rows.push({name:a.name, action:`Moved to ${la.text}`, badge:la.text, color, time:_relTime(la.ts), ts:la.ts});
+    } else if(la.type==='note'){
+      rows.push({name:a.name, action:'Note added', badge:null, color:'#888', time:_relTime(la.ts), ts:la.ts});
+    } else if(la.type==='action'){
+      rows.push({name:a.name, action:`Next action set: ${la.text}`, badge:null, color:'#888', time:_relTime(la.ts), ts:la.ts});
+    }
+  });
+
+  // Coach recommendations
+  getAllEndorsements().filter(e=>e.status==='endorsed').forEach(e=>{
+    rows.push({name:e.athleteName, action:`Coach recommendation from ${e.coachName}`, badge:'Recommended', color:'#00A040', time:'May 2026', ts:0});
+  });
+
+  // Demo seed events (only shown when no real activity exists for those athletes)
+  const realNames = new Set(rows.map(r=>r.name));
+  const demo = [
+    {name:'Maya Thornton',  action:'Added game film to profile',         badge:'New Film',  color:'#7B2FFF', time:'1d ago',  ts:Date.now()-86400000},
+    {name:'Nia Washington',  action:'Joined JUKE',                       badge:'New',       color:'#0057FF', time:'2d ago',  ts:Date.now()-172800000},
+    {name:'Camryn Wells',    action:'Updated recruiting headline',        badge:'Updated',   color:'#888',    time:'3d ago',  ts:Date.now()-259200000},
+  ];
+  demo.forEach(d=>{ if(!realNames.has(d.name)) rows.push(d); });
+
+  rows.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  return rows.slice(0,15);
 }
 
 function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../login.html';}
-
-

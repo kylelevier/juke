@@ -114,8 +114,25 @@ function fmtNet(r){
 // ── HELPERS ─────────────────────────────────────────────
 function statusHtml(school){
   const s=statusData[school]||'none';
-  const L={none:'+ Track',saved:'Saved',contacted:'Contacted',applied:'Applied',committed:'Committed'};
+  const L={none:'Save to Board',saved:'Saved',contacted:'Contacted',applied:'Applied',committed:'Committed'};
   return`<span class="status-pill status-${s}" onclick="event.stopPropagation();openStatusPopover('${esc(school)}',this)">${L[s]}</span>`;
+}
+function _getFitTags(r){
+  const tags=[];
+  const div=document.getElementById('pf-div')?.value;
+  const gov=document.getElementById('pf-gov')?.value;
+  const vc=document.getElementById('pf-vc')?.value;
+  const region=document.getElementById('pf-region')?.value;
+  const state=document.getElementById('pf-state')?.value;
+  const hbcu=document.getElementById('pf-hbcu')?.value;
+  if(div&&r['Division']===div)tags.push(r['Division']);
+  else if(gov&&r['Governing Body']===gov)tags.push(r['Governing Body']);
+  if(vc&&r['Varsity or Club']===vc)tags.push(r['Varsity or Club']);
+  if(state&&r['State']===state)tags.push('In your state');
+  else if(region&&r['Region']===region)tags.push(r['Region']);
+  if(hbcu==='yes'&&r['HBCU']==='Yes')tags.push('HBCU');
+  if(!tags.length&&r['Scholarship Available (Y/N/Partial)']==='Yes')tags.push('Scholarships available');
+  return[...new Set(tags)].slice(0,2);
 }
 let _spSchool = null;
 
@@ -302,6 +319,8 @@ function renderCards(){
     const statusClass=st!=='none'?` has-status-${st}`:'';
     const conf=r['Flag Football Conference']||'';
     const meta=[r.State,r.Region,conf].filter(Boolean).join(' · ');
+    const fitTags=fit>=0?_getFitTags(r):[];
+    const fitTagsHtml=fitTags.length?`<div class="card-fit-reason">${fitTags.map(t=>`<span class="card-fit-tag">${t}</span>`).join('')}</div>`:'';
     return`<div class="school-card${statusClass}" onclick="openProgramProfile('${esc(r.School)}')">
       <div class="card-hd">
         <div class="card-logo-wrap" data-logo="${r.School}"><div class="card-logo-initials">🏈</div></div>
@@ -312,11 +331,12 @@ function renderCards(){
         ${fit>=0?fitBadge(fit):''}
       </div>
       <div class="card-fact-row">${cardFactRow(r)}</div>
+      ${fitTagsHtml}
       ${note?`<div class="card-note"><span style="flex-shrink:0">📌</span><span>${note}</span></div>`:''}
       <div class="card-ft">
         <div class="card-actions">
           ${statusHtml(r.School)}${recruitHtml(r.School)}
-          <button class="btn ${ic?'btn-primary':'btn-ghost'}" style="padding:3px 8px;font-size:10px" onclick="toggleCompare('${esc(r.School)}')">${ic?'✓':'+ Cmp'}</button>
+          <button class="btn ${ic?'btn-primary':'btn-ghost'}" style="padding:3px 8px;font-size:10px" onclick="event.stopPropagation();toggleCompare('${esc(r.School)}')">${ic?'✓ Compare':'Compare'}</button>
         </div>
       </div>
     </div>`;

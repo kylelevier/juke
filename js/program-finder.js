@@ -48,11 +48,16 @@ function openProgramProfile(schoolName){
 
   // ── Recruiting form button ──
   const rl=r['Athlete Interest / Recruiting Form']||'';
-  const recruitBtn=rl.startsWith('http')
-    ?`<a class="pp-recruit-link" href="${rl}" target="_blank" rel="noopener">View Recruiting Form &#x2197;</a>`
-    :`<button class="pp-recruit-link disabled" disabled>No recruiting form on file</button>`;
-
   const notesHtml=r.Notes?`<div class="pp-notes">${r.Notes}</div>`:'';
+
+  // ── "Why This School?" section ──
+  const _coachNote=adminNotes[schoolName]||'';
+  const _whyParts=[];
+  if(_coachNote) _whyParts.push(`<div class="pp-why-note"><span class="pp-why-note-icon">📌</span><div>${_coachNote}</div></div>`);
+  if(fit>=70&&fit>=0) _whyParts.push(`<div class="pp-context-note">Your preferences are a strong match for this program — this school lines up with several of the criteria you set.</div>`);
+  else if(fit>=50&&fit>=0) _whyParts.push(`<div class="pp-context-note">This program matches several of your preferences. Worth a closer look.</div>`);
+  if(r.HBCU==='Yes') _whyParts.push(`<div class="pp-context-note" style="border-left-color:#166534;">This is a Historically Black College or University (HBCU).</div>`);
+  const whySection=_whyParts.length?'<div class="pp-section"><div class="pp-section-title">Why This School?</div>'+_whyParts.join('')+'</div>':'';
 
   // ── Financial zone ──
   const fmt$=n=>'$'+Math.round(n).toLocaleString();
@@ -60,61 +65,65 @@ function openProgramProfile(schoolName){
   const aidRaw=parseInt((r['Avg Financial Aid Award']||'').replace(/[$,]/g,''))||0;
   const trueAnnual=costRaw&&aidRaw?costRaw-aidRaw:null;
 
-  const costCallout=trueAnnual?`<div class="pp-cost-callout"><div class="pp-cost-label">True Annual Family Cost</div><div class="pp-cost-amount">${fmt$(trueAnnual)}</div><div class="pp-cost-sub">Est. COA minus avg financial aid award</div></div>`:'';
+  const costCallout=trueAnnual?`<div class="pp-cost-callout"><div class="pp-cost-label">Cost Snapshot</div><div class="pp-cost-amount">${fmt$(trueAnnual)}</div><div class="pp-cost-sub">Estimated annual cost after average aid — your number will vary by income and merit</div></div>`:'';
 
-  const incomeBands=sc?`<div class="pp-income-hd">Net Price by Family Income</div><div class="pp-income-table"><div class="pp-income-row"><span class="pp-income-lbl">Under $30k / yr</span><span class="pp-income-val">${fmt$(sc.netPrice.u30k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$30k – $48k</span><span class="pp-income-val">${fmt$(sc.netPrice._3048k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$48k – $75k</span><span class="pp-income-val">${fmt$(sc.netPrice._4875k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$75k – $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._75110k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">Over $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._110kp)}/yr</span></div></div>`:''
+  const incomeBands=sc?`<div class="pp-income-hd">What Families Actually Pay (by Income)</div><div class="pp-income-table"><div class="pp-income-row"><span class="pp-income-lbl">Under $30k / yr</span><span class="pp-income-val">${fmt$(sc.netPrice.u30k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$30k – $48k</span><span class="pp-income-val">${fmt$(sc.netPrice._3048k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$48k – $75k</span><span class="pp-income-val">${fmt$(sc.netPrice._4875k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">$75k – $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._75110k)}/yr</span></div><div class="pp-income-row"><span class="pp-income-lbl">Over $110k</span><span class="pp-income-val">${fmt$(sc.netPrice._110kp)}/yr</span></div></div>`:''
 
   const scNote='<div class="pp-sc-note">&#128196; Estimated from College Scorecard data. Your actual cost will vary by income, merit, and athletic aid.</div>';
 
   const finSection='<div class="pp-section">'
     +'<div class="pp-section-title">Can I Afford It?</div>'
+    +'<div class="pp-section-sub">Financial aid can change the cost significantly — these are starting estimates, not final numbers.</div>'
     +costCallout
-    +(costRaw?`<div class="pp-row"><span class="pp-lbl">Cost of Attendance</span><span class="pp-val">${fmt$(costRaw)}/yr</span></div>`:'')
-    +(aidRaw?`<div class="pp-row"><span class="pp-lbl">Avg Financial Aid Award</span><span class="pp-val">${fmt$(aidRaw)}</span></div>`:'')
+    +(costRaw?`<div class="pp-row"><span class="pp-lbl">Full Cost of Attendance</span><span class="pp-val">${fmt$(costRaw)}/yr</span></div>`:'')
+    +(aidRaw?`<div class="pp-row"><span class="pp-lbl">Average Aid Package</span><span class="pp-val">${fmt$(aidRaw)}</span></div>`:'')
     +incomeBands
-    +(sc?`<div class="pp-row" style="margin-top:10px"><span class="pp-lbl">Students Receiving Aid</span><span class="pp-val">${sc.pctAid}%</span></div>`:'')
-    +(sc?`<div class="pp-row"><span class="pp-lbl">Avg Debt at Graduation</span><span class="pp-val">${fmt$(sc.avgDebt)}</span></div>`:'')
-    +(sc?`<div class="pp-row"><span class="pp-lbl">Median Earnings (2yr out)</span><span class="pp-val">${fmt$(sc.medEarnings)}/yr</span></div>`:'')
+    +(sc?`<div class="pp-row" style="margin-top:10px"><span class="pp-lbl">Students Who Get Aid</span><span class="pp-val">${sc.pctAid}%</span></div>`:'')
+    +(sc?`<div class="pp-row"><span class="pp-lbl">Avg Student Debt</span><span class="pp-val">${fmt$(sc.avgDebt)}</span></div>`:'')
     +(sc?scNote:'')
     +'</div>';
 
   // ── Academic Fit zone ──
+  let _admContext='';
+  if(rmlLabel==='Likely') _admContext='<div class="pp-context-note">Your academic profile appears to be a strong fit for this school\'s admitted student range.</div>';
+  else if(rmlLabel==='Match') _admContext='<div class="pp-context-note">Your profile is in range — this school admits a solid portion of applicants.</div>';
+  else if(rmlLabel==='Reach') _admContext='<div class="pp-context-note">This school is selective. A strong application and coach support can make a real difference.</div>';
+
   const acadSection=sc?'<div class="pp-section">'
-    +'<div class="pp-section-title">Will I Get In?</div>'
-    +`<div class="pp-row"><span class="pp-lbl">Admission Rate</span><span class="pp-val">${sc.admRate}%${rmlLabel?' &mdash; <strong>'+rmlLabel+'</strong>':''}</span></div>`
-    +`<div class="pp-row"><span class="pp-lbl">Avg GPA Range</span><span class="pp-val">${sc.gpaRange}</span></div>`
+    +'<div class="pp-section-title">Can I Get In?</div>'
+    +_admContext
+    +`<div class="pp-row"><span class="pp-lbl">Admissions Fit</span><span class="pp-val">${sc.admRate}% admitted${rmlLabel?' &mdash; <strong>'+rmlLabel+'</strong>':''}</span></div>`
+    +`<div class="pp-row"><span class="pp-lbl">GPA Range</span><span class="pp-val">${sc.gpaRange}</span></div>`
     +`<div class="pp-row"><span class="pp-lbl">SAT Middle 50%</span><span class="pp-val">${sc.satRange}</span></div>`
     +scNote
     +'</div>':'';
 
-  // ── Retention & Graduation zone ──
-  const retSection=sc?'<div class="pp-section">'
-    +'<div class="pp-section-title">Will I Stay?</div>'
-    +'<div class="pp-stat-grid">'
-    +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.retention}%</div><div class="pp-stat-tile-lbl">1st-Year Retention</div></div>`
-    +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad4}%</div><div class="pp-stat-tile-lbl">4-Year Grad Rate</div></div>`
-    +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad6}%</div><div class="pp-stat-tile-lbl">6-Year Grad Rate</div></div>`
-    +'</div>'
-    +scNote
-    +'</div>':'';
-
-  // ── Campus Life zone ──
+  // ── Life zone: campus + retention merged ──
   const enrRaw=parseInt((r['School Size (Enrollment)']||'').replace(/,/g,''))||0;
   const szLbl=enrRaw>=25000?'Very Large':enrRaw>=10000?'Large':enrRaw>=3000?'Medium':enrRaw>0?'Small':'';
-  const enrRow=enrRaw?`<div class="pp-row"><span class="pp-lbl">Enrollment</span><span class="pp-val">${enrRaw.toLocaleString()}${szLbl?' ('+szLbl+')':''}</span></div>`:'';
-  const locRow=sc?`<div class="pp-row"><span class="pp-lbl">Campus Setting</span><span class="pp-val">${sc.location}</span></div>`:'';
+  const enrRow=enrRaw?`<div class="pp-row"><span class="pp-lbl">Campus Size</span><span class="pp-val">${enrRaw.toLocaleString()} students${szLbl?' ('+szLbl+')':''}</span></div>`:'';
+  const locRow=sc?`<div class="pp-row"><span class="pp-lbl">Location</span><span class="pp-val">${sc.location}</span></div>`:'';
   const genRow=sc?`<div class="pp-row"><span class="pp-lbl">Student Body</span><span class="pp-val">${sc.womenPct}% women</span></div>`:'';
   const relRow=r['Religious Affiliation']?`<div class="pp-row"><span class="pp-lbl">Affiliation</span><span class="pp-val">${r['Religious Affiliation']}</span></div>`:'';
   const hbcuRow2=r.HBCU==='Yes'?`<div class="pp-row"><span class="pp-lbl">HBCU</span><span class="pp-val">Yes</span></div>`:'';
-  const campusSection=(enrRow||locRow||genRow||relRow||hbcuRow2)?'<div class="pp-section"><div class="pp-section-title">Will I Fit?</div>'+enrRow+locRow+genRow+relRow+hbcuRow2+'</div>':'';
-
-  // ── Outcomes zone ──
-  const outSection=sc?'<div class="pp-section">'
-    +'<div class="pp-section-title">What Comes Next?</div>'
-    +`<div class="pp-row"><span class="pp-lbl">Employment Rate</span><span class="pp-val">${sc.empRate}%</span></div>`
-    +`<div class="pp-row"><span class="pp-lbl">Graduate School Rate</span><span class="pp-val">${sc.gradSchool}%</span></div>`
-    +scNote
+  const lifeSection=(sc||enrRow||locRow||genRow||relRow||hbcuRow2)?'<div class="pp-section">'
+    +'<div class="pp-section-title">Will I Like It Here?</div>'
+    +enrRow+locRow+genRow+relRow+hbcuRow2
+    +(sc?'<div class="pp-stat-grid" style="margin-top:12px">'
+      +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.retention}%</div><div class="pp-stat-tile-lbl">Students Stay</div></div>`
+      +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad4}%</div><div class="pp-stat-tile-lbl">Graduate in 4 Yrs</div></div>`
+      +`<div class="pp-stat-tile"><div class="pp-stat-tile-val">${sc.grad6}%</div><div class="pp-stat-tile-lbl">Graduate in 6 Yrs</div></div>`
+      +'</div>'+scNote:'')
     +'</div>':'';
+
+  // ── "What Should I Do Next?" section ──
+  const _inPipeNow=statusData[schoolName]&&statusData[schoolName]!=='none';
+  const _nextItems=[];
+  if(!_inPipeNow) _nextItems.push(`<div class="pp-next-action-item pp-next-note"><span class="pp-next-item-icon">📌</span>Save this school to your board to track your recruiting progress.</div>`);
+  if(rl.startsWith('http')) _nextItems.push(`<a class="pp-next-action-item" href="${rl}" target="_blank" rel="noopener"><span class="pp-next-item-icon">📋</span>Fill out the recruiting interest form</a>`);
+  if(coach&&coach.email) _nextItems.push(`<a class="pp-next-action-item" href="mailto:${coach.email}"><span class="pp-next-item-icon">✉️</span>Email ${coach.name||'the coach'} to introduce yourself</a>`);
+  if(SCHOOL_URLS&&SCHOOL_URLS[schoolName]) _nextItems.push(`<a class="pp-next-action-item" href="${SCHOOL_URLS[schoolName]}" target="_blank" rel="noopener"><span class="pp-next-item-icon">🏟️</span>Visit the athletics website</a>`);
+  const nextSection=_nextItems.length?'<div class="pp-section"><div class="pp-section-title">What Should I Do Next?</div><div class="pp-next-actions">'+_nextItems.join('')+'</div></div>':'';
 
   // ── Div / VC / Type badges ──
   const divBadge=divTag(r['Governing Body'],r['Division']);
@@ -133,24 +142,23 @@ function openProgramProfile(schoolName){
     +sigHtml
     +'<div class="pp-status-row" id="pp-status-row"></div>'
     +'<div class="pp-map-wrap"><div id="pp-map"></div></div>'
+    +whySection
     +'<div class="pp-section">'
-    +'<div class="pp-section-title">Athletic Opportunity</div>'
+    +'<div class="pp-section-title">Can I Play Here?</div>'
     +'<div class="pp-badges">'+divBadge+vcBadge+typeBadge+hbcuBadge+'</div>'
     +'<div class="pp-row"><span class="pp-lbl">Conference</span><span class="pp-val">'+(r['Flag Football Conference']||'Independent')+'</span></div>'
     +'<div class="pp-row"><span class="pp-lbl">Scholarships</span><span class="pp-val" style="font-size:11px;max-width:65%">'+(r['Scholarship Available (Y/N/Partial)']||'&mdash;')+'</span></div>'
     +notesHtml
     +coachHtml
-    +recruitBtn
     +'</div>'
+    +acadSection
+    +finSection
+    +lifeSection
+    +nextSection
     +'<div class="pp-section">'
     +'<div class="pp-section-title">My Notes</div>'
     +`<textarea class="pp-user-notes" placeholder="Add notes about this program…" oninput="ppSaveNote(this.value)">${(adminNotes[schoolName]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>`
     +'</div>'
-    +finSection
-    +acadSection
-    +retSection
-    +campusSection
-    +outSection
     +'<div style="height:32px"></div>';
 
   document.getElementById('pp-topbar-title').textContent=r.School;
@@ -254,7 +262,7 @@ function ppTogglePipeline(){
   if(cur && cur !== 'none'){
     status[_ppCurrent] = 'none';
   } else {
-    status[_ppCurrent] = 'prospect';
+    status[_ppCurrent] = 'saved';
     // Also show a brief toast
     showToast(`${_ppCurrent} added to your board`);
   }
@@ -293,7 +301,7 @@ function _ppRenderStatusRow(schoolName){
   const el = document.getElementById('pp-status-row');
   if(!el) return;
   const cur = statusData[schoolName] || 'none';
-  const stages = [{key:'saved',label:'Saved'},{key:'contacted',label:'Contacted'},{key:'applied',label:'Applied'},{key:'committed',label:'Committed'}];
+  const stages = [{key:'saved',label:'Saved'},{key:'contacting',label:'Contacting'},{key:'applied',label:'Applied'},{key:'committed',label:'Committed'}];
   el.innerHTML = stages.map(function(s){
     var active = cur===s.key ? ' active' : '';
     return '<button class="pp-status-pill s-'+s.key+active+'" data-key="'+s.key+'" onclick="ppSetStatus(this.dataset.key)">'+s.label+'</button>';

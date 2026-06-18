@@ -12,10 +12,11 @@ const ATHLETES = [
 ];
 
 const COACH_PIPELINE_STAGES = [
-  {key:"identified", label:"Identified",    color:"#888"},
-  {key:"contacted",  label:"Contacted",     color:"#7B2FFF"},
-  {key:"visit",      label:"Visit Scheduled",color:"#FF4500"},
-  {key:"offer",      label:"Offer Extended", color:"#0057FF"},
+  {key:"identified", label:"Identified",    color:"#888888"},
+  {key:"evaluating", label:"Evaluating",    color:"#7B2FFF"},
+  {key:"contacting", label:"Contacting",    color:"#0057FF"},
+  {key:"recruiting", label:"Recruiting",    color:"#FF6B00"},
+  {key:"offer",      label:"Offer Extended",color:"#FF0080"},
   {key:"committed",  label:"Committed",     color:"#00E050"},
 ];
 
@@ -24,12 +25,21 @@ function ls(k){try{return JSON.parse(localStorage.getItem('juke_coach_'+k))||nul
 function lss(k,v){try{localStorage.setItem('juke_coach_'+k,JSON.stringify(v));}catch{}}
 
 let coachProfile = ls('profile') || {name:"Coach Sarah Mitchell",title:"Head Flag Football Coach",school:"Northern Arizona University",div:"NCAA D1",conf:"Big Sky Conference",loc:"Flagstaff, AZ",seasons:5,bio:"Building a program that develops champions on and off the field. NAU Flag Football is a fast-growing D1 program with a commitment to academic excellence and athletic development. We are actively recruiting skilled playmakers for the 2025–26 roster."};
-let coachPipeline = ls('pipeline') || {identified:[1,7],contacted:[3,5],visit:[2],offer:[6],committed:[]};
+// Migrate old pipeline keys if present (contacted→contacting, visit→recruiting)
+(function _migratePipeline(){
+  const raw = ls('pipeline');
+  if(!raw) return;
+  if(raw.contacted && !raw.contacting){ raw.contacting = raw.contacted; delete raw.contacted; lss('pipeline', raw); }
+  if(raw.visit     && !raw.recruiting){ raw.recruiting  = raw.visit;     delete raw.visit;     lss('pipeline', raw); }
+})();
+let coachPipeline = ls('pipeline') || {identified:[1,7],evaluating:[],contacting:[3,5],recruiting:[2],offer:[6],committed:[]};
 // Boards = named labels (no embedded athlete lists — membership lives in coachTags)
 let coachBoards = ls('boards2') || [{id:1,name:"2026 Watch List"},{id:2,name:"QB Targets"}];
 // coachTags: { athleteId: [boardId, boardId, ...] }
 let coachTags = ls('tags') || {1:[1],3:[1],7:[1],2:[2],5:[2],8:[2]};
-let coachNotes = ls('notes') || {};
+let coachNotes        = ls('notes')        || {};
+let coachNextActions  = ls('next_actions') || {};
+let coachLastActivity = ls('last_activity')|| {};
 let activePos = new Set();
 let activeBoardFilter = null; // null = All Pipeline
 let _spId = null;
@@ -42,7 +52,7 @@ function switchTab(tab){
   document.getElementById('content-'+tab).classList.add('active');
   if(tab==='feed')     renderCoachFeed();
   if(tab==='pipeline'){renderBoardChips();renderPipeline();}
-  if(tab==='analytics')renderAnalytics();
+  if(tab==='analytics')renderActivityFeed();
   if(tab==='profile')  loadProfileForm();
 }
 
@@ -169,6 +179,30 @@ function getPipelineStage(id){
   return null;
 }
 
+// ── FIT SCORE ─────────────────────────────────────────────────────────────────
+function fitScore(a){
+  let score = 0;
+  const gpa = parseFloat(a.gpa)||0;
+  if(gpa>=4.0)score+=25; else if(gpa>=3.8)score+=22; else if(gpa>=3.5)score+=18; else if(gpa>=3.0)score+=12;
+  const forty = parseFloat(a.forty)||5.0;
+  if(forty<=4.35)score+=30; else if(forty<=4.45)score+=25; else if(forty<=4.55)score+=18; else if(forty<=4.65)score+=12; else score+=5;
+  const vert = parseInt(a.vertical)||0;
+  if(vert>=34)score+=20; else if(vert>=30)score+=16; else if(vert>=26)score+=12; else score+=6;
+  if(a.division==='D1')score+=15; else if(a.division==='D2')score+=10;
+  if(a.year>=2026)score+=10;
+  return Math.min(99, score);
+}
+
+// ── RELATIVE TIME ─────────────────────────────────────────────────────────────
+function _relTime(ts){
+  const m = Math.floor((Date.now()-ts)/60000);
+  if(m<1) return 'Just now';
+  if(m<60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if(h<24) return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+
 function pipelineBadgeHtml(id){
   const s = getPipelineStage(id);
   if(!s) return '';
@@ -258,7 +292,9 @@ function setBoardFilter(boardId){
   renderPipeline();
 }
 
-// ── PIPELINE ─────────────────────────────────────────────────────────────────
+// ── PIPELINE (KANBAN) ─────────────────────────────────────────────────────────
+let _dragId = null;
+
 function renderPipeline(){
   const filterSet = activeBoardFilter!==null
     ? new Set(Object.values(coachPipeline).flat().filter(id=>(coachTags[id]||[]).includes(activeBoardFilter)))
@@ -267,71 +303,97 @@ function renderPipeline(){
   document.getElementById('pipeline-wrap').innerHTML = COACH_PIPELINE_STAGES.map(s=>{
     let ids = coachPipeline[s.key]||[];
     if(filterSet) ids=ids.filter(id=>filterSet.has(id));
+
     const cards = ids.map(id=>{
       const a = ATHLETES.find(x=>x.id===id);
       if(!a) return '';
-      const boardNames=(coachTags[id]||[]).map(bid=>{const b=coachBoards.find(x=>x.id===bid);return b?b.name:'';}).filter(Boolean);
-      return `<div class="pl-card" style="border-left-color:${s.color}" onclick="openAthlete(${id})">
+      const boardNames = (coachTags[id]||[])
+        .map(bid=>{ const b=coachBoards.find(x=>x.id===bid); return b?b.name:''; }).filter(Boolean);
+      const la = coachLastActivity[id];
+      const laText = la ? _relTime(la.ts) : a.school;
+      const na = coachNextActions[id]||'';
+      const fs = fitScore(a);
+      const fitHtml = fs>=80
+        ? `<span class="pl-fit">${fs}</span>`
+        : '';
+      return `<div class="pl-card" draggable="true"
+          style="border-left-color:${s.color}"
+          ondragstart="_onDragStart(event,${id})"
+          ondragend="_onDragEnd(event)"
+          onclick="openAthlete(${id})">
         <div class="pl-card-hd">
           <div class="pl-av">${initials(a.name)}</div>
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="pl-name">${a.name}</div>
-            <div class="pl-meta">${a.pos.join(' · ')} · '${String(a.year).slice(2)} · ${a.state}</div>
+            <div class="pl-meta">${a.pos.join('/')} · '${String(a.year).slice(2)} · ${a.state}</div>
           </div>
+          ${fitHtml}
         </div>
-        <div class="pl-last">${a.school}</div>
-        ${boardNames.length?`<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${boardNames.map(n=>`<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);color:var(--columbia)">${n}</span>`).join('')}</div>`:''}
+        ${na?`<div class="pl-na"><span class="pl-na-arrow">→</span>${na}</div>`:''}
+        <div class="pl-last">${laText}</div>
+        ${boardNames.length?`<div class="pl-board-tags">${boardNames.map(n=>`<span class="pl-board-tag">${n}</span>`).join('')}</div>`:''}
       </div>`;
     }).join('');
-    const total=(coachPipeline[s.key]||[]).length;
-    const shown=ids.length;
-    const countLabel=filterSet&&shown!==total?`${shown}/${total}`:String(total);
-    return `<div class="pl-col">
+
+    const total = (coachPipeline[s.key]||[]).length;
+    const shown = ids.length;
+    const countLabel = filterSet&&shown!==total ? `${shown}/${total}` : String(total);
+
+    return `<div class="pl-col"
+        id="pl-col-${s.key}"
+        ondragover="_onDragOver(event)"
+        ondragleave="_onDragLeave(event)"
+        ondrop="_onDrop(event,'${s.key}')">
       <div class="pl-col-hd">
         <div class="pl-col-dot" style="background:${s.color}"></div>
         <div class="pl-col-name">${s.label}</div>
         <div class="pl-col-count">${countLabel}</div>
       </div>
-      <div class="pl-cards">${cards||`<div class="pl-empty">${filterSet?'None in this board':'No athletes yet'}</div>`}</div>
+      <div class="pl-cards" id="pl-cards-${s.key}">
+        ${cards||`<div class="pl-empty">Drop athletes here</div>`}
+      </div>
     </div>`;
   }).join('');
+  updateHeaderStats();
+}
+
+// ── DRAG HANDLERS ─────────────────────────────────────────────────────────────
+function _onDragStart(e, id){
+  _dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(()=>{ const el=e.target; if(el) el.classList.add('dragging'); }, 0);
+}
+function _onDragEnd(e){ e.target.classList.remove('dragging'); }
+function _onDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('pl-col-over');
+}
+function _onDragLeave(e){ e.currentTarget.classList.remove('pl-col-over'); }
+function _onDrop(e, stageKey){
+  e.preventDefault();
+  e.currentTarget.classList.remove('pl-col-over');
+  if(_dragId==null) return;
+  _setStageKey(_dragId, stageKey);
+  _dragId = null;
+}
+
+// Shared stage-write used by drag-drop and setStage() in coach-profile.js
+function _setStageKey(id, stageKey){
+  for(const s of COACH_PIPELINE_STAGES){
+    coachPipeline[s.key] = (coachPipeline[s.key]||[]).filter(x=>x!==id);
+  }
+  if(stageKey)(coachPipeline[stageKey]=coachPipeline[stageKey]||[]).push(id);
+  coachLastActivity[id] = {ts:Date.now(), type:'stage',
+    text: COACH_PIPELINE_STAGES.find(s=>s.key===stageKey)?.label||''};
+  lss('pipeline', coachPipeline);
+  lss('last_activity', coachLastActivity);
+  renderPipeline();
+  filterAthletes();
   updateHeaderStats();
 }
 
 // addToBoard: opens slide-over (boards are managed there now)
 function addToBoard(athleteId){ openAthlete(athleteId); }
 
-// ── ANALYTICS ─────────────────────────────────────────────────────────────────
-function renderAnalytics(){
-  const totalPipeline = Object.values(coachPipeline).flat().length;
-  const stats = [
-    {num:142,lbl:'Profile Views',delta:'+18 this week'},
-    {num:totalPipeline,lbl:'In Pipeline',delta:''},
-    {num:24,lbl:'Messages Sent',delta:'+6 this week'},
-    {num:(coachPipeline.committed||[]).length,lbl:'Committed',delta:''},
-  ];
-  document.getElementById('analytics-stats').innerHTML = stats.map(s=>`
-    <div class="an-stat">
-      <div class="an-stat-num">${s.num}</div>
-      <div class="an-stat-lbl">${s.lbl}</div>
-      ${s.delta?`<div class="an-stat-delta">${s.delta}</div>`:''}
-    </div>`).join('');
-
-  const recent = [
-    {name:"Camryn Wells",action:"Added your program to pipeline",time:"2h ago",stage:"Interested",color:"#0057FF"},
-    {name:"Simone Reeves",action:"Viewed your program profile",time:"5h ago",stage:"Viewing",color:"#888"},
-    {name:"Maya Thornton",action:"Opened your recruiting message",time:"1d ago",stage:"Contacted",color:"#7B2FFF"},
-    {name:"Taylor Brooks",action:"Saved your program to watchlist",time:"2d ago",stage:"Interested",color:"#0057FF"},
-    {name:"Nia Washington",action:"Viewed your program profile",time:"3d ago",stage:"Viewing",color:"#888"},
-  ];
-  document.getElementById('an-table').innerHTML = `
-    <div class="an-table-hd"><div class="an-table-title">Recent Athlete Activity</div></div>
-    ${recent.map(r=>`<div class="an-row">
-      <div class="board-av" style="flex-shrink:0;width:32px;height:32px;font-size:12px">${initials(r.name)}</div>
-      <div class="an-row-name">${r.name}<br><span class="an-row-meta">${r.action}</span></div>
-      <div style="flex-shrink:0;text-align:right">
-        <div class="an-row-badge" style="color:${r.color};background:${r.color}18;border:1px solid ${r.color}44">${r.stage}</div>
-        <div class="an-row-meta" style="margin-top:3px">${r.time}</div>
-      </div>
-    </div>`).join('')}`;
-}
+// renderAnalytics() replaced by renderActivityFeed() in coach-feed.js

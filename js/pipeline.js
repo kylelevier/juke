@@ -162,6 +162,37 @@ function _getNextMove(stage,momentum){
   return rules[momentum.level]||rules.none;
 }
 
+const STAGE_DESC={
+  dream_schools:'Programs worth exploring.',
+  interested:'Programs on your radar.',
+  contact_made:"Schools you've reached out to.",
+  active_conversation:'Conversations with coaches.',
+  visit_planned:'Visits scheduled or planned.',
+  applied:'Applications in progress.',
+  offer_received:'Opportunities to compare.',
+  top_choices:'Your strongest options.',
+  committed:'Your next chapter.',
+  closed:'Programs no longer in play.'
+};
+function _makeBoardProfileChip(){
+  const d=lsGet('juke_player');
+  let score=0;
+  if(d.fname&&d.lname)score+=10;
+  if(d.gradyr)score+=5;
+  if((d.positions||d._positions||[]).length)score+=10;
+  if(d.height)score+=5;
+  if(d.gpa)score+=10;
+  if(d.highlight)score+=25;
+  if(d.intro)score+=15;
+  if(d.gp)score+=10;
+  if(d.school)score+=5;
+  if(d.sat||d.act)score+=5;
+  score=Math.min(100,score);
+  const col=score<40?'#FF4D4D':score<70?'#FF9800':'var(--columbia)';
+  const tip=score===100?'Profile complete ✓':score>50?'Keep going — coaches are checking':'Start your profile so coaches can find you';
+  return`<div class="pipeline-stat board-profile-chip" onclick="switchTab('profile')" title="${tip}"><div class="pipeline-stat-num" style="color:${col};font-size:16px">${score}%</div><div class="pipeline-stat-lbl">Profile</div></div>`;
+}
+
 // ── DRAG HANDLERS ────────────────────────────────────────
 function _pdMove(e){
   if(!_pd.clone) return;
@@ -274,7 +305,7 @@ function _renderBoardCols(){
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
     const col=document.createElement('div');
     col.className='pipeline-col'+(schools.length===0?' pipeline-col--empty':'');
-    col.innerHTML=`<div class="pipeline-col-hd"><span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span><span class="pipeline-col-count">${schools.length}</span></div>`;
+    col.innerHTML=`<div class="pipeline-col-hd"><div class="pipeline-col-hd-text"><span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span><div class="pipeline-col-sub">${STAGE_DESC[stage.key]||''}</div></div><span class="pipeline-col-count">${schools.length}</span></div>`;
     const body=document.createElement('div');
     body.className='pipeline-col-body';
     body.dataset.stage=stage.key;
