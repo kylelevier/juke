@@ -53,13 +53,113 @@ function renderMilestoneRail(){
     if(diff<7)return diff+'d ago';
     return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   };
-  const stageLabel={saved:'Saved',contacted:'Contacted',engaged:'Engaged',visit:'Visit',applied:'Applied',offer:'Offer',committed:'Committed',archived:'Archived'};
+  const stageLabel={saved:'Saved',contacting:'Contacting',applied:'Applied',offered:'Offered',committed:'Committed',archived:'Archived',contacted:'Contacting',engaged:'Contacting',visit:'Contacting',offer:'Offered'};
   rail.innerHTML=tl.map(ev=>{
     const initials=ev.school.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const domain=SCHOOL_DOMAINS[ev.school]??null;
     const logoHtml=domain?'<img src="https://logo.clearbit.com/'+domain+'" onerror="this.parentNode.textContent=\''+initials+'\'" loading="lazy"/>':initials;
     return'<div class="ms-card" onclick="openBoardDetail(\''+esc(ev.school)+'\')">'+'<div class="ms-card-top"><div class="ms-logo">'+logoHtml+'</div><div class="ms-school">'+ev.school+'</div></div>'+'<span class="ms-badge ms-'+ev.status+'">'+(stageLabel[ev.status]||ev.status)+'</span>'+'<div class="ms-date">'+fmt(ev.ts)+'</div>'+'</div>';
   }).join('');
+}
+
+// ── STAGE MIGRATION ──────────────────────────────────────
+// Collapses 8-stage model → 5-stage Momentum Engine
+const STAGE_MIGRATION_MAP={
+  contacted:'contacting', engaged:'contacting', visit:'contacting',
+  offer:'offered',
+  // pre-8-stage legacy keys
+  interested:'saved', dream_schools:'saved', top_choices:'saved',
+  contact_made:'contacting', active_conversation:'contacting',
+  visit_planned:'contacting', offer_received:'offered', closed:'archived',
+};
+
+function _migrateStages(){
+  const sd=lsGet('juke_status');
+  if(!sd)return;
+  let changed=false;
+  Object.entries(sd).forEach(([school,stage])=>{
+    if(STAGE_MIGRATION_MAP[stage]){sd[school]=STAGE_MIGRATION_MAP[stage];changed=true;}
+  });
+  if(changed){lsSet('juke_status',sd);Object.assign(statusData,sd);}
+}
+
+// ── MOMENTUM SYSTEM ───────────────────────────────────────
+// Thresholds are stage-aware: offers expire fast, saved schools are slow-burn.
+// active = within threshold.active days of last contact
+// cooling = active..cooling days  stalled = beyond cooling
+const MOMENTUM_THRESHOLDS={
+  offered:    {active:3,  cooling:7 },  // offers move fast — 3d active, 7d stalled
+  applied:    {active:7,  cooling:21},  // application window
+  contacting: {active:7,  cooling:30},  // relationship building
+  saved:      {active:14, cooling:45},  // wishlist, lower urgency
+  committed:  {active:30, cooling:60},  // relationship maintenance
+};
+
+function _calcMomentum(schoolName){
+  const stage=statusData[schoolName]||'saved';
+  const lcd=(_boardMeta[schoolName]||{}).last_contact_date;
+  const t=MOMENTUM_THRESHOLDS[stage]||MOMENTUM_THRESHOLDS.contacting;
+
+  if(!lcd){
+    // Stage-aware label when no contact has ever been logged
+    if(stage==='offered'||stage==='applied')
+      return{level:stage==='offered'?'stalled':'cooling',days:null,label:'No contact logged'};
+    return{level:'none',days:null,label:'Not started'};
+  }
+
+  const days=Math.floor((new Date()-new Date(lcd+'T00:00:00'))/(1000*60*60*24));
+  if(days<=0)  return{level:'active',days:0,label:'Active today'};
+  if(days<=t.active)  return{level:'active',  days,label:`${days}d ago`};
+  if(days<=t.cooling) return{level:'cooling', days,label:`${days}d ago`};
+  return{level:'stalled',days,label:`${days}d ago`};
+}
+
+function _stageLabel(key){
+  const s=PIPELINE_STAGES.find(s=>s.key===key);
+  if(s)return s.label;
+  const fallback={contacted:'Contacting',engaged:'Contacting',visit:'Contacting',offer:'Offered',archived:'Archived'};
+  return fallback[key]||(key?key.charAt(0).toUpperCase()+key.slice(1):'');
+}
+
+// ── NEXT MOVE ENGINE ─────────────────────────────────────
+// V1: Rules determine WHAT. Copy explains WHY.
+// V2: AI personalizes and drafts outreach.
+const NEXT_MOVE_RULES={
+  saved:{
+    none:    {action:'Send an intro email to the coach',      reason:'You haven\'t contacted this program yet.'},
+    active:  {action:'Share your latest highlights',          reason:'Great timing — keep the relationship warm.'},
+    cooling: {action:'Check in with the coaching staff',      reason:'Stay on their radar.'},
+    stalled: {action:'Reach out before this goes cold',       reason:'Relationships need consistent contact.'},
+  },
+  contacting:{
+    none:    {action:'Follow up with the coaching staff',     reason:'Keep the conversation going.'},
+    active:  {action:'Ask about scheduling a campus visit',   reason:'You have momentum — take the next step.'},
+    cooling: {action:'Send a follow-up message',              reason:'It\'s been a while — stay visible.'},
+    stalled: {action:'Re-engage before they move on',         reason:'Don\'t let this relationship go cold.'},
+  },
+  applied:{
+    none:    {action:'Email the coach about your application',reason:'Let them know you\'ve applied.'},
+    active:  {action:'Ask about next steps in the process',   reason:'Good communication — keep it going.'},
+    cooling: {action:'Follow up on your application',         reason:'Check in and show continued interest.'},
+    stalled: {action:'Contact the coaching staff now',        reason:'Don\'t go silent during the application process.'},
+  },
+  offered:{
+    none:    {action:'Review and understand the full offer',  reason:'Know exactly what\'s on the table.'},
+    active:  {action:'Move toward making a decision',         reason:'You\'re engaged — keep moving forward.'},
+    cooling: {action:'Request a decision deadline',           reason:'Clarify your timeline with the coaching staff.'},
+    stalled: {action:'Decide or ask for more time',           reason:'Don\'t leave an offer waiting.'},
+  },
+  committed:{
+    none:    {action:'Connect with your future coach',        reason:'Build the relationship before you arrive.'},
+    active:  {action:'Stay in touch with the team',           reason:'Build relationships before the season starts.'},
+    cooling: {action:'Reach out to future teammates',         reason:'Warm up relationships before you arrive.'},
+    stalled: {action:'Check in with the coaching staff',      reason:'Stay connected with your future program.'},
+  },
+};
+
+function _getNextMove(stage,momentum){
+  const rules=NEXT_MOVE_RULES[stage]||NEXT_MOVE_RULES.saved;
+  return rules[momentum.level]||rules.none;
 }
 
 // ── DRAG HANDLERS ────────────────────────────────────────
@@ -117,6 +217,7 @@ function _pdUp(e){
 let _boardMeta={};
 
 async function renderPipeline(){
+  _migrateStages();
   renderMilestoneRail();
   // Load Supabase records in background; board renders immediately from localStorage
   if(sb&&currentUser){
@@ -140,19 +241,39 @@ function _renderBoardCols(){
   Object.entries(statusData).forEach(([school,status])=>{
     if(schoolsByStage[status])schoolsByStage[status].push(school);
   });
-  const total=Object.values(schoolsByStage).flat().length;
+
+  // ── Command Center: 3 momentum-based stats ──
+  const activeStageKeys=['contacting','applied','offered'];
+  const activeSchools=activeStageKeys.flatMap(k=>schoolsByStage[k]||[]);
+  const stalledList=activeSchools.filter(n=>_calcMomentum(n).level==='stalled');
+  const coolingList=activeSchools.filter(n=>_calcMomentum(n).level==='cooling');
+  const activeCount=activeSchools.filter(n=>_calcMomentum(n).level==='active').length;
+  const offerCount=schoolsByStage['offered']?.length||0;
+  const needsAttn=[...stalledList,...coolingList];
 
   document.getElementById('pipeline-summary').innerHTML=`
-    <div class="pipeline-stat"><div class="pipeline-stat-num">${total}</div><div class="pipeline-stat-lbl">Total</div></div>
-    ${PIPELINE_STAGES.map(s=>`<div class="pipeline-stat"><div class="pipeline-stat-num" style="color:${s.color}">${schoolsByStage[s.key].length}</div><div class="pipeline-stat-lbl">${s.label}</div></div>`).join('')}
+    <div class="board-cmd-stat${stalledList.length?' board-cmd-urgent':''}">
+      <div class="board-cmd-num">${stalledList.length}</div>
+      <div class="board-cmd-lbl">Stalled</div>
+    </div>
+    <div class="board-cmd-stat">
+      <div class="board-cmd-num">${activeCount}</div>
+      <div class="board-cmd-lbl">Active</div>
+    </div>
+    ${offerCount?`<div class="board-cmd-stat board-cmd-gold"><div class="board-cmd-num">${offerCount}</div><div class="board-cmd-lbl">Offers</div></div>`:''}
+    <div class="board-cmd-actions">
+      <button class="board-cmd-show-empty" onclick="_toggleEmptyStages(this)" data-showing="">Show empty stages</button>
+    </div>
   `;
+
+  _renderAttentionStrip(needsAttn);
 
   const colsEl=document.getElementById('pipeline-cols');
   colsEl.innerHTML='';
   PIPELINE_STAGES.forEach(stage=>{
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
     const col=document.createElement('div');
-    col.className='pipeline-col';
+    col.className='pipeline-col'+(schools.length===0?' pipeline-col--empty':'');
     col.innerHTML=`<div class="pipeline-col-hd"><span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span><span class="pipeline-col-count">${schools.length}</span></div>`;
     const body=document.createElement('div');
     body.className='pipeline-col-body';
@@ -160,6 +281,7 @@ function _renderBoardCols(){
     if(!schools.length){
       const ph=document.createElement('div');ph.className='pipeline-empty-col';ph.textContent='Drop cards here';
       body.appendChild(ph);
+      col.style.display='none'; // collapse empty stages by default
     } else {
       schools.forEach(r=>body.appendChild(buildPipelineCard(r,stage.key)));
     }
@@ -168,61 +290,118 @@ function _renderBoardCols(){
   });
 }
 
+// ── ATTENTION STRIP ──────────────────────────────────────
+function _renderAttentionStrip(needsList){
+  let strip=document.getElementById('board-attn-strip');
+  if(!strip){
+    strip=document.createElement('div');
+    strip.id='board-attn-strip';
+    const colsEl=document.getElementById('pipeline-cols');
+    colsEl.parentNode.insertBefore(strip,colsEl);
+  }
+  if(!needsList.length){strip.innerHTML='';return;}
+  // Sort by: (1) stage urgency — offered first, (2) momentum level — stalled before cooling,
+  // (3) days since contact descending, (4) overdue next_action_date
+  const STAGE_RANK={offered:0,applied:1,contacting:2,saved:3,committed:4};
+  const MOMENTUM_RANK={stalled:0,cooling:1};
+  const sorted=[...needsList].sort((a,b)=>{
+    const sa=STAGE_RANK[statusData[a]]??9,sb=STAGE_RANK[statusData[b]]??9;
+    if(sa!==sb) return sa-sb;
+    const ma=_calcMomentum(a),mb=_calcMomentum(b);
+    const ra=MOMENTUM_RANK[ma.level]??9,rb=MOMENTUM_RANK[mb.level]??9;
+    if(ra!==rb) return ra-rb;
+    // Within same stage+momentum: most days elapsed first
+    const da=ma.days??999,db=mb.days??999;
+    return db-da;
+  });
+  const top=sorted.slice(0,5);
+  strip.innerHTML=`<div class="board-attn-hd">⚠ Needs Attention</div><div class="board-attn-cards">${
+    top.map(name=>{
+      const m=_boardMeta[name]||{};
+      const na=m.next_action||'No next action set';
+      const nad=m.next_action_date;
+      const daysOver=nad?Math.ceil((new Date()-new Date(nad+'T00:00:00'))/(1000*60*60*24)):0;
+      return`<div class="board-attn-card" onclick="openBoardDetail('${esc(name)}')">
+        <div class="board-attn-school">${name}</div>
+        <div class="board-attn-task">${na}</div>
+        ${nad&&daysOver>0?`<div class="board-attn-age overdue">${daysOver}d overdue</div>`:'<div class="board-attn-age">No date set</div>'}
+      </div>`;
+    }).join('')}${sorted.length>5?`<div class="board-attn-more">+${sorted.length-5} more</div>`:''}</div>`;
+}
+
+// ── CONTACTED TODAY ──────────────────────────────────────
+// Quick recovery: one tap on card resets momentum to Active.
+async function _markContactedToday(schoolName,btn){
+  btn.disabled=true;
+  const today=new Date().toISOString().split('T')[0];
+  _boardMeta[schoolName]=Object.assign(_boardMeta[schoolName]||{},{last_contact_date:today});
+  await saveBoardContact(schoolName,{lastContactDate:today});
+  // Re-render this card in place
+  const card=document.querySelector(`.pipeline-card[data-school="${CSS.escape(schoolName)}"]`);
+  const r=RAW.find(x=>x.School===schoolName);
+  const stage=statusData[schoolName]||'saved';
+  if(card&&r) card.replaceWith(buildPipelineCard(r,stage));
+  // Refresh attention strip with updated momentum data
+  const activeStageKeys=['contacting','applied','offered'];
+  const activeSchools=activeStageKeys.flatMap(k=>
+    Object.entries(statusData).filter(([,v])=>v===k).map(([s])=>s)
+  );
+  const needsAttn=activeSchools.filter(n=>
+    ['stalled','cooling'].includes(_calcMomentum(n).level)
+  );
+  _renderAttentionStrip(needsAttn);
+  showToast('Marked as contacted today');
+}
+
+// ── EMPTY STAGE TOGGLE ───────────────────────────────────
+function _toggleEmptyStages(btn){
+  const showing=btn.dataset.showing==='1';
+  document.querySelectorAll('.pipeline-col--empty').forEach(c=>{c.style.display=showing?'none':'';});
+  btn.dataset.showing=showing?'':'1';
+  btn.textContent=showing?'Show empty stages':'Hide empty stages';
+}
+
 // ── CARD BUILD ───────────────────────────────────────────
+// Card answers four questions:
+//  1. What school is this?   → name + logo
+//  2. Where am I?            → stage pill
+//  3. Is momentum growing?   → colored dot + label
+//  4. What do I do next?     → Next Move action text
 function buildPipelineCard(r,stageKey){
   const meta=_boardMeta[r.School]||{};
-  const lsAttrs=(lsGet('juke_card_attrs')||{})[r.School]||{};
-  // Merge Supabase meta + localStorage attrs (Supabase wins if logged in)
-  const attrs=sb&&currentUser?meta:lsAttrs;
+  const momentum=_calcMomentum(r.School);
+  const userAction=meta.next_action;
+  const move=userAction?{action:userAction,reason:null}:_getNextMove(stageKey,momentum);
+  const moveExtra=userAction?'pc-move-custom':(momentum.level==='stalled'?'pc-move-stalled':'');
 
   const card=document.createElement('div');
   card.className=`pipeline-card status-${stageKey}`;
   card.dataset.school=r.School;
 
-  // ── Header: drag handle + logo + name/state ──
-  const hd=document.createElement('div');hd.className='pipeline-card-hd';
-  const handle=document.createElement('span');
-  handle.className='pipeline-drag-handle';handle.title='Drag to move';handle.textContent='⠿';
+  card.innerHTML=`
+    <div class="pc-header">
+      <span class="pipeline-drag-handle" title="Drag to move">⠿</span>
+      <div class="pc-logo school-logo-wrap school-logo-sm" data-logo="${r.School}"><div class="school-logo-initials">🏈</div></div>
+      <div class="pc-name-block">
+        <div class="pc-name">${r.School}</div>
+        ${r.State?`<div class="pc-school-meta">${r.State}${r.Region?' · '+r.Region:''}</div>`:''}
+      </div>
+    </div>
+    <div class="pc-momentum pc-m-${momentum.level}">
+      <span class="pc-m-dot"></span>
+      <span class="pc-m-lbl">${momentum.label}</span>
+    </div>
+    <div class="pc-move${moveExtra?' '+moveExtra:''}">
+      <div class="pc-move-action">${move.action}</div>
+      ${move.reason?`<div class="pc-move-reason">${move.reason}</div>`:''}
+    </div>
+    <div class="pc-footer">
+      <span class="pc-stage-pill">${_stageLabel(stageKey)}</span>
+      ${stageKey!=='committed'?`<button class="pc-contacted-btn" onclick="event.stopPropagation();_markContactedToday('${r.School.replace(/'/g,"\\'")}',this)" title="Mark as contacted today">✓ Reached out</button>`:''}
+    </div>
+  `;
 
-  const logoWrap=_logoPlaceholder(r.School);logoWrap.dataset.logo=r.School;
-
-  const hdText=document.createElement('div');hdText.className='pipeline-card-hd-text';
-  hdText.innerHTML=`<div class="pipeline-card-name">${r.School}</div><div class="pipeline-card-meta">${r.State||''}${r.Region?` · ${r.Region}`:''}</div>`;
-  hd.appendChild(handle);hd.appendChild(logoWrap);hd.appendChild(hdText);
-
-  // ── Row: fit score + division badge ──
-  const row=document.createElement('div');row.className='pipeline-card-row';
-  const fit=getFit(r);
-  if(fit>=0){const tmp=document.createElement('span');tmp.innerHTML=fitBadge(fit);while(tmp.firstChild)row.appendChild(tmp.firstChild);}
-  row.innerHTML+=divTag(r['Governing Body'],r['Division']);
-
-  // ── Contact row: last contact + next action ──
-  const contactRow=document.createElement('div');contactRow.className='pipeline-card-contact';
-  const lcd=meta.last_contact_date;
-  const na=meta.next_action;
-  const naDate=meta.next_action_date;
-  contactRow.innerHTML=`
-    ${lcd?`<span class="pc-last-contact" title="Last contact">📅 ${_fmtDate(lcd)}</span>`:''}
-    ${na?`<span class="pc-next-action ${_isOverdue(naDate)?'overdue':''}" title="Next action">${_isOverdue(naDate)?'⚠':'▶'} ${na}${naDate?' · '+_fmtDate(naDate):''}</span>`:''}
-  `.trim();
-
-  // ── Key tags: card attributes ──
-  const tagsEl=document.createElement('div');tagsEl.className='pipeline-card-tags';
-  const attrTags=[];
-  if(attrs.is_dream_school) attrTags.push('<span class="tag tag-attr tag-dream">⭐ Dream</span>');
-  if(attrs.is_top_choice)   attrTags.push('<span class="tag tag-attr tag-top">🔥 Top Choice</span>');
-  if(attrs.is_in_state)     attrTags.push('<span class="tag tag-attr tag-instate">📍 In-State</span>');
-  if(attrs.scholarship_opp) attrTags.push('<span class="tag tag-attr tag-schol">💰 Scholarship</span>');
-  if(attrs.academic_match)  attrTags.push('<span class="tag tag-attr tag-acad">📚 Acad Match</span>');
-  if(attrs.is_christian)    attrTags.push('<span class="tag tag-attr tag-christian">✝ Christian</span>');
-  if(r.HBCU==='Yes')        attrTags.push('<span class="tag tag-hbcu">HBCU</span>');
-  tagsEl.innerHTML=attrTags.join('');
-
-  card.appendChild(hd);
-  if(contactRow.innerHTML.trim()) card.appendChild(contactRow);
-  card.appendChild(row);
-  if(attrTags.length) card.appendChild(tagsEl);
-  fetchSchoolLogo(r.School,logoWrap);
+  fetchSchoolLogo(r.School,card.querySelector('.pc-logo'));
 
   // ── Drag ──
   card.addEventListener('mousedown',e=>{

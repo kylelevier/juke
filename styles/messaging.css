@@ -56,6 +56,8 @@
 .msg-thread-name{font-family:-apple-system,system-ui,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .msg-thread-time{font-size:10px;color:rgba(255,255,255,.3);flex-shrink:0;white-space:nowrap;}
 .msg-thread-preview{font-size:12px;color:rgba(255,255,255,.38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.msg-thread-school{font-size:10px;color:rgba(255,255,255,.3);margin-bottom:1px;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;}
+.msg-thread-school-stage{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,0,128,.55);}
 .msg-thread-badge{background:#FF0080;color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:2px 6px;flex-shrink:0;line-height:1.4;}
 .msg-thread-empty{padding:32px 16px;text-align:center;font-size:12px;color:rgba(255,255,255,.3);line-height:1.7;}
 .msg-thread-empty strong{color:rgba(255,255,255,.55);}
@@ -102,6 +104,22 @@
 .msg-loading{text-align:center;font-size:12px;color:var(--text-dim);padding:32px;}
 .msg-load-error{text-align:center;font-size:12px;color:var(--red);padding:24px;}
 
+/* ── School context strip (athlete portal only) ── */
+.msg-school-ctx{
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  padding:7px 16px;flex-shrink:0;
+  background:rgba(0,87,255,.05);border-bottom:1px solid rgba(0,87,255,.1);
+}
+.msg-sc-school{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.01em;}
+.msg-sc-stage{
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;flex-shrink:0;
+}
+.msg-sc-sep{font-size:11px;color:var(--text-muted);}
+.msg-sc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.msg-sc-momentum{font-size:11px;color:var(--text-muted);}
+.msg-sc-contact{font-size:10px;color:var(--text-dim);margin-left:auto;white-space:nowrap;}
+
 /* Compose area */
 .msg-compose{display:flex;align-items:flex-end;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 .msg-compose-area{flex:1;resize:none;border:1px solid var(--border-mid);border-radius:12px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:14px;padding:9px 14px;outline:none;transition:border-color .15s;max-height:120px;overflow-y:auto;line-height:1.45;}
@@ -130,6 +148,20 @@
 .msg-new-result-info{flex:1;min-width:0;}
 .msg-new-result-name{font-size:13px;font-weight:600;color:var(--text);}
 .msg-new-result-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+
+/* ── New Message modal: school-first picker ── */
+.msg-nm-back{background:none;border:none;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;padding:2px 8px 2px 0;letter-spacing:.02em;}
+.msg-nm-back:hover{color:var(--text);}
+.msg-nm-section-hd{padding:10px 16px 6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);}
+.msg-nm-school-list{display:flex;flex-direction:column;}
+.msg-nm-school-row{display:flex;align-items:center;gap:10px;padding:10px 16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;width:100%;text-align:left;transition:background .12s;}
+.msg-nm-school-row:hover{background:var(--surface2);}
+.msg-nm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.msg-nm-school-nm{flex:1;font-size:13px;font-weight:500;color:var(--text);}
+.msg-nm-pill{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0;}
+.msg-nm-divider{display:flex;align-items:center;padding:0 16px;margin:4px 0;}
+.msg-nm-divider::before,.msg-nm-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.msg-nm-divider span{padding:0 10px;font-size:10px;color:var(--text-muted);white-space:nowrap;}
 
 /* Toast (fallback if portal doesn't have showToast) */
 .msg-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:#1a1a1a;color:#fff;font-size:13px;padding:10px 18px;border-radius:8px;z-index:9999;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;white-space:nowrap;}

@@ -162,10 +162,10 @@
     if (!sb || !currentUser) return [];
     var uid = currentUser.id;
 
-    // All conversations this user is in
+    // All conversations this user is in, with school context when linked
     var r = await sb
       .from('conversations')
-      .select('id,participant_a,participant_b,last_message_at,last_message_preview,created_at')
+      .select('id,participant_a,participant_b,last_message_at,last_message_preview,created_at,player_program_id,player_programs(stage,programs(school))')
       .or('participant_a.eq.' + uid + ',participant_b.eq.' + uid)
       .order('last_message_at', { ascending: false, nullsFirst: false });
 
@@ -230,13 +230,28 @@
 
     list.innerHTML = threads.map(function(t){
       var name     = t.other.display_name || 'Unknown';
-      var initials = _initials(name);
+      var initials = typeof _initials === 'function' ? _initials(name) : (name[0] || '?').toUpperCase();
       var preview  = t.conv.last_message_preview || 'No messages yet';
       var time     = t.conv.last_message_at ? _fmtTime(t.conv.last_message_at) : '';
       var role     = t.other.role || 'athlete';
       var active   = t.conv.id === _activeConvId ? ' active' : '';
       var unread   = t.unread > 0 ? ' unread' : '';
       var color    = ROLE_COLORS[role] || '#FF0080';
+
+      // School context — shown when conversation is linked to a player_programs row
+      var schoolCtx = '';
+      var pp = t.conv.player_programs;
+      if (pp) {
+        var schoolName = (pp.programs || {}).school || '';
+        var stageTxt   = pp.stage || '';
+        if (schoolName) {
+          schoolCtx = '<div class="msg-thread-school">'
+            + _esc(schoolName)
+            + (stageTxt ? '<span class="msg-thread-school-stage">'+_esc(stageTxt)+'</span>' : '')
+            + '</div>';
+        }
+      }
+
       return '<div class="msg-thread-item' + active + unread + '"'
         + ' onclick="openMsgThread(\'' + t.conv.id + '\',\'' + t.otherId + '\')">'
         + '<div class="msg-thread-av" style="background:' + color + '">' + initials + '</div>'
@@ -245,6 +260,7 @@
             + '<span class="msg-thread-name">' + _esc(name) + '</span>'
             + '<span class="msg-thread-time">' + _esc(time) + '</span>'
           + '</div>'
+          + schoolCtx
           + '<div class="msg-thread-preview">' + _esc(preview) + '</div>'
         + '</div>'
         + (t.unread > 0 ? '<span class="msg-thread-badge">' + t.unread + '</span>' : '')
@@ -270,12 +286,19 @@
   // ── OPEN THREAD ──────────────────────────────────────────────
   async function openMsgThread(convId, otherId) {
     _activeConvId = convId;
+
+    // Resolve thread once — used for school context and unread clearing
+    var thread = _threads.find(function(x){ return x.conv.id === convId; });
+
     _paintThreads(_filtered);
 
     var empty = document.getElementById('msg-empty-state');
     var convo = document.getElementById('msg-convo');
     if (empty) empty.style.display = 'none';
     if (convo) convo.style.display = 'flex';
+
+    // Paint school context strip immediately from cached thread data
+    _paintSchoolCtx(thread ? thread.conv : null);
 
     // Show cached profile, fetch fresh in background
     var profile = _profiles[otherId] || { display_name: 'Loading…', role: 'athlete', org: '' };
@@ -290,8 +313,7 @@
     await updateMsgBadge();
 
     // Clear unread in thread data
-    var t = _threads.find(function(x){ return x.conv.id === convId; });
-    if (t) t.unread = 0;
+    if (thread) thread.unread = 0;
     _paintThreads(_filtered);
 
     // Focus compose
@@ -305,7 +327,7 @@
     var sub  = document.getElementById('msg-header-sub');
     var color = ROLE_COLORS[profile.role] || '#FF0080';
     if (av) {
-      av.textContent = _initials(profile.display_name || 'U');
+      av.textContent = typeof _initials === 'function' ? _initials(profile.display_name || 'U') : (profile.display_name||'?')[0].toUpperCase();
       av.style.background = color;
       av.className = 'msg-header-av';
     }
@@ -316,12 +338,67 @@
     }
   }
 
+  // ── SCHOOL CONTEXT STRIP ─────────────────────────────────────
+  // Recruiting-relationship context painted below the coach header.
+  // Only rendered on athlete portal (element only exists in athlete.html).
+  function _paintSchoolCtx(conv) {
+    var ctx = document.getElementById('msg-school-ctx');
+    if (!ctx) return;                         // not in this portal
+
+    if (!conv || !conv.player_program_id || !conv.player_programs) {
+      ctx.style.display = 'none';
+      return;
+    }
+
+    var pp     = conv.player_programs;
+    var school = (pp.programs || {}).school || null;
+    var stage  = pp.stage || null;
+    if (!school) { ctx.style.display = 'none'; return; }
+
+    // Stage color + label
+    var stageColor = '#6b7280';
+    var stageLabel = stage ? (stage.charAt(0).toUpperCase() + stage.slice(1)) : '';
+    if (typeof PIPELINE_STAGES !== 'undefined' && stage) {
+      var si = PIPELINE_STAGES.find(function(s){ return s.id === stage; });
+      if (si) { stageColor = si.color; stageLabel = si.label; }
+    }
+
+    // Momentum
+    var momentum = { level: 'none', label: 'Not started' };
+    if (typeof _calcMomentum === 'function') momentum = _calcMomentum(school);
+    var dotColor = ({ active:'#00c853', cooling:'#f59e0b', stalled:'#ef4444', none:'#9ca3af' })[momentum.level] || '#9ca3af';
+
+    // Last contact
+    var bm  = (typeof _boardMeta !== 'undefined') ? (_boardMeta[school] || {}) : {};
+    var lcd = bm.last_contact_date || null;
+    var contactTxt = lcd ? 'Last contact ' + lcd : '';
+
+    var g = function(id){ return document.getElementById(id); };
+    var schoolEl = g('msg-sc-school'), stageEl = g('msg-sc-stage'),
+        dotEl    = g('msg-sc-dot'),    mEl     = g('msg-sc-momentum'),
+        cEl      = g('msg-sc-contact');
+
+    if (schoolEl) schoolEl.textContent     = school;
+    if (stageEl) {
+      stageEl.textContent      = stageLabel;
+      stageEl.style.background = stageColor + '20';
+      stageEl.style.color      = stageColor;
+    }
+    if (dotEl)  dotEl.style.background     = dotColor;
+    if (mEl)    mEl.textContent            = momentum.label;
+    if (cEl)    cEl.textContent            = contactTxt;
+
+    ctx.style.display = 'flex';
+  }
+
   function closeMsgThread() {
     _activeConvId = null;
     var empty = document.getElementById('msg-empty-state');
     var convo = document.getElementById('msg-convo');
+    var ctx   = document.getElementById('msg-school-ctx');
     if (empty) empty.style.display = '';
     if (convo) convo.style.display = 'none';
+    if (ctx)   ctx.style.display   = 'none';
     _paintThreads(_filtered);
   }
 
@@ -468,6 +545,10 @@
     delete _pending[tempId];
     _paintBubbles(); _scrollBottom();
     _bumpThreadPreview(convId, body);
+
+    // Momentum: outbound messages on school-linked conversations update last_contact_date
+    var sentThread = _threads.find(function(t){ return t.conv.id === convId; });
+    if (sentThread) _updateMomentumForConv(sentThread.conv);
   }
 
   function retryMsg(tempId) {
@@ -490,6 +571,41 @@
     });
     _filtered = _threads.slice();
     _paintThreads(_filtered);
+  }
+
+  // ── MOMENTUM BRIDGE ──────────────────────────────────────────
+  // Called on both successful send (_trySend) and inbound receipt (_onNewMsg).
+  // Updates last_contact_date for the school relationship linked to this conversation.
+  function _updateMomentumForConv(conv) {
+    if (!conv || !conv.player_program_id) return;
+    var today  = new Date().toISOString().split('T')[0];
+    var pp     = conv.player_programs;
+    var school = pp ? ((pp.programs || {}).school || null) : null;
+    var ppId   = conv.player_program_id;
+
+    // In-memory board cache (athlete portal only)
+    if (school && typeof _boardMeta !== 'undefined') {
+      _boardMeta[school] = Object.assign(_boardMeta[school] || {}, { last_contact_date: today });
+    }
+    // Persist to Supabase
+    if (school && typeof saveBoardContact === 'function') {
+      saveBoardContact(school, { lastContactDate: today });
+    } else if (sb) {
+      sb.from('player_programs')
+        .update({ last_contact_date: today, updated_at: new Date().toISOString() })
+        .eq('id', ppId);
+    }
+    // Refresh visible board card so momentum dot updates instantly
+    if (school && typeof RAW !== 'undefined' && typeof buildPipelineCard === 'function') {
+      var card = document.querySelector('.pipeline-card[data-school="' + CSS.escape(school) + '"]');
+      var raw  = RAW.find(function(x){ return x.School === school; });
+      if (card && raw) {
+        card.replaceWith(buildPipelineCard(
+          raw,
+          (typeof statusData !== 'undefined' ? statusData[school] : null) || 'saved'
+        ));
+      }
+    }
   }
 
   // ── REALTIME ─────────────────────────────────────────────────
@@ -554,6 +670,9 @@
     });
     _filtered = _threads.slice();
     _paintThreads(_filtered);
+
+    // Momentum: inbound messages from coaches reset last_contact_date
+    if (msg.sender_id !== currentUser.id) _updateMomentumForConv(thread.conv);
   }
 
   function _onConvUpdate(payload) {
@@ -602,114 +721,7 @@
     return n;
   }
 
-  // ── NEW MESSAGE MODAL ────────────────────────────────────────
-  async function openNewMsg(prefillId, prefillName) {
-    if (!sb || !currentUser) {
-      _toast('Sign in to send messages');
-      return;
-    }
-
-    // Direct open — skip modal (e.g. "Message" button on an athlete card)
-    if (prefillId) {
-      var cid = await _getOrCreate(prefillId);
-      if (!cid) { _toast('Could not start conversation'); return; }
-      if (prefillName && !_profiles[prefillId]) {
-        _profiles[prefillId] = { display_name: prefillName, role: 'athlete', org: '' };
-      }
-      await renderMsgThreadList();
-      if (typeof switchTab === 'function') switchTab('messages');
-      openMsgThread(cid, prefillId);
-      return;
-    }
-
-    // Build modal once
-    if (!document.getElementById('msg-new-modal')) {
-      var overlay = document.createElement('div');
-      overlay.id        = 'msg-new-modal';
-      overlay.className = 'msg-new-overlay';
-      overlay.innerHTML =
-        '<div class="msg-new-box" role="dialog" aria-modal="true" aria-label="New Message">'
-          + '<div class="msg-new-hd">'
-            + '<span class="msg-new-title">New Message</span>'
-            + '<button class="msg-new-close" aria-label="Close" '
-            +   'onclick="document.getElementById(\'msg-new-modal\').classList.remove(\'open\')">✕</button>'
-          + '</div>'
-          + '<div class="msg-new-search-wrap">'
-            + '<input id="msg-new-search" class="msg-new-search" type="text" '
-            +   'placeholder="Search by name…" autocomplete="off" '
-            +   'oninput="searchMsgRecipients(this.value)"/>'
-          + '</div>'
-          + '<div id="msg-new-results" class="msg-new-results">'
-            + '<div class="msg-new-hint">Start typing to search</div>'
-          + '</div>'
-        + '</div>';
-      overlay.addEventListener('click', function(e){
-        if (e.target === overlay) overlay.classList.remove('open');
-      });
-      document.body.appendChild(overlay);
-    }
-
-    // Reset and open
-    var modal = document.getElementById('msg-new-modal');
-    var input = document.getElementById('msg-new-search');
-    var res   = document.getElementById('msg-new-results');
-    if (input) input.value = '';
-    if (res)   res.innerHTML = '<div class="msg-new-hint">Start typing to search</div>';
-    modal.classList.add('open');
-    setTimeout(function(){ if (input) input.focus(); }, 120);
-  }
-
-  async function searchMsgRecipients(q) {
-    var res = document.getElementById('msg-new-results');
-    if (!res) return;
-
-    if (!q || q.trim().length < 2) {
-      res.innerHTML = '<div class="msg-new-hint">Type at least 2 characters</div>';
-      return;
-    }
-
-    clearTimeout(_searchTimer);
-    _searchTimer = setTimeout(async function(){
-      res.innerHTML = '<div class="msg-new-hint">Searching…</div>';
-
-      var role   = _myRole();
-      var filter;
-      if (role === 'athlete') {
-        filter = ['college_coach','hs_coach','recruiting_coordinator'];
-      } else if (role === 'college_coach' || role === 'hs_coach' || role === 'recruiting_coordinator') {
-        filter = ['athlete'];
-      } else {
-        // admin / parent — see everyone except self
-        filter = ['athlete','college_coach','hs_coach','parent','recruiting_coordinator'];
-      }
-
-      var r = await sb.from('user_profiles')
-        .select('id,display_name,role,org')
-        .in('role', filter)
-        .ilike('display_name', '%' + q + '%')
-        .neq('id', currentUser.id)
-        .limit(12);
-
-      if (!r.data || !r.data.length) {
-        res.innerHTML = '<div class="msg-new-hint">No users found</div>';
-        return;
-      }
-
-      res.innerHTML = r.data.map(function(u){
-        var color = ROLE_COLORS[u.role] || '#FF0080';
-        var sub   = [ROLE_LABELS[u.role] || u.role, u.org].filter(Boolean).join(' · ');
-        return '<div class="msg-new-result" onclick="startConvWith(\'' + u.id + '\')">'
-          + '<div class="msg-thread-av sm" style="background:' + color + '">'
-          +   _initials(u.display_name || 'U')
-          + '</div>'
-          + '<div class="msg-new-result-info">'
-            + '<div class="msg-new-result-name">' + _esc(u.display_name || 'Unknown') + '</div>'
-            + '<div class="msg-new-result-sub">' + _esc(sub) + '</div>'
-          + '</div>'
-        + '</div>';
-      }).join('');
-    }, 280);
-  }
+  // openNewMsg and searchMsgRecipients moved to features/messaging-modal.js
 
   async function startConvWith(userId) {
     var modal = document.getElementById('msg-new-modal');
@@ -852,8 +864,6 @@
   window.retryMsg             = retryMsg;
   window.msgComposeKeydown    = msgComposeKeydown;
   window.msgComposeResize     = msgComposeResize;
-  window.openNewMsg           = openNewMsg;
-  window.searchMsgRecipients  = searchMsgRecipients;
   window.startConvWith        = startConvWith;
 
 }());

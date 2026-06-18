@@ -2,14 +2,11 @@
 
 // ── PIPELINE STAGES ─────────────────────────────────────────────
 const PIPELINE_STAGES=[
-  {key:'saved',     label:'Saved',     color:'#0057FF'},
-  {key:'contacted', label:'Contacted', color:'#7B2FFF'},
-  {key:'engaged',   label:'Engaged',   color:'#FF0080'},
-  {key:'visit',     label:'Visit',     color:'#E67E22'},
-  {key:'applied',   label:'Applied',   color:'#FF4500'},
-  {key:'offer',     label:'Offer',     color:'#F1C40F'},
-  {key:'committed', label:'Committed', color:'#00E050'},
-  {key:'archived',  label:'Archived',  color:'#6B7280'},
+  {key:'saved',      label:'Saved',      color:'#0057FF'},
+  {key:'contacting', label:'Contacting', color:'#7B2FFF'},
+  {key:'applied',    label:'Applied',    color:'#FF4500'},
+  {key:'offered',    label:'Offered',    color:'#F1C40F'},
+  {key:'committed',  label:'Committed',  color:'#00E050'},
 ];
 
 // ── SCHOOL LOGO (Google favicon service) ─────────────────

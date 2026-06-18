@@ -15,13 +15,11 @@
 .pipeline-col-body{display:flex;flex-direction:column;gap:8px;min-height:120px;}
 .pipeline-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .15s;position:relative;}
 .pipeline-card:hover{border-color:var(--columbia-bd);box-shadow:0 2px 8px rgba(24,95,165,.08);}
-/* Stage border accents */
+/* Stage border accents — new 5-stage + legacy compat */
 .pipeline-card.status-saved,.pipeline-card.status-interested,.pipeline-card.status-dream_schools,.pipeline-card.status-top_choices{border-left:3px solid #0057FF;border-radius:0 12px 12px 0;}
-.pipeline-card.status-contacted,.pipeline-card.status-contact_made{border-left:3px solid #7B2FFF;border-radius:0 12px 12px 0;}
-.pipeline-card.status-engaged,.pipeline-card.status-active_conversation{border-left:3px solid #FF0080;border-radius:0 12px 12px 0;}
-.pipeline-card.status-visit,.pipeline-card.status-visit_planned{border-left:3px solid #E67E22;border-radius:0 12px 12px 0;}
+.pipeline-card.status-contacting,.pipeline-card.status-contacted,.pipeline-card.status-contact_made,.pipeline-card.status-engaged,.pipeline-card.status-active_conversation,.pipeline-card.status-visit,.pipeline-card.status-visit_planned{border-left:3px solid #7B2FFF;border-radius:0 12px 12px 0;}
 .pipeline-card.status-applied{border-left:3px solid #FF4500;border-radius:0 12px 12px 0;}
-.pipeline-card.status-offer,.pipeline-card.status-offer_received{border-left:3px solid #F1C40F;border-radius:0 12px 12px 0;}
+.pipeline-card.status-offered,.pipeline-card.status-offer,.pipeline-card.status-offer_received{border-left:3px solid #F1C40F;border-radius:0 12px 12px 0;}
 .pipeline-card.status-committed{border-left:3px solid #00E050;border-radius:0 12px 12px 0;}
 .pipeline-card.status-archived,.pipeline-card.status-closed{border-left:3px solid #6B7280;border-radius:0 12px 12px 0;}
 /* Contact + next action row */
@@ -48,6 +46,82 @@
 .pipeline-card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
 .pipeline-empty-col{border:1.5px dashed var(--border);border-radius:12px;padding:24px 14px;text-align:center;color:var(--text-dim);font-size:12px;}
 .pipeline-add-hint{margin-top:18px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--columbia);line-height:1.5;}
+
+/* ── COMMAND CENTER STATS (replaces old 9-stat strip) ── */
+.board-cmd-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);min-width:80px;}
+.board-cmd-stat.board-cmd-urgent{border-color:rgba(255,69,0,.4);background:rgba(255,69,0,.06);}
+.board-cmd-stat.board-cmd-gold{border-color:rgba(241,196,15,.4);background:rgba(241,196,15,.06);}
+.board-cmd-num{font-family:'Archivo Condensed',sans-serif;font-size:30px;font-weight:900;line-height:1;color:var(--text);}
+.board-cmd-urgent .board-cmd-num{color:#FF4500;}
+.board-cmd-gold .board-cmd-num{color:#a07a00;}
+.board-cmd-lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-top:2px;}
+.board-cmd-actions{margin-left:auto;display:flex;align-items:center;}
+.board-cmd-show-empty{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:11px;font-weight:500;cursor:pointer;transition:all .12s;}
+.board-cmd-show-empty:hover{border-color:var(--columbia-bd);color:var(--columbia);}
+
+/* ── ATTENTION STRIP ── */
+.board-attn-strip{margin-bottom:16px;}
+.board-attn-hd{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#FF4500;margin-bottom:8px;}
+.board-attn-cards{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.board-attn-card{flex-shrink:0;width:175px;padding:10px 12px;background:rgba(255,69,0,.06);border:1px solid rgba(255,69,0,.25);border-radius:10px;cursor:pointer;transition:border-color .12s;}
+.board-attn-card:hover{border-color:rgba(255,69,0,.5);}
+.board-attn-school{font-family:'Archivo Condensed',sans-serif;font-weight:700;font-style:italic;font-size:13px;text-transform:uppercase;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.board-attn-task{font-size:11px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.board-attn-age{font-size:10px;font-weight:600;margin-top:4px;color:var(--text-dim);}
+.board-attn-age.overdue{color:#FF4500;}
+.board-attn-more{flex-shrink:0;display:flex;align-items:center;font-size:12px;color:var(--text-muted);padding:0 8px;}
+
+/* ── CARD NEXT ACTION BOX (most prominent card element) ── */
+.pc-action-box{margin:8px 0 6px;padding:7px 10px;border-radius:8px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);display:flex;flex-direction:column;gap:2px;}
+.pc-action-box.pc-action-overdue{background:rgba(255,69,0,.08);border-color:rgba(255,69,0,.3);}
+.pc-action-box.pc-action-empty{background:var(--surface2);border:1px dashed var(--border);}
+.pc-action-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--columbia);}
+.pc-action-overdue .pc-action-label{color:#FF4500;}
+.pc-action-text{font-size:12px;font-weight:500;color:var(--text);line-height:1.3;}
+.pc-action-date{font-size:10px;color:var(--text-muted);}
+.pc-action-overdue .pc-action-date{color:#FF4500;font-weight:600;}
+.pc-action-prompt{font-size:11px;color:var(--text-dim);font-style:italic;}
+.tag-schol-icon{font-size:12px;}
+
+/* ── CARD FOOTER: why this school matters ── */
+.pipeline-card-foot{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px;}
+
+/* ── SMALL LOGO variant for card header ── */
+.school-logo-sm{width:28px!important;height:28px!important;border-radius:6px!important;}
+
+/* ── MOMENTUM CARD LAYOUT ── */
+.pc-header{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+.pc-name-block{flex:1;min-width:0;}
+.pc-name{font-family:'Archivo Condensed',sans-serif;font-weight:900;font-style:italic;font-size:14px;text-transform:uppercase;letter-spacing:.02em;color:var(--text);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-school-meta{font-size:10px;color:var(--text-muted);margin-top:1px;}
+
+/* Momentum indicator */
+.pc-momentum{display:flex;align-items:center;gap:6px;margin-bottom:9px;}
+.pc-m-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pc-m-active  .pc-m-dot{background:#00C853;}
+.pc-m-cooling .pc-m-dot{background:#F59E0B;}
+.pc-m-stalled .pc-m-dot{background:#FF4500;animation:pulseDot 2s infinite;}
+.pc-m-none    .pc-m-dot{background:var(--border);}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+.pc-m-lbl{font-size:11px;font-weight:500;}
+.pc-m-active  .pc-m-lbl{color:#007a30;}
+.pc-m-cooling .pc-m-lbl{color:#b45309;}
+.pc-m-stalled .pc-m-lbl{color:#FF4500;font-weight:600;}
+.pc-m-none    .pc-m-lbl{color:var(--text-dim);}
+
+/* Next Move — primary focus of the card */
+.pc-move{background:var(--surface2);border-radius:8px;padding:9px 11px;margin-bottom:8px;}
+.pc-move-action{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+.pc-move-reason{font-size:11px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
+.pc-move.pc-move-custom{background:var(--columbia-bg);border:1px solid var(--columbia-bd);}
+.pc-move.pc-move-stalled{background:rgba(255,69,0,.07);border:1px solid rgba(255,69,0,.2);}
+
+/* Stage label footer */
+.pc-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
+.pc-contacted-btn{font-size:10px;font-weight:600;color:#00875a;background:rgba(0,224,80,.08);border:1px solid rgba(0,224,80,.25);border-radius:20px;padding:3px 10px;cursor:pointer;transition:background .15s,opacity .15s;flex-shrink:0;}
+.pc-contacted-btn:hover{background:rgba(0,224,80,.16);}
+.pc-contacted-btn:disabled{opacity:.4;cursor:default;}
+.pc-stage-pill{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-dim);}
 
 /* ── PIPELINE DRAG & DROP ── */
 .pipeline-card{cursor:grab;}

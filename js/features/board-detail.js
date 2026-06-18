@@ -47,7 +47,7 @@ function _renderBDShell(){
   const panel=document.getElementById('bd-panel');
   const prog=RAW.find(r=>r.School===_bdSchool)||{};
   const stage=statusData[_bdSchool]||'saved';
-  const stageLabel={saved:'Saved',contacted:'Contacted',engaged:'Engaged',visit:'Visit',applied:'Applied',offer:'Offer',committed:'Committed',archived:'Archived'};
+  const stageLabel={saved:'Saved',contacting:'Contacting',applied:'Applied',offered:'Offered',committed:'Committed',archived:'Archived',contacted:'Contacting',engaged:'Contacting',visit:'Contacting',offer:'Offered'};
   const sc=WS_STAGE_COLORS[stage]||WS_STAGE_COLORS.saved;
   const lsAttrs=(lsGet('juke_card_attrs')||{})[_bdSchool]||{};
 
@@ -124,14 +124,56 @@ async function _loadBDSection(key){
 function _renderBDOverview(body){
   const prog=RAW.find(r=>r.School===_bdSchool)||{};
   const fit=typeof fitScores!=='undefined'?fitScores[_bdSchool+'|'+prog.State]??-1:-1;
-
-  // Next action form
   const meta=_boardMeta[_bdSchool]||{};
   const lcd=meta.last_contact_date||'';
   const na=meta.next_action||'';
   const nad=meta.next_action_date||'';
+  const overdue=nad&&new Date(nad+'T00:00:00')<new Date();
+  const stage=statusData[_bdSchool]||'saved';
+  // Momentum + rule-based recommendation (only shown when no user-set action)
+  const momentum=typeof _calcMomentum==='function'?_calcMomentum(_bdSchool):{level:'none',days:null,label:'Not started'};
+  const recommended=!na&&typeof _getNextMove==='function'?_getNextMove(stage,momentum):null;
 
   body.innerHTML=`
+    <!-- 1. Next Action — most important thing to act on -->
+    <div class="bd-section${overdue?' bd-section-overdue':''}">
+      <div class="bd-section-title">${overdue?'⚠ Overdue':'▶ Next Action'}</div>
+      <div class="bd-contact-form">
+        <div class="bd-form-row">
+          <label class="bd-form-label">What to do next</label>
+          <input type="text" class="bd-input" id="bd-na" value="${na}" placeholder="e.g. Send highlight reel, email coach…" onblur="_bdSaveContact()">
+        </div>
+        <div class="bd-form-row">
+          <label class="bd-form-label">Due Date</label>
+          <input type="date" class="bd-input" id="bd-nad" value="${nad}" onchange="_bdSaveContact()">
+        </div>
+        <div class="bd-form-row">
+          <label class="bd-form-label">Last Contact</label>
+          <input type="date" class="bd-input" id="bd-lcd" value="${lcd}" onchange="_bdSaveContact()">
+        </div>
+      </div>
+    </div>
+
+    ${recommended?`
+    <!-- 2. Juke suggests — rule-based recommendation with reason -->
+    <div class="bd-section bd-section-suggest">
+      <div class="bd-suggest-hd">
+        <span class="bd-suggest-badge">Juke Suggests</span>
+        <span class="bd-suggest-momentum bd-sm-${momentum.level}">${momentum.label}</span>
+      </div>
+      <div class="bd-suggest-action">${recommended.action}</div>
+      <div class="bd-suggest-reason">${recommended.reason}</div>
+      <button class="bd-suggest-adopt" onclick="_bdAdoptRecommendation('${recommended.action.replace(/'/g,"\\'")}')">Use this as my next action →</button>
+    </div>`:''}
+
+    <!-- 2b. Outreach draft trigger — always shown when not committed -->
+    ${stage!=='committed'?`
+    <div class="bd-draft-trigger-row">
+      <button class="bd-draft-trigger-btn" onclick="_bdShowDraft(this)">✏ Draft outreach →</button>
+      <span class="bd-draft-trigger-note">V1 template · AI drafts coming</span>
+    </div>`:''}
+
+    <!-- 3. School facts -->
     <div class="bd-section">
       <div class="bd-overview-grid">
         <div class="bd-ov-item"><span class="bd-ov-label">Division</span><span class="bd-ov-val">${prog['Division']||'—'}</span></div>
@@ -140,32 +182,21 @@ function _renderBDOverview(body){
         <div class="bd-ov-item"><span class="bd-ov-label">Conference</span><span class="bd-ov-val">${prog.Conference||'—'}</span></div>
         <div class="bd-ov-item"><span class="bd-ov-label">School Type</span><span class="bd-ov-val">${prog['School Type']||'—'}</span></div>
         <div class="bd-ov-item"><span class="bd-ov-label">Enrollment</span><span class="bd-ov-val">${prog.Enrollment||'—'}</span></div>
-        <div class="bd-ov-item"><span class="bd-ov-label">HBCU</span><span class="bd-ov-val">${prog.HBCU||'—'}</span></div>
-        <div class="bd-ov-item"><span class="bd-ov-label">Religious</span><span class="bd-ov-val">${prog['Religious Affiliation']||'—'}</span></div>
-        <div class="bd-ov-item"><span class="bd-ov-label">Scholarship</span><span class="bd-ov-val">${prog.Scholarship||'—'}</span></div>
+        ${prog.Scholarship?`<div class="bd-ov-item"><span class="bd-ov-label">Scholarship</span><span class="bd-ov-val">${prog.Scholarship}</span></div>`:''}
+        ${prog.HBCU&&prog.HBCU!=='No'?`<div class="bd-ov-item"><span class="bd-ov-label">HBCU</span><span class="bd-ov-val">${prog.HBCU}</span></div>`:''}
+        ${prog['Religious Affiliation']?`<div class="bd-ov-item"><span class="bd-ov-label">Religious</span><span class="bd-ov-val">${prog['Religious Affiliation']}</span></div>`:''}
         ${fit>=0?`<div class="bd-ov-item"><span class="bd-ov-label">Fit Score</span><span class="bd-ov-val">${fitBadge(fit)}</span></div>`:''}
-      </div>
-    </div>
-
-    <div class="bd-section">
-      <div class="bd-section-title">Next Action</div>
-      <div class="bd-contact-form">
-        <div class="bd-form-row">
-          <label class="bd-form-label">Last Contact</label>
-          <input type="date" class="bd-input" id="bd-lcd" value="${lcd}" onchange="_bdSaveContact()">
-        </div>
-        <div class="bd-form-row">
-          <label class="bd-form-label">Next Action</label>
-          <input type="text" class="bd-input" id="bd-na" value="${na}" placeholder="e.g. Send highlight reel" onblur="_bdSaveContact()">
-        </div>
-        <div class="bd-form-row">
-          <label class="bd-form-label">Due Date</label>
-          <input type="date" class="bd-input" id="bd-nad" value="${nad}" onchange="_bdSaveContact()">
-        </div>
       </div>
     </div>
   `;
 }
+
+function _bdAdoptRecommendation(action){
+  const input=document.getElementById('bd-na');
+  if(input){input.value=action;_bdSaveContact();showToast('Next action updated');}
+}
+
+// Draft engine lives in board-detail-draft.js (loaded after this file)
 
 async function _bdSaveContact(){
   const lcd=document.getElementById('bd-lcd')?.value||null;

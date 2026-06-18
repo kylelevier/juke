@@ -680,6 +680,14 @@
             <div class="msg-header-sub" id="msg-header-sub"></div>
           </div>
         </div>
+        <div class="msg-school-ctx" id="msg-school-ctx" style="display:none">
+          <span class="msg-sc-school" id="msg-sc-school"></span>
+          <span class="msg-sc-stage" id="msg-sc-stage"></span>
+          <span class="msg-sc-sep">·</span>
+          <span class="msg-sc-dot" id="msg-sc-dot"></span>
+          <span class="msg-sc-momentum" id="msg-sc-momentum"></span>
+          <span class="msg-sc-contact" id="msg-sc-contact"></span>
+        </div>
         <div class="msg-bubbles" id="msg-bubbles"></div>
         <div class="msg-compose">
           <textarea class="msg-compose-area" id="msg-compose-area" placeholder="Type a message…" rows="1" onkeydown="msgComposeKeydown(event)" oninput="msgComposeResize(this)"></textarea>
@@ -847,10 +855,12 @@
   <script src="../js/features/activity-feed.js"></script>
   <script src="../js/features/workspace.js"></script>
   <script src="../js/features/board-detail.js"></script>
+  <script src="../js/features/board-detail-draft.js"></script>
   <script src="../js/features/profile-edit.js"></script>
   <script src="../js/features/profile-view.js"></script>
   <script src="../js/features/outreach.js"></script>
   <script src="../js/coach-portal.js"></script>
   <script src="../js/messaging.js"></script>
+  <script src="../js/features/messaging-modal.js"></script>
 </body>
 </html>

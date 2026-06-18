@@ -120,6 +120,24 @@ async function deleteBoardItem(table, id){
   await sb.from(table).delete().eq('id',id);
 }
 
+// ── Conversation ↔ Program linking ───────────────────────────
+// Sets player_program_id on a conversation row so threads have school context.
+async function linkConversationToProgram(convId, ppId){
+  if(!sb||!convId||!ppId) return;
+  await sb.from('conversations').update({player_program_id:ppId}).eq('id',convId);
+}
+
+// Returns the conversation row for a given player_program_id, or null.
+// Used by messaging to check if a school thread already exists before creating a new one.
+async function getConversationByProgram(ppId){
+  if(!sb||!ppId) return null;
+  const {data}=await sb.from('conversations')
+    .select('id,participant_a,participant_b,last_message_at,last_message_preview,player_program_id')
+    .eq('player_program_id',ppId)
+    .maybeSingle();
+  return data||null;
+}
+
 // ── Bulk load board records for the board render ──────────────
 // Returns {schoolName: {ppId, stage, last_contact_date, next_action, next_action_date,
 //                       is_dream_school, is_top_choice, is_in_state, scholarship_opp,

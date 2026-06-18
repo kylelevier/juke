@@ -77,24 +77,20 @@ function jukeLogout(){localStorage.removeItem('juke_auth');location.href='login.
 let _wsSchool=null,_wsPPId=null,_wsData={};
 
 const WS_STAGE_COLORS={
-  // ── Active 8-stage pipeline ──
-  saved:    {bg:'rgba(0,87,255,.1)',    text:'#2055cc'},
-  contacted:{bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
-  engaged:  {bg:'rgba(255,0,128,.1)',  text:'#cc006a'},
-  visit:    {bg:'rgba(230,126,34,.1)', text:'#c96b3a'},
-  applied:  {bg:'rgba(255,69,0,.1)',   text:'#cc3800'},
-  offer:    {bg:'rgba(180,140,0,.1)',  text:'#a07a00'},
-  committed:{bg:'rgba(0,180,60,.1)',   text:'#007a30'},
-  archived: {bg:'rgba(107,114,128,.1)',text:'#5c6370'},
-  // ── Legacy compat aliases (safe to remove after full data migration) ──
-  interested:{bg:'rgba(0,87,255,.1)',  text:'#2055cc'},
-  dream_schools:{bg:'rgba(0,87,255,.1)',text:'#2055cc'},
-  top_choices:{bg:'rgba(0,87,255,.1)', text:'#2055cc'},
-  contact_made:{bg:'rgba(123,47,255,.1)',text:'#7b2fff'},
-  active_conversation:{bg:'rgba(255,0,128,.1)',text:'#cc006a'},
-  visit_planned:{bg:'rgba(230,126,34,.1)',text:'#c96b3a'},
-  offer_received:{bg:'rgba(180,140,0,.1)',text:'#a07a00'},
-  closed:{bg:'rgba(107,114,128,.1)',   text:'#5c6370'},
+  // ── Active 5-stage momentum pipeline ──
+  saved:      {bg:'rgba(0,87,255,.1)',    text:'#2055cc'},
+  contacting: {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
+  applied:    {bg:'rgba(255,69,0,.1)',   text:'#cc3800'},
+  offered:    {bg:'rgba(180,140,0,.1)',  text:'#a07a00'},
+  committed:  {bg:'rgba(0,180,60,.1)',   text:'#007a30'},
+  archived:   {bg:'rgba(107,114,128,.1)',text:'#5c6370'},
+  // ── Legacy compat (pre-migration keys map to nearest new stage) ──
+  contacted:  {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
+  engaged:    {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
+  visit:      {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
+  offer:      {bg:'rgba(180,140,0,.1)',  text:'#a07a00'},
+  interested: {bg:'rgba(0,87,255,.1)',   text:'#2055cc'},
+  dream_schools:{bg:'rgba(0,87,255,.1)', text:'#2055cc'},
 };
 const WS_LOG_ICONS={mail:'✉',email:'@',message:'◎',phone_call:'☎',juke:'⚡'};
 const WS_LOG_LABELS={mail:'Mail',email:'Email',message:'Message',phone_call:'Phone Call',juke:'Juke'};
