@@ -16,19 +16,11 @@
 <!-- ── HEADER ── -->
 <header>
   <div class="hd-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:28px;width:auto;display:block"><defs><linearGradient id="jukeGradCo" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs><path fill="url(#jukeGradCo)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/></svg></div>
-  <div class="hd-div"></div>
-  <div class="hd-slogan">Recruiting <em>her</em> way.</div>
   <div class="hd-right">
     <div class="hd-school-chip" id="hd-school-chip">
       <div class="hd-school-logo" id="hd-school-logo-wrap"><span id="hd-school-abbr">NAU</span></div>
       <div class="hd-school-name" id="hd-school-name-short">N. Arizona</div>
     </div>
-    <button class="hd-msg-btn" id="hd-msg-btn" title="Messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()">
-      <svg viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="1" width="18" height="14" rx="2"/>
-        <polyline points="1,3 10,10 19,3"/>
-      </svg>
-    </button>
     <button class="coach-signin-btn" id="coach-signin-btn" onclick="openCoachAuth()" style="display:none">Sign In</button>
     <div class="juke-user-chip" id="juke-user-chip" style="display:none"></div>
   </div>
@@ -37,11 +29,11 @@
 <!-- ── TAB NAV ── -->
 <nav class="tab-nav">
   <button class="tab-btn active" id="tab-feed" onclick="switchTab('feed')">Today</button>
-  <button class="tab-btn" id="tab-search" onclick="switchTab('search')">Prospects</button>
   <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">Board</button>
+  <button class="tab-btn" id="tab-search" onclick="switchTab('search')">Prospects</button>
+  <button class="tab-btn" id="tab-messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
   <button class="tab-btn" id="tab-analytics" onclick="switchTab('analytics')">Activity</button>
   <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">My Profile</button>
-  <button class="tab-btn" id="tab-messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
 </nav>
 
 <!-- ── PAGE WRAP ── -->
@@ -51,26 +43,8 @@
 <!-- ══ FEED TAB ══ -->
 <div class="tab-content active" id="content-feed">
   <div class="workspace-shell">
-    <div class="workspace-hero">
-      <div>
-        <div class="workspace-eyebrow">Today</div>
-        <h1 class="workspace-title">Recruiting Workspace</h1>
-        <div class="workspace-sub">Focus on athletes who need attention, open actions, and recent movement.</div>
-      </div>
-      <button class="workspace-board-btn" onclick="switchTab('pipeline')">Open Board</button>
-    </div>
     <div class="feed-list" id="coach-feed-list">
       <div class="feed-loading">Loading recruiting workspace...</div>
-    </div>
-    <div class="today-board-card">
-      <div class="today-board-hd">
-        <div>
-          <div class="today-board-title">Board Summary</div>
-          <div class="today-board-sub">Current recruiting pipeline by stage</div>
-        </div>
-        <button class="td-see-all" onclick="switchTab('pipeline')">View Board</button>
-      </div>
-      <div class="today-stage-grid" id="today-stage-grid"></div>
     </div>
   </div>
 </div>

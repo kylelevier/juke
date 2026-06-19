@@ -78,7 +78,6 @@ function renderCoachFeed(){
   if(!list) return;
 
   const allIds = COACH_PIPELINE_STAGES.flatMap(s=>coachPipeline[s.key]||[]);
-  _renderTodayBoardSummary();
 
   // ── Next Actions ──
   const withActions = allIds
@@ -207,18 +206,6 @@ function renderCoachFeed(){
   list.innerHTML = html;
 }
 
-function _renderTodayBoardSummary(){
-  const grid = document.getElementById('today-stage-grid');
-  if(!grid) return;
-  grid.innerHTML = COACH_PIPELINE_STAGES.map(s=>{
-    const count = (coachPipeline[s.key]||[]).length;
-    return `<button class="today-stage" onclick="switchTab('pipeline')">
-      <span class="today-stage-dot" style="background:${s.color}"></span>
-      <span class="today-stage-name">${s.label}</span>
-      <span class="today-stage-count">${count}</span>
-    </button>`;
-  }).join('');
-}
 
 function _tdSection(title, sub, bodyHtml, footerHtml=''){
   return `<div class="td-section">
