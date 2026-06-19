@@ -1,22 +1,28 @@
 // ── AUTH UI ──────────────────────────────────────────────
 function openAuthModal(mode){
   if(mode==='signout'){_doSignOut();return;}
-  document.getElementById('auth-modal-overlay').classList.add('open');
+  const modal=document.getElementById('auth-modal-overlay');
+  modal.classList.add('open');
   showSignIn();
+  if(window.JukeDialog) window.JukeDialog.open(modal, {close: closeAuthModal, focus: document.getElementById('auth-email')});
 }
 function closeAuthModal(e){
-  if(e&&e.target!==document.getElementById('auth-modal-overlay'))return;
-  document.getElementById('auth-modal-overlay').classList.remove('open');
+  const modal=document.getElementById('auth-modal-overlay');
+  if(e&&e.target!==modal)return;
+  modal.classList.remove('open');
+  if(window.JukeDialog) window.JukeDialog.close(modal);
 }
 function showSignIn(){
   document.getElementById('auth-panel-signin').style.display='';
   document.getElementById('auth-panel-signup').style.display='none';
   document.getElementById('auth-msg').className='auth-msg';
+  document.querySelector('#auth-modal-overlay [role="dialog"]').setAttribute('aria-labelledby','auth-signin-title');
 }
 function showSignUp(){
   document.getElementById('auth-panel-signin').style.display='none';
   document.getElementById('auth-panel-signup').style.display='';
   document.getElementById('auth-msg-up').className='auth-msg';
+  document.querySelector('#auth-modal-overlay [role="dialog"]').setAttribute('aria-labelledby','auth-signup-title');
 }
 function _updateAuthUI(){
   const signedin=!!currentUser;
@@ -45,7 +51,7 @@ async function handleSignIn(){
   const {error}=await sb.auth.signInWithPassword({email,password:pw});
   btn.disabled=false;btn.textContent='Sign In';
   if(error){msg.textContent=error.message;msg.className='auth-msg error';}
-  else{document.getElementById('auth-modal-overlay').classList.remove('open');}
+  else{closeAuthModal();}
 }
 async function handleSignUp(){
   if(!sb){alert('Supabase not configured — add your URL and key to the file.');return;}

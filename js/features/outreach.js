@@ -138,9 +138,13 @@ function hlOpen(type){
   }
 
   modal.style.display = 'flex';
+  if(window.JukeDialog) window.JukeDialog.open(modal, {close: closeHlModal});
 }
 
 function closeHlModal(){
   const m = document.getElementById('hl-modal');
-  if(m) m.style.display = 'none';
+  if(m) {
+    m.style.display = 'none';
+    if(window.JukeDialog) window.JukeDialog.close(m);
+  }
 }

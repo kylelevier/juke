@@ -41,7 +41,7 @@
       +'</div>'
       +profilesHTML
       +'<div class="juke-chip-dd-section">'
-        +'<button class="juke-chip-dd-item" onclick="location.href=\'login.html\'">+ Add Account</button>'
+        +'<button class="juke-chip-dd-item" onclick="location.href=\'../preview.html\'">+ Add Account</button>'
       +'</div>'
       +'<div class="juke-chip-dd-divider"></div>'
       +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
@@ -67,11 +67,11 @@ function switchProfile(profileId){
     localStorage.setItem('juke_auth',JSON.stringify(auth));
     var p=auth.profiles.find(function(x){return x.id===profileId;});
     if(!p) return;
-    var portals={athlete:'juke.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
-    location.href=portals[p.type]||'login.html';
+    var portals={athlete:'athlete.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
+    location.href=portals[p.type]||'../preview.html';
   }catch(e){}
 }
-function jukeLogout(){localStorage.removeItem('juke_auth');location.href='login.html';}
+function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../preview.html';}
 
 // ── SCHOOL WORKSPACE ─────────────────────────────────────────────────────────
 let _wsSchool=null,_wsPPId=null,_wsData={};
@@ -118,7 +118,9 @@ async function openSchoolWorkspace(schoolName){
   document.getElementById('ws-tasks-strip').classList.remove('has-tasks');
   document.getElementById('ws-body').innerHTML='<div class="ws-empty">Loading…</div>';
   document.getElementById('ws-bottom-bar').innerHTML='';
-  document.getElementById('ws-overlay').classList.add('open');
+  const overlay=document.getElementById('ws-overlay');
+  overlay.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeWorkspace});
   document.body.style.overflow='hidden';
 
   if(!sb||!currentUser){_renderWsOffline();return;}
@@ -166,7 +168,9 @@ async function openSchoolWorkspace(schoolName){
 }
 
 function closeWorkspace(){
-  document.getElementById('ws-overlay').classList.remove('open');
+  const overlay=document.getElementById('ws-overlay');
+  overlay.classList.remove('open');
+  if(window.JukeDialog) window.JukeDialog.close(overlay);
   document.body.style.overflow='';
   _wsSchool=null;_wsPPId=null;
 }
@@ -548,4 +552,3 @@ async function checkJukeLoginAlerts(){
     setTimeout(()=>banner?.remove(),12000);
   }catch(e){}
 }
-

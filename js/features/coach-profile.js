@@ -106,7 +106,9 @@ function openAthlete(id){
       <button class="sp-action-btn primary" onclick="openMsgFromOutside('athlete_'+id)">Message</button>
     </div>
   `;
-  document.getElementById('sp-overlay').classList.add('open');
+  const overlay = document.getElementById('sp-overlay');
+  overlay.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeSP});
   document.body.style.overflow='hidden';
 }
 
@@ -143,12 +145,13 @@ function _saveNextAction(id, val){
 }
 
 function closeSP(e){
-  if(e&&e.target!==document.getElementById('sp-overlay'))return;
-  document.getElementById('sp-overlay').classList.remove('open');
+  const overlay = document.getElementById('sp-overlay');
+  if(e&&e.target!==overlay)return;
+  overlay.classList.remove('open');
+  if(window.JukeDialog) window.JukeDialog.close(overlay);
   document.body.style.overflow='';
   _spId=null;
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&_spId)closeSP();});
 
 // ── COACH PROFILE CARD ────────────────────────────────────────────────────────
 function updateHeaderStats(){

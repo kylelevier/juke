@@ -142,7 +142,7 @@ function loadEndorsementRequests(){
   } else {
     panel.style.display='';
     badge.style.display='none';
-    cards.innerHTML='<div class="end-req-none">No pending requests. Athletes who list you as their coach reference will appear here.</div>';
+    cards.innerHTML='<div class="end-req-none">No recommendation requests need review right now.</div>';
   }
 }
 
@@ -165,25 +165,6 @@ function submitHSEndorsement(id){
     loadEndorsementRequests();
   },1600);
 }
-
-// Seed a demo pending request so the panel shows on first visit
-(function seedHSPendingRequest(){
-  var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
-  if(!all.some(function(e){return e.id==='end_demo_pending';})){
-    all.push({
-      id:'end_demo_pending',
-      athleteProfileId:'demo_athlete_2',
-      athleteName:'Jordan Rivera',
-      coachName:'HS Coach',
-      coachSchool:'DeSoto HS',
-      coachTitle:'Head Coach',
-      coachNote:'Coach, I\'m reaching out to college programs and could really use your support. A few honest words from you would mean everything to my recruiting process.',
-      status:'pending',
-      requestedAt:'May 2026'
-    });
-    try{localStorage.setItem('juke_endorsements',JSON.stringify(all));}catch(e){}
-  }
-})();
 
 // TAB SWITCHING
 // ──────────────────────────────────────────────
@@ -247,10 +228,65 @@ function updateHSCard(){
   // Update stats
   const endorsed = Object.keys(endorsements).length;
   const withInterest = ATHLETES.filter(a=>a.programs.length>0).length;
-  if(el('hs-stat-roster'))   el('hs-stat-roster').textContent   = ATHLETES.length;
-  if(el('hs-stat-seniors'))  el('hs-stat-seniors').textContent  = ATHLETES.filter(a=>a.year===2025).length;
-  if(el('hs-stat-interest')) el('hs-stat-interest').textContent = withInterest;
-  if(el('hs-stat-endorsed')) el('hs-stat-endorsed').textContent = endorsed;
+  setText('hs-stat-roster', ATHLETES.length);
+  setText('hs-stat-roster-summary', ATHLETES.length);
+  setText('hs-stat-seniors', ATHLETES.filter(a=>a.year===2025).length);
+  setText('hs-stat-seniors-summary', ATHLETES.filter(a=>a.year===2025).length);
+  setText('hs-stat-interest', withInterest);
+  setText('hs-stat-interest-summary', withInterest);
+  setText('hs-stat-endorsed', endorsed);
+  setText('hs-stat-endorsed-summary', endorsed);
+  renderRosterAttention();
+}
+
+function setText(id, value){
+  const node = el(id);
+  if(node) node.textContent = value;
+}
+
+function renderRosterAttention(){
+  const list = el('roster-attention-list');
+  if(!list) return;
+
+  const seniors = ATHLETES.filter(a=>a.year===2025);
+  const seniorsNoInterest = seniors.filter(a=>!a.programs.length);
+  const unendorsedSeniors = seniors.filter(a=>!endorsements[a.id]);
+  const noInterest = ATHLETES.filter(a=>!a.programs.length);
+  const items = [];
+
+  if(unendorsedSeniors.length){
+    items.push({
+      label: 'Senior recommendations',
+      value: `${unendorsedSeniors.length} pending`,
+      tone: 'urgent'
+    });
+  }
+  if(seniorsNoInterest.length){
+    items.push({
+      label: 'Seniors without college interest',
+      value: `${seniorsNoInterest.length} athlete${seniorsNoInterest.length!==1?'s':''}`,
+      tone: 'warn'
+    });
+  }
+  if(noInterest.length){
+    items.push({
+      label: 'Athletes needing outreach',
+      value: `${noInterest.length} ready`,
+      tone: 'info'
+    });
+  }
+
+  if(!items.length){
+    list.innerHTML = '<div class="roster-attention-empty">Roster is caught up.</div>';
+    return;
+  }
+
+  list.innerHTML = items.slice(0,3).map(item=>`
+    <div class="roster-attention-item ${item.tone}">
+      <span>${item.label}</span>
+      <strong>${item.value}</strong>
+    </div>
+  `).join('');
 }
 
 function saveHSProfile(){
@@ -335,7 +371,7 @@ function renderRoster(){
 
 function renderRosterCards(athletes){
   const grid = el('roster-grid'); if(!grid) return;
-  if(!athletes.length){ grid.innerHTML='<div class="empty-state"><div class="empty-state-title">No athletes found</div><div class="empty-state-sub">Try adjusting your filters.</div></div>'; return; }
+  if(!athletes.length){ grid.innerHTML='<div class="empty-state"><div class="empty-state-title">No matching athletes</div><div class="empty-state-sub">Clear the search or filters to return to the full roster.</div></div>'; return; }
   grid.innerHTML = athletes.map(a=>{
     const st = athleteStatus(a);
     const endorsed = endorsements[a.id];
@@ -375,7 +411,7 @@ function renderRosterCards(athletes){
 
 function renderRosterTable(athletes){
   const tbody = el('roster-tbody'); if(!tbody) return;
-  if(!athletes.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-dim)">No athletes found</td></tr>'; return; }
+  if(!athletes.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-dim)">No matching athletes. Clear the search or filters to return to the full roster.</td></tr>'; return; }
   tbody.innerHTML = athletes.map(a=>{
     const st       = athleteStatus(a);
     const stColor  = STAGE_COLORS[st]||'#ccc';

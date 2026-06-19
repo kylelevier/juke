@@ -75,24 +75,30 @@ function _toggleCoachChip() {
 // ── Auth modal helpers ─────────────────────────────────────────
 function openCoachAuth() {
   showCoachSignIn();
-  document.getElementById('coach-auth-overlay').classList.add('open');
-  setTimeout(function(){ var el = document.getElementById('coach-auth-email'); if(el) el.focus(); }, 120);
+  var overlay = document.getElementById('coach-auth-overlay');
+  overlay.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeCoachAuth, focus: document.getElementById('coach-auth-email')});
 }
 
 function closeCoachAuth(e) {
   var overlay = document.getElementById('coach-auth-overlay');
-  if (!e || e.target === overlay) overlay.classList.remove('open');
+  if (!e || e.target === overlay) {
+    overlay.classList.remove('open');
+    if(window.JukeDialog) window.JukeDialog.close(overlay);
+  }
 }
 
 function showCoachSignIn() {
   document.getElementById('coach-auth-signin-panel').style.display = '';
   document.getElementById('coach-auth-signup-panel').style.display = 'none';
+  document.querySelector('#coach-auth-overlay [role="dialog"]').setAttribute('aria-labelledby','coach-auth-signin-title');
   var m = document.getElementById('coach-auth-msg'); if(m) { m.textContent=''; m.className='coach-auth-msg'; }
 }
 
 function showCoachSignUp() {
   document.getElementById('coach-auth-signin-panel').style.display = 'none';
   document.getElementById('coach-auth-signup-panel').style.display = '';
+  document.querySelector('#coach-auth-overlay [role="dialog"]').setAttribute('aria-labelledby','coach-auth-signup-title');
   var m = document.getElementById('coach-auth-msg-up'); if(m) { m.textContent=''; m.className='coach-auth-msg'; }
 }
 
@@ -106,7 +112,7 @@ async function coachSignIn() {
   var r = await sb.auth.signInWithPassword({ email: email, password: pw });
   btn.disabled = false; btn.textContent = 'Sign In';
   if (r.error) { msg.textContent = r.error.message; msg.className = 'coach-auth-msg error'; }
-  else { document.getElementById('coach-auth-overlay').classList.remove('open'); }
+  else { closeCoachAuth(); }
 }
 
 async function coachSignUp() {

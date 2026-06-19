@@ -180,13 +180,17 @@ function openProgramProfile(schoolName){
 
   setTimeout(function(){ppInitMap(schoolName,r.State);},80);
 
-  document.getElementById('pp-overlay').classList.add('open');
+  const overlay=document.getElementById('pp-overlay');
+  overlay.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeProgramProfile});
   document.body.style.overflow='hidden';
 }
 
 function closeProgramProfile(e){
-  if(e && e.target !== document.getElementById('pp-overlay')) return;
-  document.getElementById('pp-overlay').classList.remove('open');
+  const overlay=document.getElementById('pp-overlay');
+  if(e && e.target !== overlay) return;
+  overlay.classList.remove('open');
+  if(window.JukeDialog) window.JukeDialog.close(overlay);
   document.body.style.overflow = '';
   _ppCurrent = null;
   ppDestroyMap();

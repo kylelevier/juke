@@ -45,13 +45,20 @@
           + '<button class="msg-nm-back" id="msg-nm-back" onclick="_msgBack()" style="display:none">← Back</button>'
           + '<span class="msg-new-title" id="msg-nm-title">New Message</span>'
           + '<button class="msg-new-close" aria-label="Close" '
-          +   'onclick="document.getElementById(\'msg-new-modal\').classList.remove(\'open\')">✕</button>'
+          +   'onclick="_closeNewMsgModal()">✕</button>'
         + '</div>'
         + '<div id="msg-nm-body"></div>'
       + '</div>';
-    el.addEventListener('click', function(e){ if (e.target===el) el.classList.remove('open'); });
+    el.addEventListener('click', function(e){ if (e.target===el) window._closeNewMsgModal(); });
     document.body.appendChild(el);
   }
+
+  window._closeNewMsgModal = function() {
+    var modal = document.getElementById('msg-new-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    if (window.JukeDialog) window.JukeDialog.close(modal);
+  };
 
   // ── School picker — athlete step 1 ────────────────────────
   function _paintSchoolPicker() {
@@ -121,7 +128,7 @@
       '<div id="msg-new-results" class="msg-new-results">'
         + (coaches.length
             ? coaches.map(function(u){ return _coachRow(u,school); }).join('')
-            : '<div class="msg-new-hint">No coaches found — search by name below</div>')
+            : '<div class="msg-new-hint">No matching coaches for this program. Search by name below.</div>')
       + '</div>'
       + '<div class="msg-new-search-wrap" style="margin-top:8px">'
         + '<input class="msg-new-search" type="text" placeholder="Search coaches by name…" '
@@ -153,7 +160,7 @@
         .limit(10);
       res.innerHTML = (r.data||[]).length
         ? (r.data||[]).map(function(u){ return _coachRow(u,_pickedSchool||''); }).join('')
-        : '<div class="msg-new-hint">No coaches found</div>';
+        : '<div class="msg-new-hint">No matching coaches found.</div>';
     }, 280);
   };
 
@@ -162,7 +169,7 @@
   // ── Start conversation + link to player_program ───────────
   window._msgStartWithSchool = async function(userId) {
     var modal = document.getElementById('msg-new-modal');
-    if (modal) modal.classList.remove('open');
+    if (modal) window._closeNewMsgModal();
 
     var r = await sb.rpc('get_or_create_conversation', {other_user_id:userId});
     if (r.error) { if (typeof showToast==='function') showToast('Could not start conversation'); return; }
@@ -199,7 +206,7 @@
         .ilike('display_name','%'+q+'%')
         .neq('id',currentUser.id)
         .limit(12);
-      if (!r.data||!r.data.length) { res.innerHTML='<div class="msg-new-hint">No users found</div>'; return; }
+      if (!r.data||!r.data.length) { res.innerHTML='<div class="msg-new-hint">No matching people found.</div>'; return; }
       res.innerHTML = r.data.map(function(u){
         var color = ROLE_COLORS[u.role]||'#FF0080';
         var sub   = [ROLE_LABELS[u.role]||u.role,u.org].filter(Boolean).join(' · ');
@@ -216,7 +223,7 @@
   // ── openNewMsg — replaces messaging.js version ────────────
   window.openNewMsg = function(prefillId) {
     if (!sb||!currentUser) {
-      if (typeof showToast==='function') showToast('Sign in to send messages');
+      if (typeof showToast==='function') showToast('Sign in to start a conversation');
       return;
     }
     if (prefillId) { window._msgStartWithSchool(prefillId); return; }
@@ -232,8 +239,9 @@
       document.getElementById('msg-nm-body').innerHTML     = _genericSearchHtml();
     }
 
-    document.getElementById('msg-new-modal').classList.add('open');
-    setTimeout(function(){ var i=document.getElementById('msg-new-search'); if(i) i.focus(); }, 120);
+    var modal = document.getElementById('msg-new-modal');
+    modal.classList.add('open');
+    if (window.JukeDialog) window.JukeDialog.open(modal, {close: window._closeNewMsgModal, focus: document.getElementById('msg-new-search')});
   };
 
 })();

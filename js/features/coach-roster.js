@@ -165,15 +165,6 @@ function getEndorsementForAthlete(name){
     return e.status==='endorsed' && (e.athleteName||'').toLowerCase()===name.toLowerCase();
   });
 }
-// Seed demo endorsement for Camryn Wells if not present
-(function seedCoachDemoEndorsement(){
-  var all=getAllEndorsements();
-  if(!all.some(function(e){return e.id==='end_coach_demo';})){
-    all.push({id:'end_coach_demo',athleteProfileId:'demo',athleteName:'Camryn Wells',coachName:'Marcus Johnson',coachSchool:'DeSoto HS',coachTitle:'Head Coach',coachNote:'',status:'endorsed',endorsementText:'Camryn is the most complete receiver I have coached in 12 years. She reads coverage before the snap, creates separation at every level of the route tree, and brings the same intensity to every practice rep. Any program getting her is getting a program changer — on the field and in the locker room.',submittedAt:'May 2026',requestedAt:'Apr 2026'});
-    try{localStorage.setItem('juke_endorsements',JSON.stringify(all));}catch(e){}
-  }
-})();
-
 function getPipelineStage(id){
   for(const s of COACH_PIPELINE_STAGES){ if((coachPipeline[s.key]||[]).includes(id)) return s; }
   return null;

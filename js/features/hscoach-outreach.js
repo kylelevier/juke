@@ -220,7 +220,9 @@ function openSP(id){
       <button class="sp-action-btn" onclick="openMsgFromOutside('athlete_'+${a.id})">Message</button>
     </div>
   `;
-  el('sp-overlay').classList.add('open');
+  const overlay = el('sp-overlay');
+  overlay.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeSPDirect});
 }
 
 function saveSPNote(id){
@@ -232,7 +234,9 @@ function closeSP(e){
   if(e.target===el('sp-overlay')) closeSPDirect();
 }
 function closeSPDirect(){
-  el('sp-overlay').classList.remove('open');
+  const overlay = el('sp-overlay');
+  overlay.classList.remove('open');
+  if(window.JukeDialog) window.JukeDialog.close(overlay);
   currentSPId = null;
 }
 
@@ -252,12 +256,16 @@ function openEndorse(id){
     const savedTraits = typeof endorsements[id]==='object' ? (endorsements[id].traits||[]) : [];
     t.classList.toggle('selected', savedTraits.includes(t.textContent));
   });
-  el('endorse-overlay').classList.add('open');
+  const overlay = el('endorse-overlay');
+  overlay.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeEndorseModal, focus: el('endorse-text')});
 }
 
 function closeEndorseModal(e){
-  if(!e || e.target===el('endorse-overlay')) {
-    el('endorse-overlay').classList.remove('open');
+  const overlay = el('endorse-overlay');
+  if(!e || e.target===overlay) {
+    overlay.classList.remove('open');
+    if(window.JukeDialog) window.JukeDialog.close(overlay);
     endorseTarget = null;
   }
 }
@@ -272,10 +280,5 @@ function submitEndorse(){
   lss('endorsements', endorsements);
   updateHSCard();
   renderRoster();
-  el('endorse-overlay').classList.remove('open');
-  endorseTarget = null;
-}
-
-function addAthletePrompt(){
-  alert('Add Athlete flow coming soon — this will open a form to manually add a player to your roster or invite them to create a JUKE profile.');
+  closeEndorseModal();
 }

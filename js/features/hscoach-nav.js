@@ -38,18 +38,25 @@
   }
 
   window.openHsCoachAuth = function() {
-    document.getElementById('hscoach-auth-overlay').classList.add('open');
+    showHsCoachSignIn();
+    var overlay = document.getElementById('hscoach-auth-overlay');
+    overlay.classList.add('open');
+    if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeHsCoachAuth, focus: document.getElementById('hscoach-signin-email')});
   };
   window.closeHsCoachAuth = function() {
-    document.getElementById('hscoach-auth-overlay').classList.remove('open');
+    var overlay = document.getElementById('hscoach-auth-overlay');
+    overlay.classList.remove('open');
+    if(window.JukeDialog) window.JukeDialog.close(overlay);
   };
   window.showHsCoachSignIn = function() {
     document.getElementById('hscoach-signin-panel').style.display = '';
     document.getElementById('hscoach-signup-panel').style.display = 'none';
+    document.querySelector('#hscoach-auth-overlay [role="dialog"]').setAttribute('aria-labelledby','hscoach-signin-title');
   };
   window.showHsCoachSignUp = function() {
     document.getElementById('hscoach-signin-panel').style.display = 'none';
     document.getElementById('hscoach-signup-panel').style.display = '';
+    document.querySelector('#hscoach-auth-overlay [role="dialog"]').setAttribute('aria-labelledby','hscoach-signup-title');
   };
 
   function _setMsg(id, text, type) {
@@ -142,7 +149,7 @@
       +'</div>'
       +profilesHTML
       +'<div class="juke-chip-dd-section">'
-        +'<button class="juke-chip-dd-item" onclick="location.href=\'login.html\'">+ Add Account</button>'
+        +'<button class="juke-chip-dd-item" onclick="location.href=\'../preview.html\'">+ Add Account</button>'
       +'</div>'
       +'<div class="juke-chip-dd-divider"></div>'
       +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
@@ -168,10 +175,8 @@ function switchProfile(profileId){
     localStorage.setItem('juke_auth',JSON.stringify(auth));
     var p=auth.profiles.find(function(x){return x.id===profileId;});
     if(!p) return;
-    var portals={athlete:'juke.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
-    location.href=portals[p.type]||'login.html';
+    var portals={athlete:'athlete.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
+    location.href=portals[p.type]||'../preview.html';
   }catch(e){}
 }
-function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../login.html';}
-
-
+function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../preview.html';}

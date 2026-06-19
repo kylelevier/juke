@@ -209,7 +209,7 @@
     if (!list) return;
 
     if (!sb || !currentUser) {
-      list.innerHTML = '<div class="msg-auth-prompt">Sign in to send and receive messages</div>';
+      list.innerHTML = '<div class="msg-auth-prompt"><strong>Messages are signed out.</strong><br>Sign in to view conversations and start outreach.</div>';
       return;
     }
 
@@ -223,8 +223,8 @@
     if (!list) return;
 
     if (!threads.length) {
-      list.innerHTML = '<div class="msg-thread-empty">No conversations yet.<br>'
-        + '<span>Use <strong>+ New Message</strong> to start one.</span></div>';
+      list.innerHTML = '<div class="msg-thread-empty"><strong>No conversations yet.</strong><br>'
+        + '<span>Start a message from an athlete profile or use <strong>+ New Message</strong>.</span></div>';
       return;
     }
 

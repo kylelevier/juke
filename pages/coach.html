@@ -11,7 +11,8 @@
 
 </head>
 <body>
-  <script src="../js/features/coach-portal-init.js"></script>
+  <script src="../js/features/coach-portal-init.js?v=auth-gate-2"></script>
+  <script src="../js/components/dialog-a11y.js"></script>
 
 <!-- ── HEADER ── -->
 <header>
@@ -247,10 +248,10 @@
 
 <!-- ── ATHLETE SLIDE-OVER ── -->
 <div class="sp-overlay" id="sp-overlay" onclick="closeSP(event)">
-  <div class="sp-drawer" id="sp-drawer">
+  <div class="sp-drawer" id="sp-drawer" role="dialog" aria-modal="true" aria-labelledby="sp-title">
     <div class="sp-hd">
       <div class="sp-title" id="sp-title">Athlete Profile</div>
-      <button class="sp-close" onclick="closeSP()">×</button>
+      <button class="sp-close" aria-label="Close" onclick="closeSP()">×</button>
     </div>
     <div class="sp-body" id="sp-body"></div>
   </div>
@@ -263,10 +264,10 @@
 
 <!-- ── AUTH MODAL (college coach portal) ─────────────────────── -->
 <div class="coach-auth-modal-overlay" id="coach-auth-overlay" onclick="closeCoachAuth(event)">
-  <div class="coach-auth-modal">
-    <button class="coach-auth-close" onclick="document.getElementById('coach-auth-overlay').classList.remove('open')" aria-label="Close">✕</button>
+  <div class="coach-auth-modal" role="dialog" aria-modal="true" aria-labelledby="coach-auth-signin-title">
+    <button class="coach-auth-close" onclick="closeCoachAuth()" aria-label="Close">✕</button>
     <div id="coach-auth-signin-panel">
-      <div class="coach-auth-title">Sign In</div>
+      <div class="coach-auth-title" id="coach-auth-signin-title">Sign In</div>
       <div class="coach-auth-sub">Sign in to send and receive messages with athletes.</div>
       <div class="coach-auth-field"><label>Email</label><input type="email" id="coach-auth-email" placeholder="you@school.edu" autocomplete="email"/></div>
       <div class="coach-auth-field"><label>Password</label><input type="password" id="coach-auth-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')coachSignIn()"/></div>
@@ -275,7 +276,7 @@
       <div class="coach-auth-toggle">No account? <a onclick="showCoachSignUp()">Create one</a></div>
     </div>
     <div id="coach-auth-signup-panel" style="display:none">
-      <div class="coach-auth-title">Create Account</div>
+      <div class="coach-auth-title" id="coach-auth-signup-title">Create Account</div>
       <div class="coach-auth-sub">Your account connects you with athletes across the platform.</div>
       <div class="coach-auth-field"><label>Email</label><input type="email" id="coach-auth-email-up" placeholder="you@school.edu" autocomplete="email"/></div>
       <div class="coach-auth-field"><label>Password</label><input type="password" id="coach-auth-pw-up" placeholder="Min 6 characters" autocomplete="new-password"/></div>
@@ -292,32 +293,5 @@
 <script src="../js/messaging.js"></script>
 <script src="../js/features/messaging-modal.js"></script>
 
-<!-- ROLE SWITCHER -->
-<div class="role-switcher" id="role-switcher">
-  <div class="role-switcher-menu" id="rs-menu">
-    <div class="rs-menu-hd">Switch portal</div>
-    <a class="rs-menu-item" href="athlete.html">
-      <div class="rs-menu-dot" style="background:linear-gradient(135deg,#FF0080,#7B2FFF)"></div>
-      <div><div class="rs-menu-name">Athlete</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-item active" href="coach.html">
-      <div class="rs-menu-dot" style="background:#7B2FFF"></div>
-      <div><div class="rs-menu-name">College Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-item" href="hscoach.html">
-      <div class="rs-menu-dot" style="background:#0057FF"></div>
-      <div><div class="rs-menu-name">HS / Club Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-back" href="../index.html">
-      <div class="rs-menu-back-label">&#x2190; Back to launcher</div>
-    </a>
-  </div>
-  <div class="role-switcher-pill" onclick="document.getElementById('rs-menu').classList.toggle('open')">
-    <div class="role-switcher-dot" style="background:#7B2FFF"></div>
-    <div class="role-switcher-label">College Coach</div>
-    <div class="role-switcher-caret">&#x25B2;</div>
-  </div>
-</div>
-  <script src="../js/features/coach-init2.js"></script>
 </body>
 </html>

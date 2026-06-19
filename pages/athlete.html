@@ -708,17 +708,17 @@
 
 <!-- COMPARE MODAL -->
 <div class="modal-overlay" id="compare-modal">
-  <div class="modal">
-    <div class="modal-hd"><div class="modal-title">Side-by-Side Comparison</div><button class="modal-close" onclick="closeCompareModal()">✕</button></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="compare-modal-title">
+    <div class="modal-hd"><div class="modal-title" id="compare-modal-title">Side-by-Side Comparison</div><button class="modal-close" aria-label="Close" onclick="closeCompareModal()">✕</button></div>
     <div style="overflow-x:auto;padding:20px;"><div id="compare-content"></div></div>
   </div>
 </div>
 
 <!-- PROGRAM PROFILE SLIDE-OVER -->
 <div class="pp-overlay" id="pp-overlay" onclick="closeProgramProfile(event)">
-  <div class="pp-drawer" id="pp-drawer">
+  <div class="pp-drawer" id="pp-drawer" role="dialog" aria-modal="true" aria-labelledby="pp-topbar-title">
     <div class="pp-topbar">
-      <button class="pp-back" onclick="closeProgramProfile()">‹</button>
+      <button class="pp-back" aria-label="Close" onclick="closeProgramProfile()">‹</button>
       <div class="pp-topbar-title" id="pp-topbar-title">Program Profile</div>
       <button class="pp-offer-btn" id="pp-offer-btn" onclick="ppToggleOffer()">Offered</button>
       <button class="pp-pipeline-btn" id="pp-pipeline-btn" onclick="ppTogglePipeline()">+ My Board</button>
@@ -730,10 +730,10 @@
 
 <!-- SCHOOL WORKSPACE DRAWER -->
 <div class="ws-overlay" id="ws-overlay" onclick="if(event.target===this)closeWorkspace()">
-  <div class="ws-drawer" id="ws-drawer">
+  <div class="ws-drawer" id="ws-drawer" role="dialog" aria-modal="true" aria-labelledby="ws-name">
     <div class="ws-inner">
       <div class="ws-topbar">
-        <button class="ws-back" onclick="closeWorkspace()">&#8249;</button>
+        <button class="ws-back" aria-label="Close" onclick="closeWorkspace()">&#8249;</button>
         <div class="ws-school-av" id="ws-av"></div>
         <div style="flex:1;min-width:0;">
           <div class="ws-school-name" id="ws-name"></div>
@@ -758,10 +758,10 @@
 
 <!-- HIGHLIGHT MODAL -->
 <div class="admin-modal" id="hl-modal" style="display:none" onclick="if(event.target===this)closeHlModal()">
-  <div class="admin-box" style="max-width:480px">
+  <div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="hl-modal-title" style="max-width:480px">
     <div class="admin-hd">
       <div class="admin-title" id="hl-modal-title">Highlight</div>
-      <button class="modal-close" onclick="closeHlModal()">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeHlModal()">✕</button>
     </div>
     <div class="admin-body" id="hl-modal-body" style="padding:20px"></div>
   </div>
@@ -778,8 +778,8 @@
 
 <!-- ADMIN MODAL -->
 <div class="admin-modal" id="admin-modal">
-  <div class="admin-box">
-    <div class="admin-hd"><div class="admin-title">⚙ Coach Admin Panel</div><button class="modal-close" onclick="closeAdmin()">✕</button></div>
+  <div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+    <div class="admin-hd"><div class="admin-title" id="admin-modal-title">⚙ Coach Admin Panel</div><button class="modal-close" aria-label="Close" onclick="closeAdmin()">✕</button></div>
     <div class="admin-body">
       <div id="admin-login-form">
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Enter the JUKE staff password to manage school notes and recruiting links.</div>
@@ -812,10 +812,10 @@
 
 <!-- AUTH MODAL -->
 <div class="auth-modal-overlay" id="auth-modal-overlay" onclick="closeAuthModal(event)">
-  <div class="auth-modal">
-    <button class="auth-close" onclick="closeAuthModal()">×</button>
+  <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-signin-title">
+    <button class="auth-close" aria-label="Close" onclick="closeAuthModal()">×</button>
     <div id="auth-panel-signin">
-      <div class="auth-modal-title">Sign In</div>
+      <div class="auth-modal-title" id="auth-signin-title">Sign In</div>
       <div class="auth-modal-sub">Save your profile, pipeline, and preferences across all your devices.</div>
       <div class="auth-field"><label>Email</label><input type="email" id="auth-email" placeholder="you@email.com" autocomplete="email"></div>
       <div class="auth-field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"></div>
@@ -824,7 +824,7 @@
       <div class="auth-toggle">Don't have an account? <a onclick="showSignUp()">Create one</a></div>
     </div>
     <div id="auth-panel-signup" style="display:none">
-      <div class="auth-modal-title">Create Account</div>
+      <div class="auth-modal-title" id="auth-signup-title">Create Account</div>
       <div class="auth-modal-sub">Your data stays private — only you can access your profile and pipeline.</div>
       <div class="auth-field"><label>Email</label><input type="email" id="auth-email-up" placeholder="you@email.com" autocomplete="email"></div>
       <div class="auth-field"><label>Password</label><input type="password" id="auth-password-up" placeholder="Min 6 characters" autocomplete="new-password"></div>
@@ -842,6 +842,7 @@
   <script src="../js/data-school-urls.js"></script>
   <script src="../js/data.js"></script>
   <!-- 2. Auth + shared UI -->
+  <script src="../js/components/dialog-a11y.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/ui.js"></script>
   <!-- 3. Feature modules -->

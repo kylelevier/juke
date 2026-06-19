@@ -84,28 +84,6 @@ function submitEndorsementRequest(){
   renderEndorsementSection();
 }
 
-// Seed one demo completed endorsement on first load
-(function seedDemoEndorsement(){
-  var ex=getEndorsements();
-  if(!ex.length){
-    saveEndorsements([{
-      id:'end_demo1',
-      athleteProfileId:'demo',
-      athleteName:'Demo Athlete',
-      coachName:'Marcus Johnson',
-      coachSchool:'DeSoto HS',
-      coachTitle:'Head Coach',
-      coachNote:'',
-      status:'endorsed',
-      endorsementText:'She is the most competitive athlete I have coached in 12 years. She reads the game before the play develops, makes everyone around her better, and brings the same intensity to every practice that she brings to the biggest games of the year. Any college program that gets her is getting a program changer.',
-      submittedAt:'May 2026',
-      requestedAt:'Apr 2026'
-    }]);
-  }
-})();
-
-
-
 // ── BIO BUILDER ───────────────────────────────────────────
 const BIO_FORMULAS = {
   stats:    '[Role]. [Stat 1], [Stat 2]. [What makes you rare].',

@@ -340,30 +340,13 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .sp-tag-chip.in-board:hover{background:var(--columbia-bd);}
 
 /* ── ROLE SWITCHER ── */
-.role-switcher{position:fixed;bottom:20px;left:20px;z-index:9999;font-family:'Archivo Condensed',sans-serif;}
-.role-switcher-pill{display:flex;align-items:center;gap:7px;background:rgba(20,20,20,.92);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:6px 12px 6px 8px;cursor:pointer;transition:border-color .15s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
-.role-switcher-pill:hover{border-color:rgba(255,0,128,.45);}
-.role-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.role-switcher-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);white-space:nowrap;}
-.role-switcher-caret{font-size:8px;color:rgba(255,255,255,.3);margin-left:2px;}
-.role-switcher-menu{position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(20,20,20,.96);border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;min-width:180px;display:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
-.role-switcher-menu.open{display:block;}
-.rs-menu-hd{padding:8px 12px 6px;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);border-bottom:1px solid rgba(255,255,255,.07);}
-.rs-menu-item{display:flex;align-items:center;gap:9px;padding:9px 12px;text-decoration:none;transition:background .12s;}
-.rs-menu-item:hover{background:rgba(255,255,255,.06);}
-.rs-menu-item.active{background:rgba(255,0,128,.07);}
-.rs-menu-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.rs-menu-name{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;}
-.rs-menu-sub{font-size:10px;color:rgba(255,255,255,.35);margin-top:1px;}
-.rs-menu-back{display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.07);text-decoration:none;transition:background .12s;}
-.rs-menu-back:hover{background:rgba(255,255,255,.04);}
-.rs-menu-back-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);}
 
 /* ══════════════════════════════════════════════════════════════
    MESSAGING  —  shared across all three portals
    ══════════════════════════════════════════════════════════════ */
 .msg-tab-badge{display:inline-block;background:#FF0080;color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 5px;margin-left:4px;line-height:1.5;vertical-align:middle;}
-#content-messages{display:flex;flex-direction:column;height:calc(100vh - 104px);height:calc(100dvh - 104px);overflow:hidden;padding:0;}
+#content-messages{display:none;flex-direction:column;height:calc(100vh - 104px);height:calc(100dvh - 104px);overflow:hidden;padding:0;}
+#content-messages.active{display:flex;}
 #content-messages .section-hd{flex-shrink:0;padding:12px 16px 10px;border-bottom:1px solid rgba(255,255,255,.08);}
 .msg-wrap{display:flex;flex:1;min-height:0;overflow:hidden;background:var(--page-bg);}
 .msg-thread-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;background:#1A1A1A;border-right:1px solid rgba(255,255,255,.07);}
@@ -1770,37 +1753,5 @@ async function coachSignOut() {
 <script>window.JUKE_PORTAL_TYPE='college_coach';</script>
 <script src="juke-messaging.js"></script>
 
-<!-- ROLE SWITCHER -->
-<div class="role-switcher" id="role-switcher">
-  <div class="role-switcher-menu" id="rs-menu">
-    <div class="rs-menu-hd">Switch portal</div>
-    <a class="rs-menu-item" href="juke.html">
-      <div class="rs-menu-dot" style="background:linear-gradient(135deg,#FF0080,#7B2FFF)"></div>
-      <div><div class="rs-menu-name">Athlete</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-item active" href="coach.html">
-      <div class="rs-menu-dot" style="background:#7B2FFF"></div>
-      <div><div class="rs-menu-name">College Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-item" href="hscoach.html">
-      <div class="rs-menu-dot" style="background:#0057FF"></div>
-      <div><div class="rs-menu-name">HS / Club Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-back" href="index.html">
-      <div class="rs-menu-back-label">&#x2190; Back to launcher</div>
-    </a>
-  </div>
-  <div class="role-switcher-pill" onclick="document.getElementById('rs-menu').classList.toggle('open')">
-    <div class="role-switcher-dot" style="background:#7B2FFF"></div>
-    <div class="role-switcher-label">College Coach</div>
-    <div class="role-switcher-caret">&#x25B2;</div>
-  </div>
-</div>
-<script>
-document.addEventListener('click',function(e){
-  var sw=document.getElementById('role-switcher');
-  if(sw&&!sw.contains(e.target))document.getElementById('rs-menu').classList.remove('open');
-});
-</script>
 </body>
 </html>

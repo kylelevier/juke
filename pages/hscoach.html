@@ -11,7 +11,8 @@
 
 </head>
 <body>
-  <script src="../js/features/hscoach-portal-init.js"></script>
+  <script src="../js/features/hscoach-portal-init.js?v=auth-gate-2"></script>
+  <script src="../js/components/dialog-a11y.js"></script>
 
 <!-- ── HEADER ── -->
 <header>
@@ -43,48 +44,33 @@
   <button class="tab-btn" id="tab-messages" onclick="switchHsTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
 </nav>
 
-<!-- ── HS COACH PROFILE CARD ── -->
-<input type="file" id="banner-input" accept="image/*" style="display:none" onchange="handleBanner(this)"/>
-<input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)"/>
-<div class="coach-card" id="hs-coach-card">
-  <div class="coach-banner" id="coach-banner" onclick="document.getElementById('banner-input').click()">
-    <div class="coach-banner-placeholder" id="coach-banner-ph"><div class="coach-banner-cta">Add Team Banner</div></div>
-    <div class="coach-banner-overlay"><div class="coach-banner-overlay-label">Change Banner</div></div>
-  </div>
-  <div class="coach-identity">
-    <div class="coach-logo-circle" id="coach-logo-circle" onclick="document.getElementById('logo-input').click()">
-      <div class="coach-logo-initial" id="coach-logo-init">D</div>
-      <div class="coach-logo-hint">Edit</div>
-    </div>
-    <div class="coach-info">
-      <div class="coach-name" id="hs-display-name">Coach Marcus Williams</div>
-      <div class="coach-title" id="hs-display-title">Head Flag Football Coach · DeSoto High School</div>
-      <div class="coach-pills">
-        <span class="coach-pill sport" id="hs-pill-sport">Flag Football</span>
-        <span class="coach-pill" id="hs-pill-loc">DeSoto, TX</span>
-        <span class="coach-pill" id="hs-pill-league">6A UIL</span>
-        <span class="coach-pill pro">Pro</span>
-      </div>
-    </div>
-  </div>
-  <div class="coach-stats-row">
-    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-roster">18</div><div class="coach-stat-lbl">Roster</div></div>
-    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-seniors">4</div><div class="coach-stat-lbl">Seniors</div></div>
-    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-interest">6</div><div class="coach-stat-lbl">Getting Interest</div></div>
-    <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-endorsed">5</div><div class="coach-stat-lbl">Endorsed</div></div>
-  </div>
-  <div class="coach-bio" id="hs-display-bio">DeSoto Eagles flag football — building the next generation of collegiate athletes. We've sent athletes to D1, D2, and D3 programs across the country. If you're recruiting in Texas, start here.</div>
-</div>
-
 <!-- ── PAGE WRAP ── -->
 <div class="page-wrap">
 
 <!-- ════ MY ROSTER TAB ════ -->
 <div class="tab-content active" id="content-roster">
+  <div class="roster-workspace">
+    <div class="roster-hero">
+      <div>
+        <div class="roster-eyebrow">My Roster</div>
+        <h1 class="roster-title">Roster Workspace</h1>
+        <div class="roster-sub">Track seniors, college interest, and athlete recommendations.</div>
+      </div>
+    </div>
+    <div class="roster-summary-grid">
+      <div class="roster-summary-card"><div class="roster-summary-num" id="hs-stat-roster-summary">0</div><div class="roster-summary-label">Roster</div></div>
+      <div class="roster-summary-card"><div class="roster-summary-num" id="hs-stat-seniors-summary">0</div><div class="roster-summary-label">Seniors</div></div>
+      <div class="roster-summary-card"><div class="roster-summary-num" id="hs-stat-interest-summary">0</div><div class="roster-summary-label">Getting Interest</div></div>
+      <div class="roster-summary-card"><div class="roster-summary-num" id="hs-stat-endorsed-summary">0</div><div class="roster-summary-label">Endorsed</div></div>
+    </div>
+    <div class="roster-attention">
+      <div class="roster-attention-title">Needs Attention</div>
+      <div class="roster-attention-list" id="roster-attention-list"></div>
+    </div>
+  </div>
   <div class="section-bar">
-    <div class="section-title">My Roster <span style="color:var(--text-dim);font-size:12px;font-style:normal;font-weight:400;letter-spacing:0;text-transform:none" id="roster-count">8 athletes</span></div>
+    <div class="section-title">Roster <span style="color:var(--text-dim);font-size:12px;font-style:normal;font-weight:400;letter-spacing:0;text-transform:none" id="roster-count">8 athletes</span></div>
     <div class="section-actions">
-      <button class="section-btn" onclick="addAthletePrompt()">+ Add Athlete</button>
       <div class="view-toggle">
         <button class="vtog active" id="roster-vtog-cards" onclick="setRosterView('cards')" title="Card view">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
@@ -209,15 +195,6 @@
         <button class="outreach-send-btn" onclick="sendOutreach()">Send Outreach</button>
         <span class="outreach-msg" id="outreach-msg">Sent!</span>
       </div>
-      <!-- PRO: Bulk Outreach -->
-      <div style="margin-top:24px">
-        <div class="pro-gate">
-          <div class="pro-gate-label">Pro Feature</div>
-          <div class="pro-gate-title">Bulk Program Outreach</div>
-          <div class="pro-gate-sub">Target multiple college programs at once. Filter by division, conference, location, or scholarship availability — then send a single customized campaign featuring your top athletes.</div>
-          <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
-        </div>
-      </div>
     </div>
     <!-- Sidebar: templates + pro gates -->
     <div class="outreach-sidebar">
@@ -240,18 +217,6 @@
           <div class="template-sub">Showcase your entire eligible class</div>
         </div>
       </div>
-      <div class="pro-gate">
-        <div class="pro-gate-label">Pro Feature</div>
-        <div class="pro-gate-title">Contact List Export</div>
-        <div class="pro-gate-sub">Download verified coach contact info for programs in your target region.</div>
-        <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
-      </div>
-      <div class="pro-gate">
-        <div class="pro-gate-label">Pro Feature</div>
-        <div class="pro-gate-title">Program Targeting</div>
-        <div class="pro-gate-sub">Filter 357+ college programs by division, scholarship, location, and conference. Build the perfect outreach list for each athlete.</div>
-        <button class="pro-gate-btn">Upgrade to Pro — $49/mo</button>
-      </div>
     </div>
   </div>
 </div>
@@ -259,6 +224,37 @@
 <!-- ════ MY PROFILE TAB ════ -->
 <div class="tab-content" id="content-hsprofile">
   <div class="section-bar"><div class="section-title">My Profile</div></div>
+  <input type="file" id="banner-input" accept="image/*" style="display:none" onchange="handleBanner(this)"/>
+  <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)"/>
+  <div class="coach-card" id="hs-coach-card">
+    <div class="coach-banner" id="coach-banner" onclick="document.getElementById('banner-input').click()">
+      <div class="coach-banner-placeholder" id="coach-banner-ph"><div class="coach-banner-cta">Add Team Banner</div></div>
+      <div class="coach-banner-overlay"><div class="coach-banner-overlay-label">Change Banner</div></div>
+    </div>
+    <div class="coach-identity">
+      <div class="coach-logo-circle" id="coach-logo-circle" onclick="document.getElementById('logo-input').click()">
+        <div class="coach-logo-initial" id="coach-logo-init">D</div>
+        <div class="coach-logo-hint">Edit</div>
+      </div>
+      <div class="coach-info">
+        <div class="coach-name" id="hs-display-name">Coach Marcus Williams</div>
+        <div class="coach-title" id="hs-display-title">Head Flag Football Coach · DeSoto High School</div>
+        <div class="coach-pills">
+          <span class="coach-pill sport" id="hs-pill-sport">Flag Football</span>
+          <span class="coach-pill" id="hs-pill-loc">DeSoto, TX</span>
+          <span class="coach-pill" id="hs-pill-league">6A UIL</span>
+          <span class="coach-pill pro">Pro</span>
+        </div>
+      </div>
+    </div>
+    <div class="coach-stats-row">
+      <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-roster">18</div><div class="coach-stat-lbl">Roster</div></div>
+      <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-seniors">4</div><div class="coach-stat-lbl">Seniors</div></div>
+      <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-interest">6</div><div class="coach-stat-lbl">Getting Interest</div></div>
+      <div class="coach-stat"><div class="coach-stat-num" id="hs-stat-endorsed">5</div><div class="coach-stat-lbl">Endorsed</div></div>
+    </div>
+    <div class="coach-bio" id="hs-display-bio">DeSoto Eagles flag football — building the next generation of collegiate athletes. We've sent athletes to D1, D2, and D3 programs across the country. If you're recruiting in Texas, start here.</div>
+  </div>
   <div class="profile-section">
     <div class="profile-form-grid">
       <div class="form-group">
@@ -357,10 +353,10 @@
 
 <!-- ── ATHLETE SLIDE-OVER ── -->
 <div class="sp-overlay" id="sp-overlay" onclick="closeSP(event)">
-  <div class="sp-drawer" id="sp-drawer">
+  <div class="sp-drawer" id="sp-drawer" role="dialog" aria-modal="true" aria-labelledby="sp-title">
     <div class="sp-hd">
       <div class="sp-title" id="sp-title">Athlete Profile</div>
-      <button class="sp-close" onclick="closeSPDirect()">✕</button>
+      <button class="sp-close" aria-label="Close" onclick="closeSPDirect()">✕</button>
     </div>
     <div class="sp-body" id="sp-body"></div>
   </div>
@@ -368,10 +364,10 @@
 
 <!-- ── ENDORSE MODAL ── -->
 <div class="modal-overlay" id="endorse-overlay" onclick="closeEndorseModal(event)">
-  <div class="modal-box" onclick="event.stopPropagation()">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="endorse-title" onclick="event.stopPropagation()">
     <div class="modal-hd">
       <div class="modal-title" id="endorse-title">Endorse Athlete</div>
-      <button class="modal-close" onclick="closeEndorseModal()">✕</button>
+      <button class="modal-close" aria-label="Close" onclick="closeEndorseModal()">✕</button>
     </div>
     <div class="modal-sub" id="endorse-sub">Your endorsement carries weight. College coaches trust HS/club coach vouches — be specific and honest.</div>
     <div class="endorse-traits" id="endorse-traits">
@@ -398,12 +394,12 @@
 
 <!-- HS COACH AUTH MODAL -->
 <div class="coach-auth-modal-overlay" id="hscoach-auth-overlay">
-  <div class="coach-auth-modal">
-    <button class="coach-auth-close" onclick="closeHsCoachAuth()">✕</button>
+  <div class="coach-auth-modal" role="dialog" aria-modal="true" aria-labelledby="hscoach-signin-title">
+    <button class="coach-auth-close" aria-label="Close" onclick="closeHsCoachAuth()">✕</button>
 
     <!-- SIGN IN PANEL -->
     <div id="hscoach-signin-panel">
-      <div class="coach-auth-title">HS/Club Coach Sign In</div>
+      <div class="coach-auth-title" id="hscoach-signin-title">HS/Club Coach Sign In</div>
       <div class="coach-auth-sub">Sign in to message athletes and college coaches on JUKE.</div>
       <div class="coach-auth-field">
         <label>Email</label>
@@ -420,7 +416,7 @@
 
     <!-- SIGN UP PANEL -->
     <div id="hscoach-signup-panel" style="display:none">
-      <div class="coach-auth-title">Create Account</div>
+      <div class="coach-auth-title" id="hscoach-signup-title">Create Account</div>
       <div class="coach-auth-sub">Create your HS/Club Coach account to start recruiting on JUKE.</div>
       <div class="coach-auth-field">
         <label>Full Name</label>
@@ -451,32 +447,5 @@
 <script src="../js/messaging.js"></script>
 <script src="../js/features/messaging-modal.js"></script>
 
-<!-- ROLE SWITCHER -->
-<div class="role-switcher" id="role-switcher">
-  <div class="role-switcher-menu" id="rs-menu">
-    <div class="rs-menu-hd">Switch portal</div>
-    <a class="rs-menu-item" href="athlete.html">
-      <div class="rs-menu-dot" style="background:linear-gradient(135deg,#FF0080,#7B2FFF)"></div>
-      <div><div class="rs-menu-name">Athlete</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-item" href="coach.html">
-      <div class="rs-menu-dot" style="background:#7B2FFF"></div>
-      <div><div class="rs-menu-name">College Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-item active" href="hscoach.html">
-      <div class="rs-menu-dot" style="background:#0057FF"></div>
-      <div><div class="rs-menu-name">HS / Club Coach</div><div class="rs-menu-sub">Recruiting portal</div></div>
-    </a>
-    <a class="rs-menu-back" href="../index.html">
-      <div class="rs-menu-back-label">&#x2190; Back to launcher</div>
-    </a>
-  </div>
-  <div class="role-switcher-pill" onclick="document.getElementById('rs-menu').classList.toggle('open')">
-    <div class="role-switcher-dot" style="background:#0057FF"></div>
-    <div class="role-switcher-label">HS / Club Coach</div>
-    <div class="role-switcher-caret">&#x25B2;</div>
-  </div>
-</div>
-  <script src="../js/features/hscoach-init2.js"></script>
 </body>
 </html>

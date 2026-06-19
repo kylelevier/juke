@@ -31,14 +31,19 @@ function openBoardDetail(schoolName){
   _bdSchool=schoolName;
   _bdSection='overview';
   _renderBDShell();
-  document.getElementById('bd-overlay').classList.add('open');
-  document.getElementById('bd-panel').classList.add('open');
+  const overlay=document.getElementById('bd-overlay');
+  const panel=document.getElementById('bd-panel');
+  overlay.classList.add('open');
+  panel.classList.add('open');
+  if(window.JukeDialog) window.JukeDialog.open(panel, {close: closeBoardDetail});
   _loadBDSection('overview');
 }
 
 function closeBoardDetail(){
-  document.getElementById('bd-overlay').classList.remove('open');
+  const overlay=document.getElementById('bd-overlay');
+  overlay.classList.remove('open');
   document.getElementById('bd-panel').classList.remove('open');
+  if(window.JukeDialog) window.JukeDialog.close(document.getElementById('bd-panel'));
   _bdSchool=null;_bdRecord=null;
 }
 
@@ -60,7 +65,7 @@ function _renderBDShell(){
           <div class="bd-school-meta">${prog.State||''}${prog.Region?' · '+prog.Region:''}${prog['Division']?' · '+prog['Division']:''}</div>
           <div class="bd-stage-badge" style="background:${sc.bg};color:${sc.text}">${stageLabel[stage]||stage}</div>
         </div>
-        <button class="bd-close-btn" onclick="closeBoardDetail()">✕</button>
+        <button class="bd-close-btn" aria-label="Close" onclick="closeBoardDetail()">✕</button>
       </div>
 
       <div class="bd-attrs">
@@ -568,6 +573,9 @@ async function _bdDeleteItem(table,id,listId,rerender){
 
   const panel=document.createElement('div');
   panel.id='bd-panel';panel.className='bd-panel';
+  panel.setAttribute('role','dialog');
+  panel.setAttribute('aria-modal','true');
+  panel.setAttribute('aria-label','Board detail');
 
   document.body.appendChild(overlay);
   document.body.appendChild(panel);

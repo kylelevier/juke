@@ -38,7 +38,7 @@
       +'</div>'
       +profilesHTML
       +'<div class="juke-chip-dd-section">'
-        +'<button class="juke-chip-dd-item" onclick="location.href=\'login.html\'">+ Add Account</button>'
+        +'<button class="juke-chip-dd-item" onclick="location.href=\'../preview.html\'">+ Add Account</button>'
       +'</div>'
       +'<div class="juke-chip-dd-divider"></div>'
       +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
@@ -64,8 +64,8 @@ function switchProfile(profileId){
     localStorage.setItem('juke_auth',JSON.stringify(auth));
     var p=auth.profiles.find(function(x){return x.id===profileId;});
     if(!p) return;
-    var portals={athlete:'juke.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
-    location.href=portals[p.type]||'login.html';
+    var portals={athlete:'athlete.html',college_coach:'coach.html',hs_coach:'hscoach.html'};
+    location.href=portals[p.type]||'../preview.html';
   }catch(e){}
 }
 
@@ -249,7 +249,7 @@ function renderActivityFeed(){
     ${s.delta?`<div class="an-stat-delta">${s.delta}</div>`:''}
   </div>`).join('');
 
-  // Activity rows — real + demo events, newest first
+  // Activity rows — newest first
   const rows = _buildActivityRows();
   const tableEl = document.getElementById('an-table');
   if(!tableEl) return;
@@ -266,7 +266,7 @@ function renderActivityFeed(){
             <div class="an-row-meta" style="margin-top:3px">${r.time}</div>
           </div>
         </div>`).join('')
-      : '<div style="padding:24px;text-align:center;font-size:12px;color:var(--text-dim)">No activity yet — start recruiting to see updates here.</div>'
+      : '<div style="padding:24px;text-align:center;font-size:12px;color:var(--text-dim)">No recruiting activity yet. Move an athlete, add a note, or set a next action to build this log.</div>'
     }`;
 }
 
@@ -293,17 +293,8 @@ function _buildActivityRows(){
     rows.push({name:e.athleteName, action:`Coach recommendation from ${e.coachName}`, badge:'Recommended', color:'#00A040', time:'May 2026', ts:0});
   });
 
-  // Demo seed events (only shown when no real activity exists for those athletes)
-  const realNames = new Set(rows.map(r=>r.name));
-  const demo = [
-    {name:'Maya Thornton',  action:'Added game film to profile',         badge:'New Film',  color:'#7B2FFF', time:'1d ago',  ts:Date.now()-86400000},
-    {name:'Nia Washington',  action:'Joined JUKE',                       badge:'New',       color:'#0057FF', time:'2d ago',  ts:Date.now()-172800000},
-    {name:'Camryn Wells',    action:'Updated recruiting headline',        badge:'Updated',   color:'#888',    time:'3d ago',  ts:Date.now()-259200000},
-  ];
-  demo.forEach(d=>{ if(!realNames.has(d.name)) rows.push(d); });
-
   rows.sort((a,b)=>(b.ts||0)-(a.ts||0));
   return rows.slice(0,15);
 }
 
-function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../login.html';}
+function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../preview.html';}

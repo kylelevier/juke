@@ -245,9 +245,15 @@ function openCompareModal(){
   h+=`<div class="cmp-row-label">Recruiting Form</div>`;schools.forEach(s=>{h+=`<div class="cmp-row-val">${recruitHtml(s.School)}</div>`;});
   h+=`</div>`;
   document.getElementById('compare-content').innerHTML=h;
-  document.getElementById('compare-modal').classList.add('visible');
+  const modal=document.getElementById('compare-modal');
+  modal.classList.add('visible');
+  if(window.JukeDialog) window.JukeDialog.open(modal, {close: closeCompareModal});
 }
-function closeCompareModal(){document.getElementById('compare-modal').classList.remove('visible');}
+function closeCompareModal(){
+  const modal=document.getElementById('compare-modal');
+  modal.classList.remove('visible');
+  if(window.JukeDialog) window.JukeDialog.close(modal);
+}
 
 // ── RENDER ──────────────────────────────────────────────
 function render(){
@@ -353,13 +359,18 @@ function exportCSV(){
 
 // ── ADMIN ────────────────────────────────────────────────
 function openAdmin(){
-  document.getElementById('admin-modal').classList.add('visible');
+  const modal=document.getElementById('admin-modal');
+  modal.classList.add('visible');
   document.getElementById('admin-login-form').style.display=adminUnlocked?'none':'block';
   document.getElementById('admin-panel').style.display=adminUnlocked?'block':'none';
   if(adminUnlocked)renderAdminList();
-  else setTimeout(()=>document.getElementById('admin-pw-input').focus(),100);
+  if(window.JukeDialog) window.JukeDialog.open(modal, {close: closeAdmin, focus: adminUnlocked ? document.getElementById('admin-search-input') : document.getElementById('admin-pw-input')});
 }
-function closeAdmin(){document.getElementById('admin-modal').classList.remove('visible');}
+function closeAdmin(){
+  const modal=document.getElementById('admin-modal');
+  modal.classList.remove('visible');
+  if(window.JukeDialog) window.JukeDialog.close(modal);
+}
 function checkAdminPw(){
   if(document.getElementById('admin-pw-input').value===ADMIN_PW){
     adminUnlocked=true;
