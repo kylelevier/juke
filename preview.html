@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JUKE — Preview Portal</title>
+<title>JUKE — Internal Switcher</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -15,9 +15,22 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 header{padding:0 32px;height:64px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
 .hd-logo{display:flex;align-items:center;}
 .hd-div{width:1px;height:26px;background:rgba(255,255,255,.15);flex-shrink:0;}
-.hd-slogan{font-family:'Instrument Serif',serif;font-size:13px;font-weight:400;color:rgba(255,255,255,.4);letter-spacing:.01em;white-space:nowrap;}
+.hd-slogan{font-family:'Instrument Serif',serif;font-size:13px;color:rgba(255,255,255,.4);letter-spacing:.01em;white-space:nowrap;}
 .hd-slogan em{font-style:italic;color:rgba(255,255,255,.65);}
 .hd-pill{margin-left:auto;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;}
+
+/* ── SESSION STATUS BAR ── */
+.session-bar{background:#111;border-bottom:1px solid rgba(255,255,255,.07);padding:10px 32px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.session-bar-label{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);white-space:nowrap;}
+.session-chips{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+.session-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;}
+.session-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.session-dot.active{background:#00E050;box-shadow:0 0 6px rgba(0,224,80,.5);}
+.session-dot.inactive{background:#444;}
+.session-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.7);}
+.session-role{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);}
+.session-clear{margin-left:auto;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);background:none;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;cursor:pointer;transition:all .15s;}
+.session-clear:hover{color:rgba(255,80,80,.8);border-color:rgba(255,80,80,.3);}
 
 /* ── MAIN ── */
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;}
@@ -27,31 +40,50 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 
 /* ── ROLE CARDS ── */
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;max-width:820px;}
-.card{background:#1A1A1A;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 24px 24px;display:flex;flex-direction:column;gap:0;cursor:pointer;text-decoration:none;transition:border-color .2s,background .2s;position:relative;overflow:hidden;}
-.card:hover{background:#222;border-color:rgba(255,0,128,.4);}
-.card:hover .card-enter{background:rgba(255,0,128,.15);color:#FF0080;border-color:rgba(255,0,128,.35);}
+.card{background:#1A1A1A;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 24px 24px;display:flex;flex-direction:column;cursor:pointer;text-decoration:none;transition:border-color .2s,background .2s;position:relative;overflow:hidden;}
+.card:hover{background:#222;}
+.card.athlete-card:hover{border-color:rgba(255,0,128,.4);}
+.card.college-card:hover{border-color:rgba(123,47,255,.4);}
+.card.hs-card:hover{border-color:rgba(0,87,255,.4);}
+.card:hover .card-enter{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.25);}
+
+/* Active session highlight */
+.card.session-active{border-color:rgba(0,224,80,.25);background:#1a1f1a;}
+.card.session-active .card-status{color:#00E050;}
+.card.session-active .card-status-dot{background:#00E050;box-shadow:0 0 6px rgba(0,224,80,.5);}
+
 .card-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;}
 .card-accent.athlete{background:linear-gradient(90deg,#FF0080,#7B2FFF);}
 .card-accent.college{background:linear-gradient(90deg,#7B2FFF,#0057FF);}
 .card-accent.hs{background:linear-gradient(90deg,#0057FF,#00C2FF);}
-.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;flex-shrink:0;}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .card-icon.athlete{background:rgba(255,0,128,.1);}
 .card-icon.college{background:rgba(123,47,255,.1);}
 .card-icon.hs{background:rgba(0,87,255,.1);}
+
+.card-status{display:flex;align-items:center;gap:5px;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.2);transition:color .2s;}
+.card-status-dot{width:6px;height:6px;border-radius:50%;background:#333;flex-shrink:0;transition:background .2s,box-shadow .2s;}
+
 .card-role{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:5px;}
 .card-title{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;color:#fff;line-height:1.1;margin-bottom:10px;}
 .card-desc{font-size:12px;color:rgba(255,255,255,.45);line-height:1.6;flex:1;}
+.card-session-info{margin-top:10px;font-size:11px;color:rgba(255,255,255,.3);min-height:16px;}
+.card-session-info strong{color:rgba(255,255,255,.55);font-weight:600;}
+
 .card-enter{display:inline-flex;align-items:center;gap:6px;margin-top:20px;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:7px 14px;font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);transition:all .2s;align-self:flex-start;}
 .card-enter svg{width:12px;height:12px;flex-shrink:0;}
 
 /* ── FOOTER ── */
 footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.footer-text{font-family:'Instrument Serif',serif;font-weight:400;font-size:12px;color:rgba(255,255,255,.2);text-transform:none;letter-spacing:0;}
+.footer-text{font-family:'Instrument Serif',serif;font-size:12px;color:rgba(255,255,255,.2);}
 .footer-text em{font-style:italic;}
 
 @media(max-width:640px){
   .cards{grid-template-columns:1fr;}
   .headline{font-size:28px;}
+  .session-bar{padding:10px 16px;}
 }
 </style>
 </head>
@@ -66,54 +98,84 @@ footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex
   </div>
   <div class="hd-div"></div>
   <div class="hd-slogan">Recruiting <em>her</em> way.</div>
-  <div class="hd-pill">Preview Mode</div>
+  <div class="hd-pill">Internal</div>
 </header>
 
+<!-- Live session status -->
+<div class="session-bar">
+  <div class="session-bar-label">Sessions</div>
+  <div class="session-chips" id="session-chips">
+    <!-- populated by JS -->
+  </div>
+  <button class="session-clear" onclick="clearAllSessions()">Clear All</button>
+</div>
+
 <main>
-  <div class="eyebrow">Choose a portal to preview</div>
+  <div class="eyebrow">Internal portal switcher</div>
   <div class="headline">Who are you today?</div>
-  <p class="subhead">Each portal shows JUKE from a different perspective. Pick a role and step inside.</p>
+  <p class="subhead">Always routes to the current live build. Sessions are shown above.</p>
 
   <div class="cards">
 
     <!-- Athlete -->
-    <a class="card" href="juke.html" onclick="jukeSetRole('athlete')">
+    <div class="card athlete-card" id="card-athlete" onclick="enterAthlete()">
       <div class="card-accent athlete"></div>
-      <div class="card-icon athlete">🏃‍♀️</div>
+      <div class="card-top">
+        <div class="card-icon athlete">🏃‍♀️</div>
+        <div class="card-status" id="status-athlete">
+          <div class="card-status-dot" id="dot-athlete"></div>
+          <span id="status-label-athlete">No session</span>
+        </div>
+      </div>
       <div class="card-role">Portal 1</div>
       <div class="card-title">Athlete</div>
       <div class="card-desc">Browse programs, build your board, manage your recruiting pipeline, and complete your profile.</div>
+      <div class="card-session-info" id="info-athlete"></div>
       <div class="card-enter">
         Enter
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>
       </div>
-    </a>
+    </div>
 
     <!-- College Coach -->
-    <a class="card" href="coach.html" onclick="jukeSetRole('college_coach')">
+    <div class="card college-card" id="card-college" onclick="enterPortal('college_coach','/coach')">
       <div class="card-accent college"></div>
-      <div class="card-icon college">🏟️</div>
+      <div class="card-top">
+        <div class="card-icon college">🏟️</div>
+        <div class="card-status" id="status-college">
+          <div class="card-status-dot" id="dot-college"></div>
+          <span id="status-label-college">No session</span>
+        </div>
+      </div>
       <div class="card-role">Portal 2</div>
       <div class="card-title">College Coach</div>
       <div class="card-desc">Search athletes by position and fit, manage your recruitment pipeline, and message prospects.</div>
+      <div class="card-session-info" id="info-college"></div>
       <div class="card-enter">
         Enter
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>
       </div>
-    </a>
+    </div>
 
     <!-- HS Coach -->
-    <a class="card" href="hscoach.html" onclick="jukeSetRole('hs_coach')">
+    <div class="card hs-card" id="card-hs" onclick="enterPortal('hs_coach','/hscoach')">
       <div class="card-accent hs"></div>
-      <div class="card-icon hs">📋</div>
+      <div class="card-top">
+        <div class="card-icon hs">📋</div>
+        <div class="card-status" id="status-hs">
+          <div class="card-status-dot" id="dot-hs"></div>
+          <span id="status-label-hs">No session</span>
+        </div>
+      </div>
       <div class="card-role">Portal 3</div>
       <div class="card-title">HS / Club Coach</div>
       <div class="card-desc">Manage your roster, track which athletes are being recruited, and provide endorsements.</div>
+      <div class="card-session-info" id="info-hs"></div>
       <div class="card-enter">
         Enter
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>
       </div>
-    </a>
+    </div>
 
   </div>
 </main>
@@ -123,16 +185,137 @@ footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex
 </footer>
 
 <script>
-function jukeSetRole(type){
-  try{
-    var auth=JSON.parse(localStorage.getItem('juke_auth'))||{};
-    auth.type=type;
-    auth.name=auth.name||'Preview User';
-    // Clear profile array so portal uses top-level type
-    delete auth.profiles;
-    localStorage.setItem('juke_auth',JSON.stringify(auth));
-  }catch(e){}
+// ── Supabase project ref — used to find the auth token in localStorage
+var SB_REF = 'gvxdabtmksxhujeytofv';
+var SB_KEY = 'sb-' + SB_REF + '-auth-token';
+
+// ── Read current sessions ──────────────────────────────────
+function getSupabaseSession() {
+  try {
+    var raw = localStorage.getItem(SB_KEY);
+    if (!raw) return null;
+    var data = JSON.parse(raw);
+    var user = data.user || (data.session && data.session.user);
+    if (!user) return null;
+    return {
+      email: user.email || '',
+      name: (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user.email || 'Athlete'
+    };
+  } catch(e) { return null; }
 }
+
+function getCoachSession() {
+  try {
+    var raw = localStorage.getItem('juke_auth');
+    if (!raw) return null;
+    var auth = JSON.parse(raw);
+    if (!auth || !auth.name || !auth.type) return null;
+    return auth;
+  } catch(e) { return null; }
+}
+
+// ── Render session state ───────────────────────────────────
+function renderSessions() {
+  var sb  = getSupabaseSession();
+  var ca  = getCoachSession();
+  var isCollege = ca && ca.type === 'college_coach';
+  var isHs      = ca && ca.type === 'hs_coach';
+
+  // Session bar chips
+  var chips = '';
+  if (sb) {
+    chips += chip('#00E050', sb.name, 'Athlete');
+  }
+  if (ca) {
+    var color = isCollege ? '#7B2FFF' : '#0057FF';
+    var roleLabel = isCollege ? 'College Coach' : 'HS Coach';
+    chips += chip(color, ca.name, roleLabel);
+  }
+  if (!chips) {
+    chips = '<span style="font-size:12px;color:rgba(255,255,255,.25);">No active sessions — enter a portal to begin.</span>';
+  }
+  document.getElementById('session-chips').innerHTML = chips;
+
+  // Athlete card
+  if (sb) {
+    setCardActive('athlete', sb.name, sb.email ? '<strong>' + sb.email + '</strong>' : '');
+  } else {
+    setCardInactive('athlete', 'No session · will prompt login');
+  }
+
+  // College coach card
+  if (isCollege) {
+    setCardActive('college', ca.name, ca.school ? 'School: <strong>' + ca.school + '</strong>' : '');
+  } else {
+    setCardInactive('college', ca ? 'Session exists as ' + ca.type : 'No session · will create one');
+  }
+
+  // HS coach card
+  if (isHs) {
+    setCardActive('hs', ca.name, ca.school ? 'School: <strong>' + ca.school + '</strong>' : '');
+  } else {
+    setCardInactive('hs', ca ? 'Session exists as ' + ca.type : 'No session · will create one');
+  }
+}
+
+function chip(color, name, role) {
+  return '<div class="session-chip">'
+    + '<div class="session-dot active" style="background:' + color + ';box-shadow:0 0 6px ' + color + '80"></div>'
+    + '<span class="session-name">' + name + '</span>'
+    + '<span class="session-role">' + role + '</span>'
+    + '</div>';
+}
+
+function setCardActive(id, name, sub) {
+  document.getElementById('card-' + id).classList.add('session-active');
+  document.getElementById('dot-' + id).classList.add('active');
+  document.getElementById('status-label-' + id).textContent = 'Active';
+  document.getElementById('info-' + id).innerHTML = sub || ('<strong>' + name + '</strong>');
+}
+
+function setCardInactive(id, msg) {
+  document.getElementById('card-' + id).classList.remove('session-active');
+  document.getElementById('dot-' + id).classList.remove('active');
+  document.getElementById('status-label-' + id).textContent = 'No session';
+  document.getElementById('info-' + id).innerHTML = msg || '';
+}
+
+// ── Navigation ────────────────────────────────────────────
+function enterAthlete() {
+  // Athlete uses Supabase — just navigate, portal handles auth modal
+  window.location.href = '/athlete';
+}
+
+function enterPortal(type, url) {
+  // Set or update juke_auth for coach portals
+  var existing = null;
+  try { existing = JSON.parse(localStorage.getItem('juke_auth')); } catch(e) {}
+
+  // Preserve name if already set, otherwise use default
+  var name = (existing && existing.name) || 'Kyle';
+  var school = (existing && existing.school) || '';
+
+  var auth = { type: type, name: name };
+  if (school) auth.school = school;
+  // Strip profiles so portal uses top-level type
+  localStorage.setItem('juke_auth', JSON.stringify(auth));
+  window.location.href = url;
+}
+
+function clearAllSessions() {
+  // Clear Supabase session
+  localStorage.removeItem(SB_KEY);
+  // Also clear any other Supabase keys for this project
+  Object.keys(localStorage).forEach(function(k) {
+    if (k.startsWith('sb-' + SB_REF)) localStorage.removeItem(k);
+  });
+  // Clear coach session
+  localStorage.removeItem('juke_auth');
+  renderSessions();
+}
+
+// ── Init ──────────────────────────────────────────────────
+renderSessions();
 </script>
 </body>
 </html>

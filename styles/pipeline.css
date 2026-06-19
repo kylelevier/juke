@@ -156,7 +156,7 @@
 .card-logo-wrap img{width:48px;height:48px;object-fit:contain;display:block;}
 .card-logo-initials{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--columbia);line-height:1;text-align:center;}
 
-/* ── BOARD DRAFT: premium first-session workspace ── */
+/* ── BOARD WORKSPACE ── */
 .board-page{max-width:1320px;margin:0 auto;padding:34px 24px 54px;box-sizing:border-box;}
 .board-workspace{display:flex;flex-direction:column;gap:18px;}
 .pipeline-summary-strip{display:grid;grid-template-columns:minmax(280px,1fr) auto auto;gap:18px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:20px 22px;box-shadow:0 10px 30px rgba(15,23,42,.04);box-sizing:border-box;}
