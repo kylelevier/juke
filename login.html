@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JUKE — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0D0D0F;color:#fff;font-family:'Archivo',sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+
+.wrap{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;max-width:360px}
+
+.logo{display:block;height:36px;width:auto}
+
+.slogan{font-family:'Instrument Serif',Georgia,serif;font-size:14px;font-weight:400;color:rgba(255,255,255,.4);letter-spacing:.01em;margin-top:12px;text-align:center}
+.slogan em{font-style:italic;color:rgba(255,255,255,.65)}
+
+.card{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px 28px;margin-top:40px;display:flex;flex-direction:column;gap:16px}
+
+.card-title{font-size:17px;font-weight:500;color:#fff;text-align:center;line-height:1.3}
+.card-sub{font-size:13px;color:rgba(255,255,255,.45);text-align:center;line-height:1.6;margin-top:-6px}
+
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px 20px;background:#fff;color:#111;border:none;border-radius:10px;font-family:'Archivo',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s}
+.google-btn:hover{background:#f2f2f2}
+.google-btn:active{transform:scale(.98)}
+.google-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.google-icon{width:18px;height:18px;flex-shrink:0}
+
+.status{font-size:13px;color:rgba(255,255,255,.5);text-align:center;min-height:18px}
+.status.error{color:#FF6B6B}
+
+.divider{height:1px;background:rgba(255,255,255,.07)}
+
+.terms{font-size:11px;color:rgba(255,255,255,.3);text-align:center;line-height:1.6}
+.terms a{color:rgba(255,255,255,.45);text-decoration:underline}
+
+.footer{position:fixed;bottom:24px;font-size:11px;color:rgba(255,255,255,.2)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" aria-label="JUKE">
+    <defs>
+      <linearGradient id="lg" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#ff0080"/>
+        <stop offset="1" stop-color="#7b2fff"/>
+      </linearGradient>
+    </defs>
+    <path fill="url(#lg)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
+  </svg>
+
+  <p class="slogan">Recruiting <em>her</em> way.</p>
+
+  <div class="card">
+    <div>
+      <div class="card-title">Sign in to JUKE</div>
+      <div class="card-sub">Your profile, board, and recruiting data — all in one place.</div>
+    </div>
+
+    <button class="google-btn" id="google-btn" onclick="signInWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="status" id="status"></div>
+
+    <div class="divider"></div>
+
+    <div class="terms">By signing in you agree to JUKE's terms of service and privacy policy.</div>
+  </div>
+
+</div>
+
+<div class="footer">&copy; 2026 JUKE &middot; shejukes.com</div>
+
+<script>
+const SUPABASE_URL = 'https://gvxdabtmksxhujeytofv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_eERuVHBjTdhkIxpWvCX62A_3bMoXgAn';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const PORTAL = {
+  athlete:       '/pages/athlete.html',
+  college_coach: '/pages/coach.html',
+  hs_coach:      '/pages/hscoach.html',
+};
+
+function setStatus(msg, isError) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (isError ? ' error' : '');
+}
+
+async function signInWithGoogle() {
+  const btn = document.getElementById('google-btn');
+  btn.disabled = true;
+  setStatus('Redirecting to Google…');
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/login.html' }
+  });
+  if (error) {
+    setStatus(error.message, true);
+    btn.disabled = false;
+  }
+}
+
+// Handle OAuth callback — Supabase sets the session automatically on return
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (!session) return;
+
+  setStatus('Signing you in…');
+  document.getElementById('google-btn').disabled = true;
+
+  const user = session.user;
+
+  // Role: prefer stored value, default to athlete for alpha
+  let role = user.user_metadata?.juke_role || 'athlete';
+
+  // Persist juke_auth for portal gating (coaches need this)
+  const name = user.user_metadata?.full_name || user.email || 'User';
+  localStorage.setItem('juke_auth', JSON.stringify({
+    name,
+    type: role,
+    activeProfileId: 'primary',
+    profiles: [{ id: 'primary', type: role, org: user.user_metadata?.org || '' }]
+  }));
+
+  window.location.replace(PORTAL[role] || PORTAL.athlete);
+});
+</script>
+
+</body>
+</html>
