@@ -300,26 +300,44 @@ function _renderBoardCols(){
     if(schoolsByStage[status])schoolsByStage[status].push(school);
   });
 
-  // ── Command Center: 3 momentum-based stats ──
+  // ── Board command center ──
+  const savedCount=schoolsByStage.saved?.length||0;
+  const totalCount=Object.values(schoolsByStage).reduce((sum,list)=>sum+list.length,0);
   const activeStageKeys=['contacting','applied','offered'];
   const activeSchools=activeStageKeys.flatMap(k=>schoolsByStage[k]||[]);
   const stalledList=activeSchools.filter(n=>_calcMomentum(n).level==='stalled');
   const coolingList=activeSchools.filter(n=>_calcMomentum(n).level==='cooling');
-  const activeCount=activeSchools.filter(n=>_calcMomentum(n).level==='active').length;
   const offerCount=schoolsByStage['offered']?.length||0;
   const needsAttn=[...stalledList,...coolingList];
+  const profilePct=(document.getElementById('pvc-pct')?.textContent||'0%').trim();
+  const topSchool=Object.keys(statusData||{})[0]||'';
+  const nextText=topSchool
+    ? `Review ${topSchool}, then decide whether to contact the coach.`
+    : 'Save a program from Programs to start building your board.';
 
   document.getElementById('pipeline-summary').innerHTML=`
-    <div class="board-cmd-stat${stalledList.length?' board-cmd-urgent':''}">
-      <div class="board-cmd-num">${stalledList.length}</div>
-      <div class="board-cmd-lbl">Stalled</div>
+    <div class="board-cmd-main">
+      <div class="board-cmd-kicker">My Board</div>
+      <div class="board-cmd-title">${totalCount?`${totalCount} program${totalCount!==1?'s':''} on your list`:'Start your recruiting list'}</div>
+      <div class="board-cmd-sub">${nextText}</div>
     </div>
-    <div class="board-cmd-stat">
-      <div class="board-cmd-num">${activeCount}</div>
-      <div class="board-cmd-lbl">Active</div>
+    <div class="board-cmd-metrics">
+      <div class="board-cmd-stat">
+        <div class="board-cmd-num">${savedCount}</div>
+        <div class="board-cmd-lbl">Saved</div>
+      </div>
+      <div class="board-cmd-stat${stalledList.length?' board-cmd-urgent':''}">
+        <div class="board-cmd-num">${needsAttn.length}</div>
+        <div class="board-cmd-lbl">Needs Action</div>
+      </div>
+      <div class="board-cmd-stat">
+        <div class="board-cmd-num">${profilePct}</div>
+        <div class="board-cmd-lbl">Profile</div>
+      </div>
+      ${offerCount?`<div class="board-cmd-stat board-cmd-gold"><div class="board-cmd-num">${offerCount}</div><div class="board-cmd-lbl">Offers</div></div>`:''}
     </div>
-    ${offerCount?`<div class="board-cmd-stat board-cmd-gold"><div class="board-cmd-num">${offerCount}</div><div class="board-cmd-lbl">Offers</div></div>`:''}
     <div class="board-cmd-actions">
+      <button class="board-cmd-primary" onclick="switchTab('finder')">Find Programs</button>
       <button class="board-cmd-show-empty" onclick="_toggleEmptyStages(this)" data-showing="">Show empty stages</button>
     </div>
   `;
@@ -328,6 +346,16 @@ function _renderBoardCols(){
 
   const colsEl=document.getElementById('pipeline-cols');
   colsEl.innerHTML='';
+  if(!totalCount){
+    colsEl.innerHTML=`
+      <div class="board-empty-state">
+        <div class="board-empty-kicker">First Move</div>
+        <div class="board-empty-title">Make Your First Moves</div>
+        <div class="board-empty-copy">Save three programs, compare fit, then move one to Contacting when you are ready to reach out.</div>
+        <button class="board-empty-btn" onclick="switchTab('finder')">Find Programs</button>
+      </div>`;
+    return;
+  }
   PIPELINE_STAGES.forEach(stage=>{
     const schools=schoolsByStage[stage.key].map(name=>RAW.find(r=>r.School===name)).filter(Boolean);
     const col=document.createElement('div');
@@ -337,7 +365,7 @@ function _renderBoardCols(){
     body.className='pipeline-col-body';
     body.dataset.stage=stage.key;
     if(!schools.length){
-      const ph=document.createElement('div');ph.className='pipeline-empty-col';ph.textContent='Drop cards here';
+      const ph=document.createElement('div');ph.className='pipeline-empty-col';ph.textContent='Drop programs here';
       body.appendChild(ph);
       col.style.display='none'; // collapse empty stages by default
     } else {
@@ -438,12 +466,12 @@ function buildPipelineCard(r,stageKey){
 
   card.innerHTML=`
     <div class="pc-header">
-      <span class="pipeline-drag-handle" title="Drag to move">⠿</span>
       <div class="pc-logo school-logo-wrap school-logo-sm" data-logo="${r.School}"><div class="school-logo-initials">🏈</div></div>
       <div class="pc-name-block">
         <div class="pc-name">${r.School}</div>
         ${r.State?`<div class="pc-school-meta">${r.State}${r.Region?' · '+r.Region:''}</div>`:''}
       </div>
+      <span class="pipeline-drag-handle" title="Drag to move">⠿</span>
     </div>
     <div class="pc-momentum pc-m-${momentum.level}">
       <span class="pc-m-dot"></span>
@@ -454,7 +482,11 @@ function buildPipelineCard(r,stageKey){
       ${move.reason?`<div class="pc-move-reason">${move.reason}</div>`:''}
     </div>
     <div class="pc-footer">
-      <span class="pc-stage-pill">${_stageLabel(stageKey)}</span>
+      <div class="pc-card-tags">
+        <span class="pc-stage-pill">${_stageLabel(stageKey)}</span>
+        ${r['Governing Body']||r['Division']?`<span class="pc-meta-pill">${[r['Governing Body'],(r['Division']||'').replace('Division ','D')].filter(Boolean).join(' ')}</span>`:''}
+        ${r['Varsity or Club']?`<span class="pc-meta-pill">${r['Varsity or Club']}</span>`:''}
+      </div>
       ${stageKey!=='committed'?`<button class="pc-contacted-btn" onclick="event.stopPropagation();_markContactedToday('${r.School.replace(/'/g,"\\'")}',this)" title="Mark as contacted today">✓ Reached out</button>`:''}
     </div>
   `;
