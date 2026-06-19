@@ -17,6 +17,11 @@
   --green-bg: rgba(39,160,106,0.10);
   --green-bd: rgba(39,160,106,0.30);
   --purple: #7c5cbf;
+  --accent:    #7B2FFF;
+  --accent-lt: #9b5fff;
+  --accent-dk: #5a1fd1;
+  --accent-bg: rgba(123,47,255,.08);
+  --accent-bd: rgba(123,47,255,.22);
   --orange: #c96b3a;
   --red:    #b03030;
   /* Apple HIG surfaces */

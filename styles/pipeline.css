@@ -172,7 +172,7 @@
 .board-cmd-primary{height:36px;border:0;border-radius:8px;background:#ff0080;color:#fff;padding:0 15px;font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
 .board-cmd-primary:hover{background:#e60073;}
 .board-cmd-show-empty{height:36px;padding:0 12px;border-radius:8px;border:1px solid #dfe3ea;background:#fff;color:#6f7480;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;white-space:nowrap;}
-.board-cmd-show-empty:hover{border-color:rgba(0,87,255,.28);color:#0057ff;}
+.board-cmd-show-empty:hover{border-color:var(--columbia-bd,rgba(255,0,128,.22));color:#FF0080;}
 .pipeline-cols,.pipeline-board{display:flex;gap:16px;overflow-x:auto;align-items:flex-start;padding:2px 2px 24px;-webkit-overflow-scrolling:touch;scrollbar-color:#cfd2d8 transparent;}
 .pipeline-board:has(.board-empty-state){overflow-x:visible;}
 .pipeline-col{min-width:252px;width:252px;flex-shrink:0;}
@@ -204,7 +204,7 @@
 .pc-stage-pill{color:#0057ff;background:rgba(0,87,255,.07);border-color:rgba(0,87,255,.16);}
 .pipeline-drag-handle{color:#b5bac3;}
 .board-empty-state{width:100%;min-height:240px;border:1px dashed #d9dde5;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:34px 38px;box-sizing:border-box;}
-.board-empty-kicker{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0057ff;margin-bottom:8px;}
+.board-empty-kicker{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FF0080;margin-bottom:8px;}
 .board-empty-title{max-width:620px;font-family:'Archivo Condensed',sans-serif;font-size:30px;font-weight:900;font-style:italic;text-transform:uppercase;line-height:1.05;color:#202026;}
 .board-empty-copy{max-width:520px;margin-top:10px;color:#6f7480;font-size:14px;line-height:1.55;}
 .board-empty-btn{margin-top:20px;height:38px;border:0;border-radius:8px;background:#ff0080;color:#fff;padding:0 16px;font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}

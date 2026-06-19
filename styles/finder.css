@@ -67,13 +67,13 @@
 
 /* ── TAGS ── */
 .tag{display:inline-block;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:4px;white-space:nowrap;}
-.tag-d1{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;}
-.tag-d2{background:#e0f0fb;color:#185FA5;border:1px solid #bfdbfe;}
-.tag-d3{background:#f0f7fe;color:#2563eb;border:1px solid #dbeafe;}
+.tag-d1{background:rgba(123,47,255,.1);color:#5a1fd1;border:1px solid rgba(123,47,255,.25);}
+.tag-d2{background:rgba(123,47,255,.07);color:#7B2FFF;border:1px solid rgba(123,47,255,.2);}
+.tag-d3{background:rgba(123,47,255,.04);color:#9b5fff;border:1px solid rgba(123,47,255,.14);}
 .tag-naia{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
 .tag-njcaa{background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;}
 .tag-other{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
-.tag-varsity{background:#e0f0fb;color:#185FA5;border:1px solid #bfdbfe;}
+.tag-varsity{background:rgba(123,47,255,.07);color:#7B2FFF;border:1px solid rgba(123,47,255,.2);}
 .tag-club{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
 .tag-hbcu{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
 .tag-pos{background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;}
@@ -81,7 +81,7 @@
 /* ── FIT BADGE ── */
 .fit-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;padding:3px 8px;border-radius:4px;white-space:nowrap;}
 .fit-high{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
-.fit-mid{background:#e0f0fb;color:#0c447c;border:1px solid #bfdbfe;}
+.fit-mid{background:rgba(123,47,255,.08);color:#5a1fd1;border:1px solid rgba(123,47,255,.22);}
 .fit-low{background:#fef9c3;color:#854d0e;border:1px solid #fde68a;}
 .fit-weak{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);}
 

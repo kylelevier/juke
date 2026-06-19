@@ -216,8 +216,8 @@
 .ws-tl-email .ws-tl-type{color:#7c6cf0;}
 .ws-tl-email .ws-tl-card{background:#FDFCFF;border:1px solid #E8E4F8;}
 .ws-tl-email .ws-tl-card p{color:#2a2035;}
-.ws-tl-message .ws-tl-dot{background:#EEF5FF;border:1.5px solid #4592e0;}
-.ws-tl-message .ws-tl-type{color:#4592e0;}
+.ws-tl-message .ws-tl-dot{background:rgba(123,47,255,.08);border:1.5px solid #7B2FFF;}
+.ws-tl-message .ws-tl-type{color:#7B2FFF;}
 .ws-tl-message .ws-tl-card{background:#F6F8FF;border:1px solid #D8E4F8;}
 .ws-tl-message .ws-tl-card p{color:#2a2035;}
 .ws-tl-mail .ws-tl-dot{background:#FFF8E8;border:1.5px solid #d4a020;}
@@ -228,8 +228,8 @@
 .ws-tl-juke .ws-tl-type{color:#FF0080;}
 .ws-tl-juke .ws-tl-card{background:#FFF7FA;border:1px solid #FFD6E8;}
 .ws-tl-juke .ws-tl-card p{color:#7a1040;}
-.ws-tl-task .ws-tl-dot{background:#EEF5FF;border:1.5px solid #4592e0;}
-.ws-tl-task .ws-tl-type{color:#4592e0;}
+.ws-tl-task .ws-tl-dot{background:rgba(123,47,255,.08);border:1.5px solid #7B2FFF;}
+.ws-tl-task .ws-tl-type{color:#7B2FFF;}
 .ws-tl-task .ws-tl-card{background:#F6F8FF;border:1px solid #D8E4F8;}
 .ws-tl-task .ws-tl-card p{color:#5070a0;text-decoration:line-through;opacity:.65;}
 .ws-tl-note .ws-tl-dot{background:#F8F4FC;border:1.5px solid #9a78b8;}
