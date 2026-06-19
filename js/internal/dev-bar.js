@@ -7,8 +7,17 @@
 (function() {
   'use strict';
 
-  // Only render for internal users (flag set by /preview)
-  if (localStorage.getItem('_juke_internal') !== '1') return;
+  // Only render for whitelisted users — checked against Supabase session email
+  var INTERNAL_USERS = ['kylelevier@gmail.com'];
+  function _isInternalUser() {
+    try {
+      var raw = localStorage.getItem('sb-gvxdabtmksxhujeytofv-auth-token');
+      if (!raw) return false;
+      var email = JSON.parse(raw).user.email;
+      return INTERNAL_USERS.indexOf(email) !== -1;
+    } catch(e) { return false; }
+  }
+  if (!_isInternalUser()) return;
 
   var SB_URL  = 'https://gvxdabtmksxhujeytofv.supabase.co';
   var SB_KEY  = 'sb_publishable_eERuVHBjTdhkIxpWvCX62A_3bMoXgAn';
@@ -199,6 +208,10 @@
   };
 
   function _jdbGoAthlete() {
+    // router.js on the athlete portal redirects away if juke_auth.type is a coach role.
+    // Athlete portal uses Supabase auth — juke_auth isn't needed there, so clear it.
+    localStorage.removeItem('juke_auth');
+
     // 1. Already have a live Supabase session → just navigate
     if (_getSbSession()) {
       window.location.href = '/athlete';

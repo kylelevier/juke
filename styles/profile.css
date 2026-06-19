@@ -106,7 +106,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
 .milestone-rail-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 20px 4px;margin-bottom:16px;scrollbar-width:none;}
 .milestone-rail-wrap::-webkit-scrollbar{display:none;}
 .milestone-rail{display:flex;gap:10px;align-items:stretch;min-height:90px;}
-.milestone-rail:empty::after{content:'No activity yet — track a school to get started';font-size:12px;color:var(--text-dim);display:flex;align-items:center;padding:0 4px;}
+.milestone-rail:empty::after{content:'No activity logged yet — open a school card to log your first update';font-size:12px;color:var(--text-dim);display:flex;align-items:center;padding:0 4px;}
 .ms-card{flex-shrink:0;width:130px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:5px;cursor:pointer;transition:box-shadow .15s;}
 .ms-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.1);}
 .ms-card-top{display:flex;align-items:center;gap:7px;}
