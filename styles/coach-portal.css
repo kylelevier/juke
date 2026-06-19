@@ -138,8 +138,9 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .pt-act-btn.primary:hover{background:var(--columbia-lt);}
 
 /* ── PIPELINE ── */
-.pipeline-wrap{padding:0 24px 24px;display:flex;gap:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
-.pl-col{flex-shrink:0;width:220px;}
+.pipeline-wrap{padding:0 24px 24px;display:flex;gap:12px;overflow-x:hidden;}
+.pl-col{flex:1 1 0;min-width:140px;}
+.pl-col.pl-col-empty{flex:0 0 48px;min-width:0;}
 .pl-col-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 4px;}
 .pl-col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .pl-col-name{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.06em;color:var(--text);}
@@ -153,6 +154,12 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .pl-meta{font-size:10px;color:var(--text-dim);}
 .pl-last{font-size:10px;color:var(--text-dim);margin-top:4px;}
 .pl-empty{border:1.5px dashed var(--border);border-radius:12px;padding:20px 12px;text-align:center;color:var(--text-dim);font-size:11px;}
+/* ── COLLAPSED EMPTY COLUMN ── */
+.pl-col.pl-col-empty .pl-col-hd{flex-direction:column;align-items:center;gap:4px;padding:0;}
+.pl-col.pl-col-empty .pl-col-name{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;letter-spacing:.1em;color:var(--text-dim);}
+.pl-col.pl-col-empty .pl-col-dot{margin:0;}
+.pl-col.pl-col-empty .pl-col-count{margin:0;font-size:10px;}
+.pl-col.pl-col-empty .pl-cards{flex:1;border:1.5px dashed var(--border);border-radius:10px;min-height:60px;}
 /* ── DRAG-DROP STATES ── */
 .pl-col-over{background:rgba(123,47,255,.05);border-radius:12px;outline:2px dashed rgba(123,47,255,.28);}
 .pl-card.dragging{opacity:.4;transform:scale(.96);box-shadow:0 4px 16px rgba(0,0,0,.12);}
@@ -280,6 +287,13 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .sp-meas-val{font-family:'Archivo Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text);line-height:1;}
 .sp-meas-lbl{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
 .sp-bio{font-size:12px;color:var(--text-muted);line-height:1.6;}
+.sp-film-section{padding-bottom:0;}
+.sp-film-embed-wrap{position:relative;width:100%;padding-bottom:56.25%;border-radius:10px;overflow:hidden;background:#000;margin-bottom:8px;}
+.sp-film-embed{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.sp-film-link-btn{display:block;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;text-align:center;transition:border-color .15s,background .15s;margin-bottom:8px;}
+.sp-film-link-btn:hover{border-color:var(--columbia);background:var(--columbia-bg);color:var(--columbia);}
+.sp-film-game-link{display:inline-block;font-size:11px;font-weight:600;color:var(--columbia);text-decoration:none;padding-bottom:16px;}
+.sp-film-game-link:hover{text-decoration:underline;}
 .sp-stage-row{display:flex;gap:5px;flex-wrap:wrap;}
 .sp-stage-btn{font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);color:var(--text-dim);background:none;cursor:pointer;transition:all .15s;}
 .sp-stage-btn.active.s-identified{background:#888888;border-color:#888;color:#fff;}
@@ -337,7 +351,12 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
   .td-section{padding:0 12px;}
   #content-profile .coach-card{margin:0 14px 18px;}
   .pipeline-wrap{padding:0 14px 20px;display:flex;flex-direction:column;overflow-x:visible;}
-  .pl-col{width:100%;}
+  .pl-col{flex:none;width:100%;}
+  .pl-col.pl-col-empty{flex:none;width:100%;}
+  .pl-col.pl-col-empty .pl-col-hd{flex-direction:row;align-items:center;}
+  .pl-col.pl-col-empty .pl-col-name{writing-mode:horizontal-tb;transform:none;font-size:12px;color:var(--text-dim);}
+  .pl-col.pl-col-empty .pl-col-count{margin-left:auto;}
+  .pl-col.pl-col-empty .pl-cards{min-height:40px;}
   .athlete-grid{padding:0 14px 20px;grid-template-columns:1fr;}
   .boards-wrap{padding:0 14px 20px;grid-template-columns:1fr;}
   .analytics-wrap{padding:0 14px 20px;}

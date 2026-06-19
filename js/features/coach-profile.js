@@ -1,4 +1,60 @@
 // ── ATHLETE SLIDE-OVER ────────────────────────────────────────────────────────
+
+// Convert a YouTube watch/short URL to an embed URL; return null for non-YouTube
+function _toYtEmbed(url){
+  if(!url) return null;
+  try{
+    const u = new URL(url);
+    let vid = null;
+    if(u.hostname.includes('youtube.com')) vid = u.searchParams.get('v');
+    else if(u.hostname === 'youtu.be') vid = u.pathname.slice(1);
+    if(!vid) return null;
+    return 'https://www.youtube.com/embed/'+vid+'?rel=0&modestbranding=1';
+  }catch(e){ return null; }
+}
+
+// Returns {highlight, gamefilm} URLs for an athlete, reading from localStorage for demo athlete
+function _getFilmUrls(a){
+  if(a.id === 2){
+    try{
+      const p = JSON.parse(localStorage.getItem('juke_player')||'{}');
+      return {highlight: p['p-highlight']||'', gamefilm: p['p-gamefilm']||''};
+    }catch(e){}
+  }
+  return {highlight: a.highlight||'', gamefilm: a.gamefilm||''};
+}
+
+// Renders the film section HTML (empty string if no film URLs)
+function _renderFilmSection(highlight, gamefilm){
+  if(!highlight && !gamefilm) return '';
+  const embedUrl = _toYtEmbed(highlight);
+  const isYt = !!embedUrl;
+  const isHudl = highlight && highlight.includes('hudl.com');
+
+  let filmHtml = '';
+  if(embedUrl){
+    filmHtml = `<div class="sp-film-embed-wrap">
+      <iframe class="sp-film-embed" src="${embedUrl}" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen loading="lazy"></iframe>
+    </div>`;
+  } else if(highlight){
+    // Hudl or other — show a prominent link button
+    const label = isHudl ? '▶ Watch on Hudl' : '▶ Watch Highlight Reel';
+    filmHtml = `<a href="${highlight}" target="_blank" rel="noopener" class="sp-film-link-btn">${label}</a>`;
+  }
+
+  const gameLinkHtml = gamefilm
+    ? `<a href="${gamefilm}" target="_blank" rel="noopener" class="sp-film-game-link">Game film ↗</a>`
+    : '';
+
+  return `<div class="sp-section sp-film-section">
+    <div class="sp-section-title">Film</div>
+    ${filmHtml}
+    ${gameLinkHtml}
+  </div>`;
+}
+
 function getAthleteBio(a){
   // For the demo athlete (Destiny Okafor, id 2), prefer the bio the athlete wrote in their portal
   if(a.id===2){
@@ -16,6 +72,7 @@ function openAthlete(id){
   const stage = getPipelineStage(id);
   const note = coachNotes[id]||'';
   const nextAction = coachNextActions[id]||'';
+  const {highlight, gamefilm} = _getFilmUrls(a);
   // Check for athlete avatar from juke portal (demo athlete id 2 = Destiny)
   const avatarSrc = (id===2) ? (localStorage.getItem('juke_avatar')||'') : '';
   const avContent = avatarSrc
@@ -64,6 +121,7 @@ function openAthlete(id){
       <div class="sp-section-title">About</div>
       <div class="sp-bio">${getAthleteBio(a)}</div>
     </div>
+    ${_renderFilmSection(highlight, gamefilm)}
     ${(()=>{
       const ends = getEndorsementForAthlete(a.name);
       if(!ends.length) return '';
