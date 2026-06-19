@@ -315,6 +315,8 @@ function clearAllSessions() {
 }
 
 // ── Init ──────────────────────────────────────────────────
+// Mark this browser as the internal user — dev bar will show on all portals
+localStorage.setItem('_juke_internal', '1');
 renderSessions();
 </script>
 </body>

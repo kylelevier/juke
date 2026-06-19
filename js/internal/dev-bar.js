@@ -7,6 +7,9 @@
 (function() {
   'use strict';
 
+  // Only render for internal users (flag set by /preview)
+  if (localStorage.getItem('_juke_internal') !== '1') return;
+
   var SB_URL  = 'https://gvxdabtmksxhujeytofv.supabase.co';
   var SB_KEY  = 'sb_publishable_eERuVHBjTdhkIxpWvCX62A_3bMoXgAn';
   var SB_STORE_KEY = 'sb-gvxdabtmksxhujeytofv-auth-token';
