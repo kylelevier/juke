@@ -7,11 +7,11 @@ let profileAwards=[];
 (function init(){
   const _ss=document.getElementById('stat-states');if(_ss)_ss.textContent=[...new Set(RAW.map(r=>r.State).filter(Boolean))].length;
   recalcFit();applyFilters();
-  loadPlayerProfile();
-  if(!profileAwards.length) addAward();
-  profileUpdate();
-  initWizPhotos();
-  renderFeed();
+  if(typeof loadPlayerProfile === 'function') loadPlayerProfile();
+  if(typeof profileAwards !== 'undefined' && !profileAwards.length && typeof addAward === 'function') addAward();
+  if(typeof profileUpdate === 'function') profileUpdate();
+  if(typeof initWizPhotos === 'function') initWizPhotos();
+  if(typeof renderFeed === 'function') renderFeed();
 })();
 
 // ── FIT PROFILE ─────────────────────────────────────────
@@ -34,7 +34,7 @@ function recalcFit(){
     prefs.type,prefs.rel,prefs.hbcu,prefs.maxNet?'net':''].filter(Boolean).length;
   document.getElementById('profile-summary').textContent = has
     ? `Profile active — ${criteriaCount} criteria · ${matches} strong matches`
-    : 'Set your preferences to see personalized match scores for every school';
+    : 'Set your preferences to see personalized match scores for every program';
 }
 function clearProfile(){
   ['pf-div','pf-gov','pf-vc','pf-region','pf-state','pf-type','pf-net','pf-rel','pf-hbcu'].forEach(id=>document.getElementById(id).value='');
@@ -169,6 +169,9 @@ function spSelect(key){
   }
   lsSet('juke_status', statusData);
   if(key !== 'none') recordMilestone(_spSchool, key);
+  if(key !== 'none' && window.JukeOnboarding){
+    JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_spSchool,stage:key});
+  }
   cloudSave();
   closeStatusPopover();
   render();

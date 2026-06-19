@@ -67,7 +67,7 @@ function openAthlete(id){
     ${(()=>{
       const ends = getEndorsementForAthlete(a.name);
       if(!ends.length) return '';
-      return '<div class="sp-section"><div class="sp-section-title">Coach Endorsement</div>'
+      return '<div class="sp-section"><div class="sp-section-title">Coach Recommendation</div>'
         + ends.map(e=>`<div class="sp-endorsement"><div class="sp-end-coach">— ${e.coachName}, ${e.coachTitle||'Coach'}${e.coachSchool?' · '+e.coachSchool:''}</div><div class="sp-end-text">&#8220;${e.endorsementText}&#8221;</div></div>`).join('')
         + '</div>';
     })()}
@@ -137,6 +137,10 @@ function saveNote(id, val){
 function _saveNextAction(id, val){
   const v = val.trim();
   if(v) coachNextActions[id] = v; else delete coachNextActions[id];
+  if(v && window.JukeOnboarding){
+    JukeOnboarding.mark('college_coach','firstActionLogged',{athleteId:id,action:v});
+    JukeOnboarding.event('college_coach','next_action_logged',{athleteId:id});
+  }
   lss('next_actions', coachNextActions);
   coachLastActivity[id] = {ts:Date.now(), type:'action', text:v};
   lss('last_activity', coachLastActivity);
@@ -205,6 +209,9 @@ function profileUpdate(){
 function saveProfile(){
   profileUpdate();
   lss('profile',coachProfile);
+  if(window.JukeOnboarding && coachProfile.school){
+    JukeOnboarding.mark('college_coach','setupDone',{school:coachProfile.school});
+  }
   const msg=document.getElementById('save-msg');
   if(msg){msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);}
 }

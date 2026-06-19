@@ -150,7 +150,7 @@ function athleteTableRow(a){
     <td onclick="event.stopPropagation()">
       <div class="pt-actions">
         <button class="pt-act-btn" onclick="openAthlete(${a.id})">View</button>
-        <button class="pt-act-btn${stage?' primary':''}" onclick="openAthlete(${a.id});setTimeout(()=>document.getElementById('sp-stage-row')?.scrollIntoView({behavior:'scroll'}),300)">${stage?stage.label:'+ Pipeline'}</button>
+        <button class="pt-act-btn${stage?' primary':''}" onclick="openAthlete(${a.id});setTimeout(()=>document.getElementById('sp-stage-row')?.scrollIntoView({behavior:'scroll'}),300)">${stage?stage.label:'+ Board'}</button>
       </div>
     </td>
   </tr>`;
@@ -220,7 +220,7 @@ function athleteCard(a){
     <div class="athlete-stats-line">GPA <span>${a.gpa}</span> &nbsp;·&nbsp; ${a.height} &nbsp;·&nbsp; 40yd <span>${a.forty}</span> &nbsp;·&nbsp; Vert <span>${a.vertical}</span></div>
     <div class="athlete-card-ft">
       <button class="ac-btn" onclick="event.stopPropagation();openAthlete(${a.id})">View</button>
-      <button class="ac-btn${stage?' primary':''}" onclick="event.stopPropagation();openAthlete(${a.id});document.getElementById('sp-stage-row').scrollIntoView({behavior:'smooth'})">${stage?stage.label:'+ Pipeline'}</button>
+      <button class="ac-btn${stage?' primary':''}" onclick="event.stopPropagation();openAthlete(${a.id});document.getElementById('sp-stage-row').scrollIntoView({behavior:'smooth'})">${stage?stage.label:'+ Board'}</button>
     </div>
   </div>`;
 }
@@ -268,7 +268,7 @@ function boardAthleteCount(boardId){
 function renderBoardChips(){
   const row=document.getElementById('board-filter-row');
   if(!row) return;
-  let html=`<button class="bfchip${activeBoardFilter===null?' active':''}" onclick="setBoardFilter(null)">All Pipeline</button>`;
+  let html=`<button class="bfchip${activeBoardFilter===null?' active':''}" onclick="setBoardFilter(null)">Full Board</button>`;
   html+=coachBoards.map(b=>{
     const cnt=boardAthleteCount(b.id);
     const isActive=activeBoardFilter===b.id;
@@ -371,10 +371,15 @@ function _onDrop(e, stageKey){
 
 // Shared stage-write used by drag-drop and setStage() in coach-profile.js
 function _setStageKey(id, stageKey){
+  const hadStage = !!getPipelineStage(id);
   for(const s of COACH_PIPELINE_STAGES){
     coachPipeline[s.key] = (coachPipeline[s.key]||[]).filter(x=>x!==id);
   }
   if(stageKey)(coachPipeline[stageKey]=coachPipeline[stageKey]||[]).push(id);
+  if(window.JukeOnboarding){
+    if(!hadStage) JukeOnboarding.mark('college_coach','firstAthleteAdded',{athleteId:id,stage:stageKey});
+    if(hadStage) JukeOnboarding.mark('college_coach','firstStageMove',{athleteId:id,stage:stageKey});
+  }
   coachLastActivity[id] = {ts:Date.now(), type:'stage',
     text: COACH_PIPELINE_STAGES.find(s=>s.key===stageKey)?.label||''};
   lss('pipeline', coachPipeline);

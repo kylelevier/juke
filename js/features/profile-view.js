@@ -1,4 +1,17 @@
 // ── PROFILE READ VIEW (dark card) ────────────────────────
+function pv(id){
+  const el=document.getElementById(id);
+  return el ? (el.value||'') : '';
+}
+
+function ph(value){
+  return String(value||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
 function renderProfileView(){
   var container=document.getElementById('profile-view');
   if(!container)return;
@@ -213,6 +226,9 @@ function updateCompletenessScore(){
   if(school){score+=5;}else{missing.push('Add your school / club team');}
   if(sat||act){score+=5;}else{missing.push('Add your SAT or ACT score');}
   score=Math.min(100,score);
+  if(score>=40 && window.JukeOnboarding){
+    JukeOnboarding.mark('athlete','profileStarted',{score});
+  }
   pctEl.textContent=score+'%';
   barEl.style.width=score+'%';
   barEl.style.background=score<40?'#FF4D4D':score<70?'#FF9800':'#FF0080';
@@ -311,10 +327,10 @@ function updateAthleteHeader(){
 
 function profileUpdate(){
   updateAthleteHeader();
-  updateHighlightRail();
+  if(typeof updateHighlightRail === 'function') updateHighlightRail();
   saveProfile();
   updateCompletenessScore();
-  updateWizAvatarInitials();
+  if(typeof updateWizAvatarInitials === 'function') updateWizAvatarInitials();
   const first=pv('p-fname'),last=pv('p-lname');
   const name=(first+' '+last).trim()||'Athlete Name';
   const pos=getPositions();

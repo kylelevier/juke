@@ -132,10 +132,10 @@ function loadEndorsementRequests(){
         +'<div><div class="epc-name">'+escEnd(e.athleteName||'Athlete')+'</div>'
         +(e.coachNote?'<div class="epc-note">&#8220;'+escEnd(e.coachNote)+'&#8221;</div>':'')
         +'</div></div>'
-        +'<label class="epc-label">Your endorsement</label>'
+        +'<label class="epc-label">Your recommendation</label>'
         +'<textarea class="epc-textarea" id="endtext-'+escEnd(e.id)+'" placeholder="What makes this athlete stand out? What will a college program be getting?"></textarea>'
         +'<div class="epc-actions">'
-        +'<button class="epc-submit-btn" onclick="submitHSEndorsement(\''+escEnd(e.id)+'\')">Submit Endorsement</button>'
+        +'<button class="epc-submit-btn" onclick="submitHSEndorsement(\''+escEnd(e.id)+'\')">Submit Recommendation</button>'
         +'<span class="epc-success" id="endsuccess-'+escEnd(e.id)+'" style="display:none">✓ Submitted</span>'
         +'</div></div>';
     }).join('');
@@ -149,7 +149,7 @@ function loadEndorsementRequests(){
 function submitHSEndorsement(id){
   var textEl=document.getElementById('endtext-'+id);
   var text=textEl?textEl.value.trim():'';
-  if(!text){alert('Please write an endorsement before submitting.');return;}
+  if(!text){alert('Please write a recommendation before submitting.');return;}
   var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
   var idx=all.findIndex(function(e){return e.id===id;});
   if(idx<0)return;
@@ -300,6 +300,9 @@ function saveHSProfile(){
     league: el('hs-league')?.value,
     bio:    el('hs-bio')?.value,
   });
+  if(window.JukeOnboarding){
+    JukeOnboarding.mark('hs_coach','setupDone',{school:el('hs-school')?.value||''});
+  }
   const msg = el('hs-save-msg');
   if(msg){ msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2200); }
 }
@@ -379,7 +382,7 @@ function renderRosterCards(athletes){
     const stColor  = STAGE_COLORS[st]||'';
     const intCount = a.programs.length;
     return `<div class="roster-card st-${st}" onclick="openSP(${a.id})">
-      ${endorsed?'<div class="endorse-badge">Endorsed</div>':''}
+      ${endorsed?'<div class="endorse-badge">Recommended</div>':''}
       <div class="rc-hd">
         <div class="rc-av"><div class="rc-av-init">${initials(a)}</div></div>
         <div>
@@ -401,7 +404,7 @@ function renderRosterCards(athletes){
           : `<span class="rc-interest-some">📍 ${intCount} program${intCount!==1?'s':''} interested</span>`}
       </div>
       <div class="rc-ft" onclick="event.stopPropagation()">
-        <button class="rc-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓ Endorsed':'Endorse'}</button>
+        <button class="rc-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓ Recommended':'Recommend'}</button>
         <button class="rc-btn" onclick="openSP(${a.id})">View Profile</button>
         <button class="rc-btn blue" onclick="openOutreachFor(${a.id})">Outreach →</button>
       </div>
@@ -421,7 +424,7 @@ function renderRosterTable(athletes){
       <td><div class="rt-av">${initials(a)}</div></td>
       <td>
         <div class="rt-name" style="cursor:pointer" onclick="openSP(${a.id})">${a.fname} ${a.lname}</div>
-        ${endorsed?'<span style="font-size:9px;color:#00a03a;font-weight:600">✓ Endorsed</span>':''}
+        ${endorsed?'<span style="font-size:9px;color:#00a03a;font-weight:600">✓ Recommended</span>':''}
       </td>
       <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${p}</span>`).join('')}</div></td>
       <td>${a.year}</td>
@@ -434,7 +437,7 @@ function renderRosterTable(athletes){
       </td>
       <td>
         <div class="rt-actions" onclick="event.stopPropagation()">
-          <button class="rt-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓':'Endorse'}</button>
+          <button class="rt-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓':'Recommend'}</button>
           <button class="rt-btn blue" onclick="openOutreachFor(${a.id})">Outreach</button>
         </div>
       </td>

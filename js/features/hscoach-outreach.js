@@ -109,6 +109,11 @@ function sendOutreach(){
   const subj = el('outreach-subject').value;
   const body = el('outreach-body').value;
   if(!to||!subj||!body){ alert('Please fill in the recipient, subject, and message.'); return; }
+  if(window.JukeOnboarding){
+    const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')].map(t=>parseInt(t.dataset.id));
+    JukeOnboarding.mark('hs_coach','firstOutreach',{to,athleteIds:selected});
+    JukeOnboarding.event('hs_coach','outreach_sent',{to,athleteCount:selected.length});
+  }
   const msg = el('outreach-msg');
   msg.classList.add('show');
   setTimeout(()=>msg.classList.remove('show'), 2500);
@@ -208,14 +213,14 @@ function openSP(id){
         }).join('')}</div>`
         :'<div style="font-size:12px;color:var(--text-dim)">No college interest logged yet. Use Outreach Tools to start the conversation.</div>'}
     </div>
-    ${endorsed?`<div class="sp-divider"></div><div class="sp-section"><div class="sp-sec-title">Your Endorsement</div><div class="sp-bio" style="color:#00a03a">${typeof endorsed==='object'&&endorsed.text?endorsed.text:'Endorsed by coach.'}</div></div>`:''}
+    ${endorsed?`<div class="sp-divider"></div><div class="sp-section"><div class="sp-sec-title">Your Recommendation</div><div class="sp-bio" style="color:#00a03a">${typeof endorsed==='object'&&endorsed.text?endorsed.text:'Recommended by coach.'}</div></div>`:''}
     <div class="sp-divider"></div>
     <div class="sp-section">
       <div class="sp-sec-title">Coach Notes</div>
       <textarea class="sp-note-area" id="sp-note-area" onblur="saveSPNote(${id})" placeholder="Private notes about this athlete…">${savedNote}</textarea>
     </div>
     <div class="sp-actions">
-      <button class="sp-action-btn primary" onclick="openEndorse(${a.id})">Endorse / Update</button>
+      <button class="sp-action-btn primary" onclick="openEndorse(${a.id})">Recommend / Update</button>
       <button class="sp-action-btn blue" onclick="openOutreachFor(${a.id})">Outreach →</button>
       <button class="sp-action-btn" onclick="openMsgFromOutside('athlete_'+${a.id})">Message</button>
     </div>
@@ -248,8 +253,8 @@ let endorseTarget = null;
 function openEndorse(id){
   endorseTarget = id;
   const a = ATHLETES.find(x=>x.id===id); if(!a) return;
-  el('endorse-title').textContent = 'Endorse '+a.fname+' '+a.lname;
-  el('endorse-sub').textContent   = 'Your endorsement carries weight. College coaches trust HS/club coach vouches — be specific and honest.';
+  el('endorse-title').textContent = 'Recommend '+a.fname+' '+a.lname;
+  el('endorse-sub').textContent   = 'Your recommendation carries weight. College coaches trust HS/club coach vouches — be specific and honest.';
   el('endorse-text').value        = typeof endorsements[id]==='object' ? (endorsements[id].text||'') : '';
   // Reset traits
   document.querySelectorAll('.endorse-trait').forEach(t=>{
@@ -278,6 +283,9 @@ function submitEndorse(){
   const text   = el('endorse-text').value.trim();
   endorsements[endorseTarget] = {traits, text, date: new Date().toLocaleDateString()};
   lss('endorsements', endorsements);
+  if(window.JukeOnboarding){
+    JukeOnboarding.mark('hs_coach','firstRecommendation',{athleteId:endorseTarget,traits:traits.length});
+  }
   updateHSCard();
   renderRoster();
   closeEndorseModal();

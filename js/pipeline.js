@@ -5,7 +5,10 @@ function switchTab(t){
   document.getElementById('tab-'+t).classList.add('active');
   document.getElementById('content-'+t).classList.add('active');
   if(t==='feed')renderFeed();
-  if(t==='pipeline')renderPipeline();
+  if(t==='pipeline'){
+    if(window.JukeOnboarding) JukeOnboarding.mark('athlete','boardViewed');
+    renderPipeline();
+  }
   if(t==='coaches'&&coachUnlocked)filterCoachAthletes();
   if(t==='profile')setTimeout(renderProfileView,0);
 }
@@ -32,6 +35,30 @@ function updateCommittedBanner(){
   } else {
     banner.classList.remove('show');
   }
+}
+
+function updateOfferStrip(){
+  const strip=document.getElementById('offer-strip');
+  if(!strip) return;
+  const grouped={saved:[],contacting:[],applied:[],offered:[],committed:[]};
+  Object.entries(statusData||{}).forEach(([school,stage])=>{
+    if(grouped[stage]) grouped[stage].push(school);
+  });
+  const sections=PIPELINE_STAGES
+    .filter(stage=>(grouped[stage.key]||[]).length)
+    .map(stage=>{
+      const logos=grouped[stage.key].slice(0,8).map(school=>{
+        const initials=school.split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase();
+        const domain=SCHOOL_DOMAINS[school];
+        const logo=domain
+          ? `<img src="https://logo.clearbit.com/${domain}" alt="" onerror="this.parentNode.innerHTML='<span class=&quot;offer-logo-chip-initials&quot;>${initials}</span>'">`
+          : `<span class="offer-logo-chip-initials">${initials}</span>`;
+        return `<button class="offer-logo-chip" title="${school}" onclick="switchTab('pipeline');setTimeout(()=>openBoardDetail('${esc(school)}'),0)">${logo}</button>`;
+      }).join('');
+      return `<div class="offer-strip-section"><span class="offer-strip-label ls-${stage.key}">${stage.label}</span><div class="offer-strip-logos">${logos}</div></div>`;
+    });
+  strip.innerHTML=sections.join('');
+  strip.classList.toggle('show', sections.length>0);
 }
 
 // ── MILESTONE TIMELINE ────────────────────────────────────

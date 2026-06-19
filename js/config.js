@@ -15,8 +15,9 @@ let currentUser = null;
 if(sb){
   sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
-    _updateAuthUI();
-    if(currentUser && event === 'SIGNED_IN') await _syncFromCloud();
+    if(currentUser && window.JukeOnboarding) JukeOnboarding.start('athlete');
+    if(typeof _updateAuthUI === 'function') _updateAuthUI();
+    if(currentUser && event === 'SIGNED_IN' && typeof _syncFromCloud === 'function') await _syncFromCloud();
     if(currentUser && event === 'INITIAL_SESSION' && typeof initMessaging === 'function') await initMessaging();
   });
 }

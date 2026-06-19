@@ -269,6 +269,9 @@ function ppTogglePipeline(){
     status[_ppCurrent] = 'saved';
     // Also show a brief toast
     showToast(`${_ppCurrent} added to your board`);
+    if(window.JukeOnboarding){
+      JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:'saved'});
+    }
   }
   lsSet('juke_status', status);
   const inPipe = status[_ppCurrent] !== 'none';
@@ -285,6 +288,9 @@ function ppSetStatus(key){
     delete statusData[_ppCurrent];
   } else {
     statusData[_ppCurrent] = key;
+    if(window.JukeOnboarding){
+      JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:key});
+    }
   }
   lsSet('juke_status', statusData);
   cloudSave();

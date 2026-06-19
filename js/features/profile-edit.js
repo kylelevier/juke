@@ -46,9 +46,9 @@ function renderEndorsementSection(){
         +'<div class="end-card-hd"><div class="end-av" style="background:#1e40af;">'+escHtml(inits)+'</div>'
         +'<div><div class="end-coach-name">'+escHtml(e.coachName)+'</div>'
         +'<div class="end-coach-school">'+escHtml(e.coachTitle||'')+(e.coachSchool?' · '+escHtml(e.coachSchool):'')+'</div></div>'
-        +'<span class="end-status-pill end-pill-received">✓ Endorsed</span></div>'
+        +'<span class="end-status-pill end-pill-received">✓ Recommended</span></div>'
         +'<div class="end-text">&#8220;'+escHtml(e.endorsementText)+'&#8221;</div>'
-        +'<div class="end-meta">Endorsed '+escHtml(e.submittedAt||'')+'</div></div>';
+        +'<div class="end-meta">Recommended '+escHtml(e.submittedAt||'')+'</div></div>';
     }
   }).join('');
 }
@@ -336,3 +336,12 @@ function initWizPhotos(){
   const avatarRaw = localStorage.getItem('juke_avatar');
   if(avatarRaw){ try{ renderWizAvatar(JSON.parse(avatarRaw)); }catch(e){} }
 }
+
+function initProfileEditor(){
+  loadPlayerProfile();
+  if(!profileAwards.length) addAward();
+  profileUpdate();
+  initWizPhotos();
+}
+
+initProfileEditor();

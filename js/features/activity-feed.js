@@ -18,7 +18,7 @@ function buildFeed(){
   var _id = 1;
   var p = lsGet('juke_player')||{};
   var sd = lsGet('juke_status')||{};
-  var endorsements = getEndorsements();
+  var endorsements = typeof getEndorsements === 'function' ? getEndorsements() : [];
   var milestones = lsGet('juke_feed_milestones')||{};
 
   // read profile value supporting both short + long key formats
@@ -116,11 +116,11 @@ function buildFeed(){
   endorsements.forEach(function(end, i){
     if(end.status==='endorsed')
       items.push({id:_id++, type:'milestone', time: end.submittedAt||'Recently', pri:8,
-        primary:'Coach '+end.coachName+' submitted an endorsement ✓',
-        secondary:end.coachSchool+' · A verified coach endorsement is now showing on your profile card — this is the strongest trust signal in the system.'});
+        primary:'Coach '+end.coachName+' submitted a recommendation ✓',
+        secondary:end.coachSchool+' · A verified coach recommendation is now showing on your profile card — this is the strongest trust signal in the system.'});
     else if(end.status==='pending')
       items.push({id:_id++, type:'timeline', time: end.requestedAt||'Recently', pri:22+i,
-        primary:'Endorsement request sent to Coach '+end.coachName,
+        primary:'Recommendation request sent to Coach '+end.coachName,
         secondary:end.coachSchool+' · Pending response. Coaches typically reply within 1–2 weeks.'});
   });
 
@@ -209,3 +209,4 @@ function renderFeed(){
   el.innerHTML = items.map(feedItemHTML).join('');
 }
 
+renderFeed();
