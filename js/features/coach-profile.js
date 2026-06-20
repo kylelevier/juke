@@ -70,6 +70,7 @@ function openAthlete(id){
   const a = ATHLETES.find(x=>x.id===id);
   if(!a) return;
   const stage = getPipelineStage(id);
+  const aid = typeof jsArg === 'function' ? jsArg(id) : JSON.stringify(id);
   const note = coachNotes[id]||'';
   const nextAction = coachNextActions[id]||'';
   const {highlight, gamefilm} = _getFilmUrls(a);
@@ -133,8 +134,8 @@ function openAthlete(id){
     <div class="sp-section">
       <div class="sp-section-title">Recruiting Stage</div>
       <div class="sp-stage-row" id="sp-stage-row">
-        ${COACH_PIPELINE_STAGES.map(s=>`<button class="sp-stage-btn${stage&&stage.key===s.key?' active s-'+s.key:''}" onclick="setStage(${id},'${s.key}')">${s.label}</button>`).join('')}
-        ${stage?`<button class="sp-stage-btn" onclick="removeFromPipeline(${id})" style="color:var(--text-dim)">✕ Remove</button>`:''}
+        ${COACH_PIPELINE_STAGES.map(s=>`<button class="sp-stage-btn${stage&&stage.key===s.key?' active s-'+s.key:''}" onclick="setStage(${aid},'${s.key}')">${s.label}</button>`).join('')}
+        ${stage?`<button class="sp-stage-btn" onclick="removeFromPipeline(${aid})" style="color:var(--text-dim)">✕ Remove</button>`:''}
       </div>
     </div>
     <div class="sp-section">
@@ -142,23 +143,23 @@ function openAthlete(id){
       <input class="sp-na-input" id="sp-next-action"
         placeholder="Watch film, send message, schedule visit…"
         value="${nextAction.replace(/"/g,'&quot;')}"
-        oninput="_saveNextAction(${id},this.value)"/>
+        oninput="_saveNextAction(${aid},this.value)"/>
       <div class="sp-na-examples">
         ${['Watch film','Send message','Schedule visit','Request transcript','Make offer'].map(ex=>
-          `<button class="sp-na-ex" onclick="document.getElementById('sp-next-action').value='${ex}';_saveNextAction(${id},'${ex}')">${ex}</button>`
+          `<button class="sp-na-ex" onclick="document.getElementById('sp-next-action').value='${ex}';_saveNextAction(${aid},'${ex}')">${ex}</button>`
         ).join('')}
       </div>
     </div>
     <div class="sp-section">
       <div class="sp-section-title">Boards</div>
       ${coachBoards.length
-        ? `<div class="sp-tag-row">${coachBoards.map(b=>`<span class="sp-tag-chip${athleteInBoard(id,b.id)?' in-board':''}" onclick="toggleAthleteBoard(${id},${b.id})">${athleteInBoard(id,b.id)?'✓ ':''} ${b.name}</span>`).join('')}</div>`
+        ? `<div class="sp-tag-row">${coachBoards.map(b=>`<span class="sp-tag-chip${athleteInBoard(id,b.id)?' in-board':''}" onclick="toggleAthleteBoard(${aid},${b.id})">${athleteInBoard(id,b.id)?'✓ ':''} ${b.name}</span>`).join('')}</div>`
         : `<div style="font-size:12px;color:var(--text-dim);font-style:italic">No boards yet — <span style="color:var(--columbia);cursor:pointer" onclick="newBoard()">create one</span></div>`
       }
     </div>
     <div class="sp-section">
       <div class="sp-section-title">Notes</div>
-      <textarea class="sp-note-area" id="sp-note" oninput="saveNote(${id},this.value)" placeholder="Add recruiting notes…">${note}</textarea>
+      <textarea class="sp-note-area" id="sp-note" oninput="saveNote(${aid},this.value)" placeholder="Add recruiting notes…">${note}</textarea>
     </div>
     <div class="sp-actions">
       <button class="sp-action-btn primary" onclick="openMsgFromOutside('athlete_'+id)">Message</button>
@@ -359,6 +360,7 @@ function seedSchoolFromAuth(){
   updateCoachCard();
   updateHeaderStats();
   filterAthletes();
+  if(typeof loadPublishedAthletes==='function') loadPublishedAthletes();
   loadSchoolLogo();
   renderBoardChips();
   const savedBanner=ls('banner');

@@ -1,3 +1,40 @@
+// ── ALPHA VISIT TRACKING ─────────────────────────────────────
+// Reads UTM params + ?ref from the URL, persists them to localStorage,
+// and inserts one row into alpha_visits. Deduplicates: only fires once
+// per browser session (sessionStorage gate) so refreshes don't flood the table.
+async function trackAlphaVisit(){
+  if(!sb) return;
+  if(sessionStorage.getItem('juke_tracked')) return;
+  sessionStorage.setItem('juke_tracked','1');
+
+  const p = new URLSearchParams(location.search);
+  const utm = {
+    utm_source:   p.get('utm_source')   || null,
+    utm_medium:   p.get('utm_medium')   || null,
+    utm_campaign: p.get('utm_campaign') || null,
+    utm_content:  p.get('utm_content')  || null,
+    ref:          p.get('ref')          || null,
+  };
+
+  // Persist UTM to localStorage so it survives navigation within the app
+  if(Object.values(utm).some(Boolean)){
+    localStorage.setItem('juke_utm', JSON.stringify(utm));
+  } else {
+    // Fall back to a previously captured UTM if no params on this URL
+    try{ Object.assign(utm, JSON.parse(localStorage.getItem('juke_utm')||'{}')); }catch(e){}
+  }
+
+  // Nothing worth tracking — organic direct visit with no UTM context
+  if(!Object.values(utm).some(Boolean)) return;
+
+  await sb.from('alpha_visits').insert({
+    ...utm,
+    landing_url: location.href,
+    user_agent:  navigator.userAgent,
+    user_id:     (await sb.auth.getUser())?.data?.user?.id || null,
+  });
+}
+
 // ── LOCAL STORAGE HELPERS ────────────────────────────────────
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return{}}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}

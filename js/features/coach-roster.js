@@ -11,6 +11,75 @@ const ATHLETES = [
   {id:8,name:"Nia Washington",pos:["QB"],year:2027,gpa:4.0,state:"NC",city:"Charlotte",height:"5'10\"",forty:"4.68",vertical:"27\"",school:"Providence Day School",division:"D1",sports:["Basketball"],bio:"Top-ranked 2027 QB. Strong arm, high IQ, exceptional leader on and off the field."},
 ];
 
+let _coachLiveProfilesLoaded = false;
+
+function _coachProfileField(p, shortKey, longKey){
+  return p?.[shortKey] || p?.[longKey] || '';
+}
+
+function _coachNumber(value){
+  const n=parseFloat(value);
+  return Number.isFinite(n)?n:0;
+}
+
+function _coachMapPublishedAthlete(row, idx){
+  const p=row.profile_data||{};
+  const fname=_coachProfileField(p,'fname','p-fname');
+  const lname=_coachProfileField(p,'lname','p-lname');
+  const name=(fname+' '+lname).trim() || p.name || 'Unnamed Athlete';
+  const cityState=_coachProfileField(p,'city','p-city');
+  const parts=cityState.split(',').map(x=>x.trim()).filter(Boolean);
+  const positions=p.positions||p._positions||[];
+  const div=(p.divisions&&p.divisions[0]) || p['pf-div'] || p.division || '';
+  return {
+    id:'live_'+(row.user_id||row.id||idx),
+    name,
+    pos:positions.length?positions:['ATH'],
+    year:parseInt(_coachProfileField(p,'gradyr','p-gradyr'))||new Date().getFullYear(),
+    gpa:_coachNumber(_coachProfileField(p,'gpa','p-gpa')),
+    state:(parts[1]||p.state||'').toUpperCase(),
+    city:parts[0]||p.city||'',
+    height:_coachProfileField(p,'height','p-height')||'',
+    forty:_coachProfileField(p,'forty','p-forty')||'',
+    vertical:_coachProfileField(p,'vertical','p-vertical')||'',
+    school:_coachProfileField(p,'school','p-school')||'',
+    division:div.replace('Division ','D')||'',
+    sports:[p.sport1,p.sport2].filter(Boolean),
+    bio:p.intro||p.bio||'',
+    highlight:_coachProfileField(p,'highlight','p-highlight')||p.gamefilm||p['p-gamefilm']||'',
+    _live:true,
+    _publishedAt:row.published_at||row.updated_at
+  };
+}
+
+async function loadPublishedAthletes(){
+  if(!window.sb||_coachLiveProfilesLoaded) return;
+  try{
+    const {data,error}=await sb
+      .from('athlete_profiles')
+      .select('id,user_id,profile_data,published_at,updated_at')
+      .eq('is_discoverable',true)
+      .order('updated_at',{ascending:false});
+    if(error){
+      console.warn('JUKE coach live athlete load failed:', error);
+      return;
+    }
+    const live=(data||[]).map(_coachMapPublishedAthlete).filter(a=>a.name!=='Unnamed Athlete');
+    const existing=new Set(ATHLETES.map(a=>String(a.id)));
+    live.forEach(a=>{
+      if(!existing.has(String(a.id))){
+        ATHLETES.unshift(a);
+        existing.add(String(a.id));
+      }
+    });
+    _coachLiveProfilesLoaded=true;
+    filterAthletes();
+    if(typeof renderCoachFeed==='function') renderCoachFeed();
+  }catch(e){
+    console.warn('JUKE coach live athlete load failed:', e);
+  }
+}
+
 const COACH_PIPELINE_STAGES = [
   {key:"identified", label:"Identified",    color:"#888888"},
   {key:"evaluating", label:"Evaluating",    color:"#7B2FFF"},
@@ -132,10 +201,11 @@ function filterAthletes(){
 function athleteTableRow(a){
   const stage = getPipelineStage(a.id);
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
+  const aid = jsArg(a.id);
   const stageBadge = stage
     ? `<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stage.color};color:${stage.color};background:${stage.color}18">${stage.label}</span>`
     : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
-  return `<tr onclick="openAthlete(${a.id})">
+  return `<tr onclick="openAthlete(${aid})">
     <td>
       <div class="pt-name">${a.name}${endorsed?' <span style="font-size:9px;color:#00A040">✓</span>':''}</div>
       <div class="pt-school">${a.school} · ${a.city}, ${a.state}</div>
@@ -149,14 +219,15 @@ function athleteTableRow(a){
     <td>${stageBadge}</td>
     <td onclick="event.stopPropagation()">
       <div class="pt-actions">
-        <button class="pt-act-btn" onclick="openAthlete(${a.id})">View</button>
-        <button class="pt-act-btn${stage?' primary':''}" onclick="openAthlete(${a.id});setTimeout(()=>document.getElementById('sp-stage-row')?.scrollIntoView({behavior:'scroll'}),300)">${stage?stage.label:'+ Board'}</button>
+        <button class="pt-act-btn" onclick="openAthlete(${aid})">View</button>
+        <button class="pt-act-btn${stage?' primary':''}" onclick="openAthlete(${aid});setTimeout(()=>document.getElementById('sp-stage-row')?.scrollIntoView({behavior:'scroll'}),300)">${stage?stage.label:'+ Board'}</button>
       </div>
     </td>
   </tr>`;
 }
 
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function jsArg(value){return JSON.stringify(value);}
 
 // ── COACH ENDORSEMENTS (read from shared localStorage) ────
 function getAllEndorsements(){try{return JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){return[];}}
@@ -203,7 +274,8 @@ function pipelineBadgeHtml(id){
 function athleteCard(a){
   const stage = getPipelineStage(a.id);
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
-  return `<div class="athlete-card" onclick="openAthlete(${a.id})">
+  const aid = jsArg(a.id);
+  return `<div class="athlete-card" onclick="openAthlete(${aid})">
     ${pipelineBadgeHtml(a.id)}
     <div class="athlete-card-hd">
       <div class="athlete-av"><div class="athlete-av-init">${initials(a.name)}</div></div>
@@ -219,8 +291,8 @@ function athleteCard(a){
     </div>
     <div class="athlete-stats-line">GPA <span>${a.gpa}</span> &nbsp;·&nbsp; ${a.height} &nbsp;·&nbsp; 40yd <span>${a.forty}</span> &nbsp;·&nbsp; Vert <span>${a.vertical}</span></div>
     <div class="athlete-card-ft">
-      <button class="ac-btn" onclick="event.stopPropagation();openAthlete(${a.id})">View</button>
-      <button class="ac-btn${stage?' primary':''}" onclick="event.stopPropagation();openAthlete(${a.id});document.getElementById('sp-stage-row').scrollIntoView({behavior:'smooth'})">${stage?stage.label:'+ Board'}</button>
+      <button class="ac-btn" onclick="event.stopPropagation();openAthlete(${aid})">View</button>
+      <button class="ac-btn${stage?' primary':''}" onclick="event.stopPropagation();openAthlete(${aid});document.getElementById('sp-stage-row').scrollIntoView({behavior:'smooth'})">${stage?stage.label:'+ Board'}</button>
     </div>
   </div>`;
 }
@@ -309,9 +381,9 @@ function renderPipeline(){
         : '';
       return `<div class="pl-card" draggable="true"
           style="border-left-color:${s.color}"
-          ondragstart="_onDragStart(event,${id})"
+          ondragstart="_onDragStart(event,${jsArg(id)})"
           ondragend="_onDragEnd(event)"
-          onclick="openAthlete(${id})">
+          onclick="openAthlete(${jsArg(id)})">
         <div class="pl-card-hd">
           <div class="pl-av">${initials(a.name)}</div>
           <div style="flex:1;min-width:0">

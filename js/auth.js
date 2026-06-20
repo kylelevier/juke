@@ -105,9 +105,10 @@ function _getFitPrefs(){
 }
 async function cloudSave(){
   if(!sb||!currentUser)return;
+  const profile=lsGet('juke_player');
   const payload={
     user_id:currentUser.id,
-    profile:lsGet('juke_player'),
+    profile,
     pipeline:lsGet('juke_status'),
     notes:lsGet('juke_notes'),
     fit:_getFitPrefs(),
@@ -118,7 +119,30 @@ async function cloudSave(){
     showToast?.('Cloud save failed. Your changes are saved on this device.');
     return;
   }
+  await _syncPublishedAthleteProfile(profile);
   _showSyncBadge();
+}
+
+async function _syncPublishedAthleteProfile(profile){
+  if(!sb||!currentUser)return;
+  const publish=lsGet('juke_publish');
+  if(!publish?.on)return;
+  const pd=Object.assign({}, profile||{});
+  pd._offers=Object.keys(lsGet('juke_offers'));
+  pd._positions=pd.positions||pd._positions||[];
+  pd['pf-div']=document.getElementById('pf-div')?.value||'';
+  pd['pf-region']=document.getElementById('pf-region')?.value||'';
+  ['p-fname','p-lname','p-email','p-gradyr','p-gpa','p-height','p-forty','p-vertical',
+   'p-city','p-school','p-major','p-highlight','p-gamefilm','p-phone'].forEach(id=>{
+    pd[id]=document.getElementById(id)?.value||pd[id]||'';
+  });
+  const {error}=await sb.from('athlete_profiles').upsert({
+    user_id:currentUser.id,
+    profile_data:pd,
+    is_discoverable:true,
+    updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+  if(error) console.error('JUKE publish sync failed:', error);
 }
 
 // ── CLOUD LOAD ───────────────────────────────────────────

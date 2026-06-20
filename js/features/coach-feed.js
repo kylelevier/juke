@@ -182,13 +182,13 @@ function renderCoachFeed(){
     html += _tdSection(
       'New Prospects',
       null,
-      newProspects.map(a=>`<div class="feed-item td-item" onclick="openAthlete(${a.id})">
+      newProspects.map(a=>`<div class="feed-item td-item" onclick="openAthlete(${typeof jsArg==='function'?jsArg(a.id):JSON.stringify(a.id)})">
         <div class="fi-icon-wrap fi-icon-new">🏃‍♀️</div>
         <div class="fi-body">
           <div class="fi-primary">${a.name} <span class="td-pos">${a.pos[0]} · '${String(a.year).slice(2)} · ${a.state}</span></div>
           <div class="fi-secondary">GPA ${a.gpa} · 40yd ${a.forty} · ${a.school}</div>
         </div>
-        <button class="td-quick-btn td-add-btn" onclick="event.stopPropagation();_quickAddBoard(${a.id})">+ Board</button>
+        <button class="td-quick-btn td-add-btn" onclick="event.stopPropagation();_quickAddBoard(${typeof jsArg==='function'?jsArg(a.id):JSON.stringify(a.id)})">+ Board</button>
       </div>`).join(''),
       `<button class="td-see-all" onclick="switchTab('search')">See All Prospects →</button>`
     );
@@ -275,7 +275,7 @@ function _buildActivityRows(){
 
   // Real activity from coachLastActivity
   Object.entries(coachLastActivity).forEach(([id, la])=>{
-    const a = ATHLETES.find(x=>x.id===parseInt(id));
+    const a = ATHLETES.find(x=>String(x.id)===String(id));
     if(!a||!la) return;
     const stage = COACH_PIPELINE_STAGES.find(s=>s.key===(la.text||'').toLowerCase().replace(/ /g,''));
     const color = stage?.color || '#888';
