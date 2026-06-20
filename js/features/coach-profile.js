@@ -67,7 +67,9 @@ function getAthleteBio(a){
 }
 function openAthlete(id){
   _spId = id;
-  const a = ATHLETES.find(x=>x.id===id);
+  const a = typeof findCoachAthlete === 'function'
+    ? findCoachAthlete(id)
+    : ATHLETES.find(x=>String(x.id)===String(id));
   if(!a) return;
   const stage = getPipelineStage(id);
   const aid = typeof jsArg === 'function' ? jsArg(id) : JSON.stringify(id);
@@ -177,7 +179,7 @@ function setStage(id, stageKey){
 }
 
 function removeFromPipeline(id){
-  for(const s of COACH_PIPELINE_STAGES){ coachPipeline[s.key]=(coachPipeline[s.key]||[]).filter(x=>x!==id); }
+  for(const s of COACH_PIPELINE_STAGES){ coachPipeline[s.key]=(coachPipeline[s.key]||[]).filter(x=>String(x)!==String(id)); }
   lss('pipeline',coachPipeline);
   filterAthletes();
   updateHeaderStats();

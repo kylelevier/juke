@@ -22,6 +22,18 @@ function _coachNumber(value){
   return Number.isFinite(n)?n:0;
 }
 
+function coachSameId(a, b){
+  return String(a)===String(b);
+}
+
+function coachHasId(list, id){
+  return (list||[]).some(x=>coachSameId(x,id));
+}
+
+function findCoachAthlete(id){
+  return ATHLETES.find(a=>coachSameId(a.id,id));
+}
+
 function _coachMapPublishedAthlete(row, idx){
   const p=row.profile_data||{};
   const fname=_coachProfileField(p,'fname','p-fname');
@@ -227,7 +239,9 @@ function athleteTableRow(a){
 }
 
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
-function jsArg(value){return JSON.stringify(value);}
+function jsArg(value){
+  return JSON.stringify(value).replace(/"/g,'&quot;');
+}
 
 // ── COACH ENDORSEMENTS (read from shared localStorage) ────
 function getAllEndorsements(){try{return JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){return[];}}
@@ -237,7 +251,7 @@ function getEndorsementForAthlete(name){
   });
 }
 function getPipelineStage(id){
-  for(const s of COACH_PIPELINE_STAGES){ if((coachPipeline[s.key]||[]).includes(id)) return s; }
+  for(const s of COACH_PIPELINE_STAGES){ if(coachHasId(coachPipeline[s.key],id)) return s; }
   return null;
 }
 
@@ -368,7 +382,7 @@ function renderPipeline(){
     if(filterSet) ids=ids.filter(id=>filterSet.has(id));
 
     const cards = ids.map(id=>{
-      const a = ATHLETES.find(x=>x.id===id);
+      const a = findCoachAthlete(id);
       if(!a) return '';
       const boardNames = (coachTags[id]||[])
         .map(bid=>{ const b=coachBoards.find(x=>x.id===bid); return b?b.name:''; }).filter(Boolean);
@@ -446,9 +460,9 @@ function _onDrop(e, stageKey){
 function _setStageKey(id, stageKey){
   const hadStage = !!getPipelineStage(id);
   for(const s of COACH_PIPELINE_STAGES){
-    coachPipeline[s.key] = (coachPipeline[s.key]||[]).filter(x=>x!==id);
+    coachPipeline[s.key] = (coachPipeline[s.key]||[]).filter(x=>!coachSameId(x,id));
   }
-  if(stageKey)(coachPipeline[stageKey]=coachPipeline[stageKey]||[]).push(id);
+  if(stageKey&&!coachHasId(coachPipeline[stageKey],id))(coachPipeline[stageKey]=coachPipeline[stageKey]||[]).push(id);
   if(window.JukeOnboarding){
     if(!hadStage) JukeOnboarding.mark('college_coach','firstAthleteAdded',{athleteId:id,stage:stageKey});
     if(hadStage) JukeOnboarding.mark('college_coach','firstStageMove',{athleteId:id,stage:stageKey});

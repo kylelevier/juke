@@ -82,7 +82,7 @@ function renderCoachFeed(){
   // ── Next Actions ──
   const withActions = allIds
     .filter(id=>coachNextActions[id])
-    .map(id=>({id, a:ATHLETES.find(x=>x.id===id), na:coachNextActions[id]}))
+    .map(id=>({id, a:findCoachAthlete(id), na:coachNextActions[id]}))
     .filter(x=>x.a);
 
   // ── Follow-Up Needed: in Contacting or Recruiting, no activity in 3 days ──
@@ -91,13 +91,13 @@ function renderCoachFeed(){
       const la = coachLastActivity[id];
       return !la || (Date.now()-la.ts) > 3*24*60*60*1000;
     });
-  const followUp = followUpIds.map(id=>({id, a:ATHLETES.find(x=>x.id===id)})).filter(x=>x.a);
+  const followUp = followUpIds.map(id=>({id, a:findCoachAthlete(id)})).filter(x=>x.a);
 
   // ── Recommendations ──
   const recs = getAllEndorsements().filter(e=>e.status==='endorsed');
 
   // ── New prospects (not yet on board) ──
-  const newProspects = ATHLETES.filter(a=>!allIds.includes(a.id)).slice(0,3);
+  const newProspects = ATHLETES.filter(a=>!coachHasId(allIds,a.id)).slice(0,3);
 
   let html = '';
 
@@ -108,7 +108,7 @@ function renderCoachFeed(){
       null,
       withActions.map(({id, a, na})=>{
         const stage = getPipelineStage(id);
-        return `<div class="feed-item td-item" onclick="openAthlete(${id})">
+        return `<div class="feed-item td-item" onclick="openAthlete(${typeof jsArg==='function'?jsArg(id):JSON.stringify(id)})">
           <div class="fi-icon-wrap td-av-wrap">${_av(a.name)}</div>
           <div class="fi-body">
             <div class="fi-primary">${a.name}</div>
@@ -128,13 +128,13 @@ function renderCoachFeed(){
       followUp.map(({id, a})=>{
         const la = coachLastActivity[id];
         const laText = la ? _relTime(la.ts) : 'No contact yet';
-        return `<div class="feed-item td-item" onclick="openAthlete(${id})">
+        return `<div class="feed-item td-item" onclick="openAthlete(${typeof jsArg==='function'?jsArg(id):JSON.stringify(id)})">
           <div class="fi-icon-wrap td-av-wrap">${_av(a.name)}</div>
           <div class="fi-body">
             <div class="fi-primary">${a.name} <span class="td-pos">${a.pos[0]} · '${String(a.year).slice(2)}</span></div>
             <div class="fi-secondary">Last contact: ${laText}</div>
           </div>
-          <button class="td-quick-btn" onclick="event.stopPropagation();openAthlete(${id})">Follow Up</button>
+          <button class="td-quick-btn" onclick="event.stopPropagation();openAthlete(${typeof jsArg==='function'?jsArg(id):JSON.stringify(id)})">Follow Up</button>
         </div>`;
       }).join('')
     );
@@ -147,7 +147,7 @@ function renderCoachFeed(){
       null,
       recs.map(e=>{
         const a = ATHLETES.find(x=>x.name.toLowerCase()===e.athleteName.toLowerCase());
-        return `<div class="feed-item td-item" ${a?`onclick="openAthlete(${a.id})"`:''}>
+        return `<div class="feed-item td-item" ${a?`onclick="openAthlete(${typeof jsArg==='function'?jsArg(a.id):JSON.stringify(a.id)})"`:''}>
           <div class="fi-icon-wrap fi-icon-milestone">⭐</div>
           <div class="fi-body">
             <div class="fi-primary">${e.athleteName}</div>
@@ -225,7 +225,7 @@ function _av(name){
 
 function _quickAddBoard(id){
   if(!coachPipeline.identified) coachPipeline.identified=[];
-  if(!coachPipeline.identified.includes(id)) coachPipeline.identified.push(id);
+  if(!coachHasId(coachPipeline.identified,id)) coachPipeline.identified.push(id);
   lss('pipeline', coachPipeline);
   updateHeaderStats();
   filterAthletes();
