@@ -34,6 +34,16 @@ function findCoachAthlete(id){
   return ATHLETES.find(a=>coachSameId(a.id,id));
 }
 
+function escHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, c=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  })[c]);
+}
+
 function _coachMapPublishedAthlete(row, idx){
   const p=row.profile_data||{};
   const fname=_coachProfileField(p,'fname','p-fname');
@@ -45,6 +55,7 @@ function _coachMapPublishedAthlete(row, idx){
   const div=(p.divisions&&p.divisions[0]) || p['pf-div'] || p.division || '';
   return {
     id:'live_'+(row.user_id||row.id||idx),
+    _userId:row.user_id||'',
     name,
     pos:positions.length?positions:['ATH'],
     year:parseInt(_coachProfileField(p,'gradyr','p-gradyr'))||new Date().getFullYear(),
@@ -313,14 +324,15 @@ function athleteCard(a){
 
 // ── BOARDS ────────────────────────────────────────────────────────────────────
 function athletesBoardIds(athleteId){
-  return coachTags[athleteId]||[];
+  const key=Object.keys(coachTags).find(k=>coachSameId(k,athleteId));
+  return key ? (coachTags[key]||[]) : [];
 }
 function athleteInBoard(athleteId, boardId){
-  return athletesBoardIds(athleteId).includes(boardId);
+  return coachHasId(athletesBoardIds(athleteId),boardId);
 }
 function toggleAthleteBoard(athleteId, boardId){
   if(!coachTags[athleteId]) coachTags[athleteId]=[];
-  const idx=coachTags[athleteId].indexOf(boardId);
+  const idx=coachTags[athleteId].findIndex(id=>coachSameId(id,boardId));
   if(idx>-1) coachTags[athleteId].splice(idx,1);
   else coachTags[athleteId].push(boardId);
   lss('tags',coachTags);
@@ -338,9 +350,9 @@ function newBoard(){
 }
 function removeBoard(boardId){
   if(!confirm('Delete this board? Athletes will be removed from it.')) return;
-  coachBoards=coachBoards.filter(b=>b.id!==boardId);
+  coachBoards=coachBoards.filter(b=>!coachSameId(b.id,boardId));
   Object.keys(coachTags).forEach(aid=>{
-    coachTags[aid]=(coachTags[aid]||[]).filter(bid=>bid!==boardId);
+    coachTags[aid]=(coachTags[aid]||[]).filter(bid=>!coachSameId(bid,boardId));
   });
   lss('boards2',coachBoards);
   lss('tags',coachTags);
@@ -349,7 +361,26 @@ function removeBoard(boardId){
 }
 function boardAthleteCount(boardId){
   const allPl=Object.values(coachPipeline).flat();
-  return allPl.filter(id=>(coachTags[id]||[]).includes(boardId)).length;
+  return allPl.filter(id=>athleteInBoard(id,boardId)).length;
+}
+function renderBoardSummary(){
+  const row=document.getElementById('board-summary-row');
+  if(!row) return;
+  const allIds=Object.values(coachPipeline).flat();
+  const liveCount=allIds.filter(id=>findCoachAthlete(id)?._live).length;
+  const activeCount=[...(coachPipeline.contacting||[]),...(coachPipeline.recruiting||[]),...(coachPipeline.offer||[])].length;
+  const nextActionCount=allIds.filter(id=>coachNextActions[id]).length;
+  const boardCount=coachBoards.length;
+  row.innerHTML=[
+    {num:allIds.length,lbl:'On Board',tone:'dark'},
+    {num:activeCount,lbl:'Active',tone:'blue'},
+    {num:nextActionCount,lbl:'Next Actions',tone:'pink'},
+    {num:liveCount,lbl:'Live Profiles',tone:'green'},
+    {num:boardCount,lbl:'Lists',tone:'gray'}
+  ].map(s=>`<div class="board-summary-card ${s.tone}">
+    <div class="board-summary-num">${s.num}</div>
+    <div class="board-summary-lbl">${s.lbl}</div>
+  </div>`).join('');
 }
 function renderBoardChips(){
   const row=document.getElementById('board-filter-row');
@@ -373,48 +404,56 @@ function setBoardFilter(boardId){
 let _dragId = null;
 
 function renderPipeline(){
-  const filterSet = activeBoardFilter!==null
-    ? new Set(Object.values(coachPipeline).flat().filter(id=>(coachTags[id]||[]).includes(activeBoardFilter)))
+  renderBoardSummary();
+  const filterIds = activeBoardFilter!==null
+    ? Object.values(coachPipeline).flat().filter(id=>athleteInBoard(id,activeBoardFilter))
     : null;
 
   document.getElementById('pipeline-wrap').innerHTML = COACH_PIPELINE_STAGES.map(s=>{
     let ids = coachPipeline[s.key]||[];
-    if(filterSet) ids=ids.filter(id=>filterSet.has(id));
+    if(filterIds) ids=ids.filter(id=>coachHasId(filterIds,id));
 
     const cards = ids.map(id=>{
       const a = findCoachAthlete(id);
       if(!a) return '';
-      const boardNames = (coachTags[id]||[])
-        .map(bid=>{ const b=coachBoards.find(x=>x.id===bid); return b?b.name:''; }).filter(Boolean);
+      const boardNames = athletesBoardIds(id)
+        .map(bid=>{ const b=coachBoards.find(x=>coachSameId(x.id,bid)); return b?b.name:''; }).filter(Boolean);
       const la = coachLastActivity[id];
-      const laText = la ? _relTime(la.ts) : a.school;
+      const laText = la ? _relTime(la.ts) : 'No recent activity';
       const na = coachNextActions[id]||'';
       const fs = fitScore(a);
       const fitHtml = fs>=80
         ? `<span class="pl-fit">${fs}</span>`
         : '';
-      return `<div class="pl-card" draggable="true"
+      const posText=(a.pos||[]).join('/');
+      const meta=[posText, `'${String(a.year).slice(2)}`, a.state].filter(Boolean).join(' · ');
+      const schoolLine=[a.school, a.city].filter(Boolean).join(' · ');
+      return `<div class="pl-card" draggable="true" data-athlete-id="${escHtml(id)}"
           style="border-left-color:${s.color}"
           ondragstart="_onDragStart(event,${jsArg(id)})"
           ondragend="_onDragEnd(event)"
           onclick="openAthlete(${jsArg(id)})">
         <div class="pl-card-hd">
-          <div class="pl-av">${initials(a.name)}</div>
+          <div class="pl-av">${escHtml(initials(a.name))}</div>
           <div style="flex:1;min-width:0">
-            <div class="pl-name">${a.name}</div>
-            <div class="pl-meta">${a.pos.join('/')} · '${String(a.year).slice(2)} · ${a.state}</div>
+            <div class="pl-name">${escHtml(a.name)}</div>
+            <div class="pl-meta">${escHtml(meta)}</div>
           </div>
           ${fitHtml}
         </div>
-        ${na?`<div class="pl-na"><span class="pl-na-arrow">→</span>${na}</div>`:''}
-        <div class="pl-last">${laText}</div>
-        ${boardNames.length?`<div class="pl-board-tags">${boardNames.map(n=>`<span class="pl-board-tag">${n}</span>`).join('')}</div>`:''}
+        <div class="pl-school">${escHtml(schoolLine||a.school||'')}</div>
+        ${na?`<div class="pl-na"><span class="pl-na-arrow">→</span>${escHtml(na)}</div>`:''}
+        <div class="pl-card-foot">
+          <span class="pl-last">${escHtml(laText)}</span>
+          ${a._live?'<span class="pl-live">Live profile</span>':''}
+        </div>
+        ${boardNames.length?`<div class="pl-board-tags">${boardNames.map(n=>`<span class="pl-board-tag">${escHtml(n)}</span>`).join('')}</div>`:''}
       </div>`;
     }).join('');
 
     const total = (coachPipeline[s.key]||[]).length;
     const shown = ids.length;
-    const countLabel = filterSet&&shown!==total ? `${shown}/${total}` : String(total);
+    const countLabel = filterIds&&shown!==total ? `${shown}/${total}` : String(total);
     const isEmpty = ids.length === 0;
 
     return `<div class="pl-col${isEmpty?' pl-col-empty':''}"
@@ -428,7 +467,7 @@ function renderPipeline(){
         ${isEmpty?`<div class="pl-col-count">0</div>`:`<div class="pl-col-count">${countLabel}</div>`}
       </div>
       <div class="pl-cards" id="pl-cards-${s.key}">
-        ${isEmpty?'':`${cards}`}
+        ${isEmpty?`<div class="pl-empty">Drop athletes here</div>`:`${cards}`}
       </div>
     </div>`;
   }).join('');

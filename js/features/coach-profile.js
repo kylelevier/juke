@@ -164,13 +164,42 @@ function openAthlete(id){
       <textarea class="sp-note-area" id="sp-note" oninput="saveNote(${aid},this.value)" placeholder="Add recruiting notes…">${note}</textarea>
     </div>
     <div class="sp-actions">
-      <button class="sp-action-btn primary" onclick="openMsgFromOutside('athlete_'+id)">Message</button>
+      <button class="sp-action-btn primary" onclick="messageAthlete(${aid})">Message</button>
     </div>
   `;
   const overlay = document.getElementById('sp-overlay');
   overlay.classList.add('open');
   if(window.JukeDialog) window.JukeDialog.open(overlay, {close: closeSP});
   document.body.style.overflow='hidden';
+}
+
+function messageAthlete(id){
+  const a = typeof findCoachAthlete === 'function'
+    ? findCoachAthlete(id)
+    : ATHLETES.find(x=>String(x.id)===String(id));
+  if(!a) return;
+  if(typeof currentUser === 'undefined' || !currentUser){
+    if(typeof openCoachAuth === 'function') openCoachAuth();
+    else if(typeof showToast === 'function') showToast('Sign in to message athletes');
+    return;
+  }
+  if(!a._userId){
+    if(typeof showToast === 'function') showToast('This demo athlete is not connected to a messaging account');
+    return;
+  }
+  closeSP();
+  if(typeof openNewMsg === 'function') openNewMsg(a._userId);
+  else if(window.openNewMsg) window.openNewMsg(a._userId);
+}
+
+function openCoachNewMessage(){
+  if(typeof currentUser === 'undefined' || !currentUser){
+    if(typeof openCoachAuth === 'function') openCoachAuth();
+    else if(typeof showToast === 'function') showToast('Sign in to start a conversation');
+    return;
+  }
+  if(typeof openNewMsg === 'function') openNewMsg();
+  else if(window.openNewMsg) window.openNewMsg();
 }
 
 function setStage(id, stageKey){

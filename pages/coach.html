@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="../styles/coach-portal.css">
+  <link rel="stylesheet" href="../styles/coach-portal.css?v=board-live-1">
   <link rel="stylesheet" href="../styles/onboarding.css">
 
 </head>
@@ -140,6 +140,7 @@
       <div class="section-subtitle">Move athletes through your recruiting workflow.</div>
     </div>
   </div>
+  <div class="board-summary-row" id="board-summary-row"></div>
   <div class="board-filter-row" id="board-filter-row"></div>
   <div class="pipeline-wrap" id="pipeline-wrap"></div>
 </div>
@@ -215,7 +216,7 @@
 <div class="tab-content" id="content-messages">
   <div class="section-hd" style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;">
     <span class="section-title" style="font-family:'Archivo Condensed',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;color:#fff;">Messages</span>
-    <button class="hd-action" onclick="openNewMsg()" style="font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">+ New Message</button>
+    <button class="hd-action" onclick="openCoachNewMessage()" style="font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">+ New Message</button>
   </div>
   <div class="msg-wrap" id="msg-wrap">
     <div class="msg-thread-panel" id="msg-thread-panel">
@@ -261,12 +262,12 @@
   </div>
 </div>
 
-  <script src="../js/features/coach-nav.js?v=live-athletes-2"></script>
-  <script src="../js/features/coach-roster.js?v=live-athletes-2"></script>
+  <script src="../js/features/coach-nav.js?v=live-athletes-4"></script>
+  <script src="../js/features/coach-roster.js?v=live-athletes-4"></script>
   <script>window.JUKE_PORTAL_TYPE='college_coach';</script>
   <script src="../js/features/onboarding.js"></script>
-  <script src="../js/features/coach-feed.js?v=live-athletes-2"></script>
-  <script src="../js/features/coach-profile.js?v=live-athletes-2"></script>
+  <script src="../js/features/coach-feed.js?v=live-athletes-4"></script>
+  <script src="../js/features/coach-profile.js?v=live-athletes-4"></script>
 
 
 <!-- ── AUTH MODAL (college coach portal) ─────────────────────── -->
