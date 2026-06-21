@@ -128,8 +128,14 @@ async function _syncPublishedAthleteProfile(profile){
   const publish=lsGet('juke_publish');
   if(!publish?.on)return;
   const pd=Object.assign({}, profile||{});
+  const avatar=lsGet('juke_avatar');
+  const banner=lsGet('juke_banner');
+  const recs=lsGet('juke_endorsements');
   pd._offers=Object.keys(lsGet('juke_offers'));
   pd._positions=pd.positions||pd._positions||[];
+  pd._avatar=typeof avatar==='string'?avatar:'';
+  pd._banner=typeof banner==='string'?banner:'';
+  pd._recommendations=(Array.isArray(recs)?recs:[]).filter(e=>e&&e.status==='endorsed');
   pd['pf-div']=document.getElementById('pf-div')?.value||'';
   pd['pf-region']=document.getElementById('pf-region')?.value||'';
   ['p-fname','p-lname','p-email','p-gradyr','p-gpa','p-height','p-forty','p-vertical',

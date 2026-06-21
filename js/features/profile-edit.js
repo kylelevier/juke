@@ -257,6 +257,7 @@ function handleBannerUpload(input){
     renderBannerPhoto(e.target.result);
     renderWizBanner(e.target.result);
     renderProfileView();
+    if(typeof cloudSave==='function') cloudSave();
   };
   reader.readAsDataURL(file);
 }
@@ -294,6 +295,7 @@ function handleAvatarUpload(input){
     renderAvatarPhoto(e.target.result);
     renderWizAvatar(e.target.result);
     renderProfileView();
+    if(typeof cloudSave==='function') cloudSave();
   };
   reader.readAsDataURL(file);
 }

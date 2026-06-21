@@ -5,6 +5,10 @@ function renderActivity(){
 
 function renderActivityCards(){
   const grid = el('activity-grid'); if(!grid) return;
+  if(typeof _hsRosterSource!=='undefined' && _hsRosterSource==='live'){
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">No college activity yet</div><div class="empty-state-sub">Live activity for this roster will appear here as college coaches view your athletes.</div></div>';
+    return;
+  }
   grid.innerHTML = ACTIVITY.map(act=>{
     const athletes = act.athletes.map(id=>ATHLETES.find(a=>a.id===id)).filter(Boolean);
     const logoSrc = logoUrl(act.domain);
@@ -20,8 +24,8 @@ function renderActivityCards(){
       </div>
       <div class="ac-athletes">
         <div class="ac-athletes-lbl">Viewed your athletes</div>
-        ${athletes.map(a=>`<span class="ac-athlete-chip" onclick="openSP(${a.id})">
-          ${initials(a)} ${a.fname} ${a.lname}
+        ${athletes.map(a=>`<span class="ac-athlete-chip" onclick="openSP(${hsJsArg(a.id)})">
+          ${initials(a)} ${hsEsc(a.fname)} ${hsEsc(a.lname)}
         </span>`).join('')}
       </div>
       <div class="ac-date">Last active ${act.date}</div>
@@ -34,6 +38,10 @@ function renderActivityCards(){
 
 function renderActivityTable(){
   const tbody = el('activity-tbody'); if(!tbody) return;
+  if(typeof _hsRosterSource!=='undefined' && _hsRosterSource==='live'){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim)">No live college activity yet.</td></tr>';
+    return;
+  }
   tbody.innerHTML = ACTIVITY.map(act=>{
     const athletes = act.athletes.map(id=>ATHLETES.find(a=>a.id===id)).filter(Boolean);
     const logoSrc = logoUrl(act.domain);
@@ -43,7 +51,7 @@ function renderActivityTable(){
         <span class="at-program">${act.school}</span>
       </td>
       <td style="font-size:11px;color:var(--text-muted)">${act.div}</td>
-      <td>${athletes.map(a=>`<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0" onclick="openSP(${a.id})">${a.fname} ${a.lname}</span>`).join('')}</td>
+      <td>${athletes.map(a=>`<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0" onclick="openSP(${hsJsArg(a.id)})">${hsEsc(a.fname)} ${hsEsc(a.lname)}</span>`).join('')}</td>
       <td style="font-size:11px;color:var(--text-dim)">${act.date}</td>
       <td><button class="rt-btn blue" onclick="openOutreachTo('${act.school}')">Contact</button></td>
     </tr>`;
@@ -55,7 +63,7 @@ function renderActivityTable(){
 // ──────────────────────────────────────────────
 function renderOutreachAthletes(){
   const row = el('outreach-athlete-row'); if(!row) return;
-  row.innerHTML = ATHLETES.map(a=>`<span class="athlete-tag" data-id="${a.id}" onclick="toggleOutreachAthlete(this)">${a.fname} ${a.lname}</span>`).join('');
+  row.innerHTML = ATHLETES.map(a=>`<span class="athlete-tag" data-id="${hsEsc(a.id)}" onclick="toggleOutreachAthlete(this)">${hsEsc(a.fname)} ${hsEsc(a.lname)}</span>`).join('');
 }
 
 function toggleOutreachAthlete(tag){
@@ -69,8 +77,8 @@ function updateOutreachBody(){
   const school = el('hs-school')?.value||'DeSoto HS';
   const coachName = [el('hs-fname')?.value, el('hs-lname')?.value].filter(Boolean).join(' ')||'Coach';
   const names = selected.map(t=>{
-    const id = parseInt(t.dataset.id);
-    const a = ATHLETES.find(x=>x.id===id);
+    const id = t.dataset.id;
+    const a = hsFindAthlete(id);
     return a ? a.fname+' '+a.lname : '';
   }).filter(Boolean);
   if(!el('outreach-subject').value){
@@ -86,7 +94,7 @@ function openOutreachFor(athleteId){
   setTimeout(()=>{
     // Select just this athlete
     document.querySelectorAll('#outreach-athlete-row .athlete-tag').forEach(t=>{
-      if(parseInt(t.dataset.id)===athleteId){ t.classList.add('selected'); }
+      if(hsSameId(t.dataset.id,athleteId)){ t.classList.add('selected'); }
       else { t.classList.remove('selected'); }
     });
     el('outreach-subject').value='';
@@ -110,7 +118,7 @@ function sendOutreach(){
   const body = el('outreach-body').value;
   if(!to||!subj||!body){ alert('Please fill in the recipient, subject, and message.'); return; }
   if(window.JukeOnboarding){
-    const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')].map(t=>parseInt(t.dataset.id));
+    const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')].map(t=>t.dataset.id);
     JukeOnboarding.mark('hs_coach','firstOutreach',{to,athleteIds:selected});
     JukeOnboarding.event('hs_coach','outreach_sent',{to,athleteCount:selected.length});
   }
@@ -146,7 +154,7 @@ function applyTemplate(key){
   const tpl = TEMPLATES[key]; if(!tpl) return;
   const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')];
   let a = null;
-  if(selected.length){ const id=parseInt(selected[0].dataset.id); a=ATHLETES.find(x=>x.id===id); }
+  if(selected.length){ const id=selected[0].dataset.id; a=hsFindAthlete(id); }
   const school    = el('hs-school')?.value||'DeSoto HS';
   const coachName = [el('hs-fname')?.value, el('hs-lname')?.value].filter(Boolean).join(' ')||'Coach';
   const fill = s => s
@@ -167,21 +175,24 @@ function applyTemplate(key){
 let currentSPId = null;
 
 function openSP(id){
-  const a = ATHLETES.find(x=>x.id===id); if(!a) return;
+  const a = hsFindAthlete(id); if(!a) return;
   currentSPId = id;
   const st = athleteStatus(a);
   const endorsed = endorsements[id];
   const savedNote = ls('note_'+id)||'';
   el('sp-title').textContent = a.fname+' '+a.lname;
+  const idArg = hsJsArg(a.id);
+  const messageId = a._userId || ('athlete_'+a.id);
+  const bannerStyle = a.banner ? ` style="background-image:url('${String(a.banner).replace(/'/g,'%27')}');background-size:cover;background-position:center;"` : '';
   el('sp-body').innerHTML = `
-    <div class="sp-banner"></div>
-    <div class="sp-av">${initials(a)}</div>
+    <div class="sp-banner"${bannerStyle}></div>
+    <div class="sp-av">${a.avatar?`<img src="${hsEsc(a.avatar)}" alt="${hsEsc(a.fname+' '+a.lname)}">`:initials(a)}</div>
     <div class="sp-name-block">
-      <div class="sp-name">${a.fname} ${a.lname}</div>
-      <div class="sp-school">${a.school} · ${a.state} · Class of ${a.year}</div>
+      <div class="sp-name">${hsEsc(a.fname)} ${hsEsc(a.lname)}</div>
+      <div class="sp-school">${hsEsc(a.school)} · ${hsEsc(a.state)} · Class of ${a.year}</div>
     </div>
     <div class="sp-pills">
-      ${a.pos.map(p=>`<span class="rc-pos">${p}</span>`).join('')}
+      ${a.pos.map(p=>`<span class="rc-pos">${hsEsc(p)}</span>`).join('')}
       <span class="rc-year">${a.year}</span>
       ${st!=='none'?`<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${STAGE_COLORS[st]};color:${STAGE_COLORS[st]};background:${STAGE_COLORS[st]}18;">${STAGE_LABELS[st]}</span>`:''}
     </div>
@@ -195,7 +206,11 @@ function openSP(id){
         <div class="sp-meas"><div class="sp-meas-val">${a.gpa||'—'}</div><div class="sp-meas-lbl">GPA</div></div>
       </div>
     </div>
-    ${a.bio?`<div class="sp-section"><div class="sp-sec-title">Bio</div><div class="sp-bio">${a.bio}</div></div>`:''}
+    ${a.bio?`<div class="sp-section"><div class="sp-sec-title">Bio</div><div class="sp-bio">${hsEsc(a.bio)}</div></div>`:''}
+    ${(a.highlight||a.gamefilm)?`<div class="sp-section"><div class="sp-sec-title">Film</div><div class="sp-interest-list">
+      ${a.highlight?`<a class="sp-int-row" href="${hsEsc(a.highlight)}" target="_blank" rel="noopener"><span class="sp-int-school">Highlight Film</span></a>`:''}
+      ${a.gamefilm?`<a class="sp-int-row" href="${hsEsc(a.gamefilm)}" target="_blank" rel="noopener"><span class="sp-int-school">Game Film</span></a>`:''}
+    </div></div>`:''}
     <div class="sp-divider"></div>
     <div class="sp-section">
       <div class="sp-sec-title">College Interest (${a.programs.length})</div>
@@ -207,22 +222,22 @@ function openSP(id){
             <div class="sp-int-logo">
               <img src="https://logo.clearbit.com/${p.name.toLowerCase().replace(/\s+/g,'')}.edu" alt="${p.name}" onerror="this.parentNode.textContent='${p.name[0]}'">
             </div>
-            <span class="sp-int-school">${p.name}</span>
+            <span class="sp-int-school">${hsEsc(p.name)}</span>
             <span class="sp-int-stage" style="background:${col}18;border:1.5px solid ${col};color:${col};font-family:'Archivo Condensed';font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:20px;">${lbl}</span>
           </div>`;
         }).join('')}</div>`
         :'<div style="font-size:12px;color:var(--text-dim)">No college interest logged yet. Use Outreach Tools to start the conversation.</div>'}
     </div>
-    ${endorsed?`<div class="sp-divider"></div><div class="sp-section"><div class="sp-sec-title">Your Recommendation</div><div class="sp-bio" style="color:#00a03a">${typeof endorsed==='object'&&endorsed.text?endorsed.text:'Recommended by coach.'}</div></div>`:''}
+    ${endorsed?`<div class="sp-divider"></div><div class="sp-section"><div class="sp-sec-title">Your Recommendation</div><div class="sp-bio" style="color:#00a03a">${typeof endorsed==='object'&&endorsed.text?hsEsc(endorsed.text):'Recommended by coach.'}</div></div>`:''}
     <div class="sp-divider"></div>
     <div class="sp-section">
       <div class="sp-sec-title">Coach Notes</div>
-      <textarea class="sp-note-area" id="sp-note-area" onblur="saveSPNote(${id})" placeholder="Private notes about this athlete…">${savedNote}</textarea>
+      <textarea class="sp-note-area" id="sp-note-area" onblur="saveSPNote(${idArg})" placeholder="Private notes about this athlete…">${hsEsc(savedNote)}</textarea>
     </div>
     <div class="sp-actions">
-      <button class="sp-action-btn primary" onclick="openEndorse(${a.id})">Recommend / Update</button>
-      <button class="sp-action-btn blue" onclick="openOutreachFor(${a.id})">Outreach →</button>
-      <button class="sp-action-btn" onclick="openMsgFromOutside('athlete_'+${a.id})">Message</button>
+      <button class="sp-action-btn primary" onclick="openEndorse(${idArg})">Recommend / Update</button>
+      <button class="sp-action-btn blue" onclick="openOutreachFor(${idArg})">Outreach →</button>
+      <button class="sp-action-btn" onclick="openMsgFromOutside(${hsJsArg(messageId)})">Message</button>
     </div>
   `;
   const overlay = el('sp-overlay');
@@ -252,7 +267,7 @@ let endorseTarget = null;
 
 function openEndorse(id){
   endorseTarget = id;
-  const a = ATHLETES.find(x=>x.id===id); if(!a) return;
+  const a = hsFindAthlete(id); if(!a) return;
   el('endorse-title').textContent = 'Recommend '+a.fname+' '+a.lname;
   el('endorse-sub').textContent   = 'Your recommendation carries weight. College coaches trust HS/club coach vouches — be specific and honest.';
   el('endorse-text').value        = typeof endorsements[id]==='object' ? (endorsements[id].text||'') : '';
@@ -279,6 +294,7 @@ function toggleTrait(el){ el.classList.toggle('selected'); }
 
 function submitEndorse(){
   if(!endorseTarget) return;
+  const refreshedId = endorseTarget;
   const traits = [...document.querySelectorAll('.endorse-trait.selected')].map(t=>t.textContent);
   const text   = el('endorse-text').value.trim();
   endorsements[endorseTarget] = {traits, text, date: new Date().toLocaleDateString()};
@@ -289,4 +305,5 @@ function submitEndorse(){
   updateHSCard();
   renderRoster();
   closeEndorseModal();
+  if(hsSameId(currentSPId,refreshedId)) openSP(refreshedId);
 }

@@ -18,6 +18,12 @@ const ATHLETES = [
   {id:8, fname:'Brianna', lname:'Washington', pos:['QB','WR'], year:2026, gpa:3.4, height:"5'8\"", forty:'4.49', vertical:'28"', school:'DeSoto HS', state:'TX', programs:[], bio:'Dual-position weapon. Can play QB or slot WR at the next level. Needs film to circulate.'},
 ];
 
+const HS_DEMO_ATHLETES = ATHLETES.map(a=>({
+  ...a,
+  pos:[...a.pos],
+  programs:a.programs.map(p=>({...p}))
+}));
+
 const ACTIVITY = [
   {id:1, school:'Northern Arizona',  abbr:'NAU', domain:'nau.edu',          div:'NCAA D1 – Big Sky',       athletes:[1,2], date:'2 days ago'},
   {id:2, school:'Texas A&M',         abbr:'A&M', domain:'tamu.edu',         div:'NCAA D1 – SEC',            athletes:[1],   date:'4 days ago'},
@@ -27,8 +33,11 @@ const ACTIVITY = [
   {id:6, school:'UNLV',              abbr:'UNLV',domain:'unlv.edu',         div:'NCAA D1 – Mountain West',  athletes:[1,4], date:'10 days ago'},
 ];
 
-const STAGE_LABELS = {none:'No Contact',saved:'Saved',interested:'Saved',contacted:'Contacted',applied:'Applied',committed:'Committed'};
-const STAGE_COLORS = {saved:'#0057FF',interested:'#0057FF',contacted:'#7B2FFF',applied:'#FF4500',committed:'#00E050'}; // interested kept as compat alias
+const STAGE_LABELS = {none:'No Contact',saved:'Saved',interested:'Saved',contacted:'Contacted',applied:'Applied',offered:'Offered',committed:'Committed'};
+const STAGE_COLORS = {saved:'#0057FF',interested:'#0057FF',contacted:'#7B2FFF',applied:'#FF4500',offered:'#FF0080',committed:'#00E050'}; // interested kept as compat alias
+
+let _hsLiveProfilesLoaded = false;
+let _hsRosterSource = 'demo';
 
 // Endorsements stored in localStorage
 let endorsements = ls('endorsements') || {};
@@ -38,10 +47,147 @@ let endorsements = ls('endorsements') || {};
 // ──────────────────────────────────────────────
 function el(id){ return document.getElementById(id); }
 
+function hsSameId(a,b){ return String(a)===String(b); }
+function hsFindAthlete(id){ return ATHLETES.find(a=>hsSameId(a.id,id)); }
+function hsJsArg(value){
+  return "'" + String(value).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ') + "'";
+}
+function hsEsc(value){
+  return String(value ?? '').replace(/[&<>"']/g, c=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  })[c]);
+}
+
+function _hsProfileField(p, shortKey, longKey){
+  return p?.[shortKey] || p?.[longKey] || '';
+}
+
+function _hsNumber(value){
+  const n=parseFloat(value);
+  return Number.isFinite(n)?n:0;
+}
+
+function _hsNormalizeOrg(value){
+  return String(value||'')
+    .toLowerCase()
+    .replace(/&/g,' and ')
+    .replace(/[^a-z0-9]+/g,' ')
+    .replace(/\b(high|school|hs|club|team|girls|womens|women|flag|football|program)\b/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function _hsSchoolTargets(){
+  const out=[];
+  const add=v=>{ if(v&&!out.includes(v)) out.push(v); };
+  add(el('hs-school')?.value);
+  const saved=ls('profile');
+  add(saved?.school);
+  try{
+    const auth=JSON.parse(localStorage.getItem('juke_auth'));
+    const apid=auth?.activeProfileId||auth?.profiles?.[0]?.id;
+    const ap=(auth?.profiles||[]).find(p=>p.id===apid)||auth?.profiles?.[0];
+    add(ap?.org);
+    add(auth?.school);
+  }catch(e){}
+  return out.map(_hsNormalizeOrg).filter(Boolean);
+}
+
+function _hsSchoolCandidates(value){
+  return String(value||'')
+    .split(/[\/|;]+|\s+-\s+/)
+    .map(_hsNormalizeOrg)
+    .filter(Boolean);
+}
+
+function _hsSchoolMatchesCoach(profileSchool){
+  const targets=_hsSchoolTargets();
+  if(!targets.length) return false;
+  const schools=_hsSchoolCandidates(profileSchool);
+  return schools.some(school=>targets.some(target=>{
+    if(!school||!target) return false;
+    return school===target || school.includes(target) || target.includes(school);
+  }));
+}
+
+function _hsMapPublishedAthlete(row, idx){
+  const p=row.profile_data||{};
+  const fname=_hsProfileField(p,'fname','p-fname');
+  const lname=_hsProfileField(p,'lname','p-lname');
+  const name=(fname+' '+lname).trim() || p.name || 'Unnamed Athlete';
+  const nameParts=name.split(/\s+/);
+  const cityState=_hsProfileField(p,'city','p-city');
+  const parts=cityState.split(',').map(x=>x.trim()).filter(Boolean);
+  const offers=Array.isArray(p._offers)?p._offers:[];
+  const programs=offers.map(school=>({name:school, div:'Offer', stage:'offered'}));
+  return {
+    id:'live_'+(row.user_id||row.id||idx),
+    _userId:row.user_id||'',
+    _live:true,
+    _publishedAt:row.published_at||row.updated_at,
+    fname:fname || nameParts[0] || 'Unnamed',
+    lname:lname || nameParts.slice(1).join(' '),
+    pos:p.positions||p._positions||['ATH'],
+    year:parseInt(_hsProfileField(p,'gradyr','p-gradyr'))||new Date().getFullYear(),
+    gpa:_hsNumber(_hsProfileField(p,'gpa','p-gpa')),
+    height:_hsProfileField(p,'height','p-height')||'',
+    forty:_hsProfileField(p,'forty','p-forty')||'',
+    vertical:_hsProfileField(p,'vertical','p-vertical')||'',
+    school:_hsProfileField(p,'school','p-school')||'',
+    state:(parts[1]||p.state||'').toUpperCase(),
+    programs,
+    bio:p.intro||p.bio||'',
+    highlight:_hsProfileField(p,'highlight','p-highlight')||'',
+    gamefilm:_hsProfileField(p,'gamefilm','p-gamefilm')||'',
+    avatar:p._avatar||p.avatar||'',
+    banner:p._banner||p.banner||'',
+    recommendations:p._recommendations||[]
+  };
+}
+
+function _hsApplyRoster(athletes, source){
+  ATHLETES.splice(0, ATHLETES.length, ...athletes);
+  _hsRosterSource=source;
+  updateHSCard();
+  renderRoster();
+  renderActivity();
+  renderOutreachAthletes();
+}
+
+async function loadPublishedHsRoster(){
+  if(_hsLiveProfilesLoaded) return;
+  const client=window.sb||window._hsSb||null;
+  if(!client) return;
+  try{
+    const {data,error}=await client
+      .from('athlete_profiles')
+      .select('id,user_id,profile_data,published_at,updated_at')
+      .eq('is_discoverable',true)
+      .order('updated_at',{ascending:false});
+    if(error){
+      console.warn('JUKE HS live roster load failed:', error);
+      return;
+    }
+    const live=(data||[])
+      .map(_hsMapPublishedAthlete)
+      .filter(a=>a.fname!=='Unnamed'&&_hsSchoolMatchesCoach(a.school));
+    _hsLiveProfilesLoaded=true;
+    if(live.length) _hsApplyRoster(live,'live');
+    else _hsApplyRoster(HS_DEMO_ATHLETES.map(a=>({...a,pos:[...a.pos],programs:a.programs.map(p=>({...p}))})),'demo');
+  }catch(e){
+    console.warn('JUKE HS live roster load failed:', e);
+  }
+}
+
 function athleteStatus(a){
   if(!a.programs.length) return 'none';
   const stages = a.programs.map(p=>p.stage);
   if(stages.includes('committed')) return 'committed';
+  if(stages.includes('offered'))   return 'offered';
   if(stages.includes('applied'))   return 'applied';
   if(stages.includes('contacted')) return 'contacted';
   return 'saved';
@@ -108,6 +254,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderRoster();
   renderActivity();
   renderOutreachAthletes();
+  setTimeout(loadPublishedHsRoster, 120);
 });
 
 // ──────────────────────────────────────────────
@@ -236,6 +383,8 @@ function updateHSCard(){
   setText('hs-stat-interest-summary', withInterest);
   setText('hs-stat-endorsed', endorsed);
   setText('hs-stat-endorsed-summary', endorsed);
+  const countEl = el('roster-count');
+  if(countEl && _hsRosterSource==='live') countEl.textContent = ATHLETES.length+' live athlete'+(ATHLETES.length!==1?'s':'');
   renderRosterAttention();
 }
 
@@ -366,7 +515,7 @@ function filteredAthletes(){
 function renderRoster(){
   const athletes = filteredAthletes();
   const countEl = el('roster-count');
-  if(countEl) countEl.textContent = athletes.length+' athlete'+(athletes.length!==1?'s':'');
+  if(countEl) countEl.textContent = athletes.length+(_hsRosterSource==='live'?' live':'')+' athlete'+(athletes.length!==1?'s':'');
 
   if(rosterView==='cards') renderRosterCards(athletes);
   else renderRosterTable(athletes);
@@ -381,17 +530,18 @@ function renderRosterCards(athletes){
     const stLabel  = STAGE_LABELS[st]||'';
     const stColor  = STAGE_COLORS[st]||'';
     const intCount = a.programs.length;
-    return `<div class="roster-card st-${st}" onclick="openSP(${a.id})">
+    const idArg = hsJsArg(a.id);
+    return `<div class="roster-card st-${st}" onclick="openSP(${idArg})">
       ${endorsed?'<div class="endorse-badge">Recommended</div>':''}
       <div class="rc-hd">
-        <div class="rc-av"><div class="rc-av-init">${initials(a)}</div></div>
+        <div class="rc-av">${a.avatar?`<img src="${hsEsc(a.avatar)}" alt="${hsEsc(a.fname+' '+a.lname)}">`:`<div class="rc-av-init">${initials(a)}</div>`}</div>
         <div>
-          <div class="rc-name">${a.fname} ${a.lname}</div>
-          <div class="rc-school">${a.school} · ${a.state}</div>
+          <div class="rc-name">${hsEsc(a.fname)} ${hsEsc(a.lname)}</div>
+          <div class="rc-school">${hsEsc(a.school)} · ${hsEsc(a.state)}</div>
         </div>
       </div>
       <div class="rc-pills">
-        ${a.pos.map((p,i)=>`<span class="rc-pos">${p}</span>`).join('')}
+        ${a.pos.map((p,i)=>`<span class="rc-pos">${hsEsc(p)}</span>`).join('')}
         <span class="rc-year">${a.year}</span>
         ${st!=='none'?`<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stColor};color:${stColor};background:${stColor}18;">${stLabel}</span>`:''}
       </div>
@@ -404,9 +554,9 @@ function renderRosterCards(athletes){
           : `<span class="rc-interest-some">📍 ${intCount} program${intCount!==1?'s':''} interested</span>`}
       </div>
       <div class="rc-ft" onclick="event.stopPropagation()">
-        <button class="rc-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓ Recommended':'Recommend'}</button>
-        <button class="rc-btn" onclick="openSP(${a.id})">View Profile</button>
-        <button class="rc-btn blue" onclick="openOutreachFor(${a.id})">Outreach →</button>
+        <button class="rc-btn primary" onclick="openEndorse(${idArg})">${endorsed?'✓ Recommended':'Recommend'}</button>
+        <button class="rc-btn" onclick="openSP(${idArg})">View Profile</button>
+        <button class="rc-btn blue" onclick="openOutreachFor(${idArg})">Outreach →</button>
       </div>
     </div>`;
   }).join('');
@@ -420,13 +570,14 @@ function renderRosterTable(athletes){
     const stColor  = STAGE_COLORS[st]||'#ccc';
     const stLabel  = STAGE_LABELS[st]||'No Contact';
     const endorsed = endorsements[a.id];
+    const idArg = hsJsArg(a.id);
     return `<tr>
       <td><div class="rt-av">${initials(a)}</div></td>
       <td>
-        <div class="rt-name" style="cursor:pointer" onclick="openSP(${a.id})">${a.fname} ${a.lname}</div>
+        <div class="rt-name" style="cursor:pointer" onclick="openSP(${idArg})">${hsEsc(a.fname)} ${hsEsc(a.lname)}</div>
         ${endorsed?'<span style="font-size:9px;color:#00a03a;font-weight:600">✓ Recommended</span>':''}
       </td>
-      <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${p}</span>`).join('')}</div></td>
+      <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${hsEsc(p)}</span>`).join('')}</div></td>
       <td>${a.year}</td>
       <td>${a.gpa||'—'}</td>
       <td>${a.forty||'—'}</td>
@@ -437,8 +588,8 @@ function renderRosterTable(athletes){
       </td>
       <td>
         <div class="rt-actions" onclick="event.stopPropagation()">
-          <button class="rt-btn primary" onclick="openEndorse(${a.id})">${endorsed?'✓':'Recommend'}</button>
-          <button class="rt-btn blue" onclick="openOutreachFor(${a.id})">Outreach</button>
+          <button class="rt-btn primary" onclick="openEndorse(${idArg})">${endorsed?'✓':'Recommend'}</button>
+          <button class="rt-btn blue" onclick="openOutreachFor(${idArg})">Outreach</button>
         </div>
       </td>
     </tr>`;

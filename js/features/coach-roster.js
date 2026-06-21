@@ -69,7 +69,12 @@ function _coachMapPublishedAthlete(row, idx){
     division:div.replace('Division ','D')||'',
     sports:[p.sport1,p.sport2].filter(Boolean),
     bio:p.intro||p.bio||'',
-    highlight:_coachProfileField(p,'highlight','p-highlight')||p.gamefilm||p['p-gamefilm']||'',
+    highlight:_coachProfileField(p,'highlight','p-highlight')||'',
+    gamefilm:_coachProfileField(p,'gamefilm','p-gamefilm')||'',
+    avatar:p._avatar||p.avatar||'',
+    banner:p._banner||p.banner||'',
+    offers:p._offers||[],
+    recommendations:p._recommendations||[],
     _live:true,
     _publishedAt:row.published_at||row.updated_at
   };
@@ -124,11 +129,33 @@ let coachProfile = ls('profile') || {name:"Coach Sarah Mitchell",title:"Head Fla
   if(raw.contacted && !raw.contacting){ raw.contacting = raw.contacted; delete raw.contacted; lss('pipeline', raw); }
   if(raw.visit     && !raw.recruiting){ raw.recruiting  = raw.visit;     delete raw.visit;     lss('pipeline', raw); }
 })();
-let coachPipeline = ls('pipeline') || {identified:[1,7],evaluating:[],contacting:[3,5],recruiting:[2],offer:[6],committed:[]};
+function _defaultCoachPipeline(){
+  const has=id=>ATHLETES.some(a=>coachSameId(a.id,id));
+  return {
+    identified:[1,7].filter(has),
+    evaluating:[],
+    contacting:[3,5].filter(has),
+    recruiting:[2].filter(has),
+    offer:[6].filter(has),
+    committed:[]
+  };
+}
+let coachPipeline = ls('pipeline') || _defaultCoachPipeline();
 // Boards = named labels (no embedded athlete lists — membership lives in coachTags)
 let coachBoards = ls('boards2') || [{id:1,name:"2026 Watch List"},{id:2,name:"QB Targets"}];
 // coachTags: { athleteId: [boardId, boardId, ...] }
-let coachTags = ls('tags') || {1:[1],3:[1],7:[1],2:[2],5:[2],8:[2]};
+function _defaultCoachTags(){
+  const has=id=>ATHLETES.some(a=>coachSameId(a.id,id));
+  const tags={};
+  if(has(1)) tags[1]=[1];
+  if(has(3)) tags[3]=[1];
+  if(has(7)) tags[7]=[1];
+  if(has(2)) tags[2]=[2];
+  if(has(5)) tags[5]=[2];
+  if(has(8)) tags[8]=[2];
+  return tags;
+}
+let coachTags = ls('tags') || _defaultCoachTags();
 let coachNotes        = ls('notes')        || {};
 let coachNextActions  = ls('next_actions') || {};
 let coachLastActivity = ls('last_activity')|| {};
@@ -175,14 +202,16 @@ function sortProspects(key){
   // update header arrows
   document.querySelectorAll('.prospect-table thead th').forEach(th=>{
     th.classList.remove('sorted');
-    th.querySelector('.sort-arrow').textContent='↕';
+    const arrow=th.querySelector('.sort-arrow');
+    if(arrow) arrow.textContent='↕';
   });
   const idx = ['name','pos','year','gpa','forty','vertical','state'].indexOf(key);
   if(idx>=0){
     const ths = document.querySelectorAll('.prospect-table thead th');
     if(ths[idx]){
       ths[idx].classList.add('sorted');
-      ths[idx].querySelector('.sort-arrow').textContent = _sortDir===1?'↑':'↓';
+      const arrow=ths[idx].querySelector('.sort-arrow');
+      if(arrow) arrow.textContent = _sortDir===1?'↑':'↓';
     }
   }
   filterAthletes();

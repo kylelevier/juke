@@ -24,6 +24,18 @@ function _getFilmUrls(a){
   return {highlight: a.highlight||'', gamefilm: a.gamefilm||''};
 }
 
+function _athleteRecommendations(a){
+  const local = getEndorsementForAthlete(a.name);
+  const live = (a.recommendations||[]).filter(e=>e&&e.status==='endorsed');
+  const seen = new Set();
+  return [...live, ...local].filter(e=>{
+    const key=[e.coachName,e.coachSchool,e.endorsementText].join('|');
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // Renders the film section HTML (empty string if no film URLs)
 function _renderFilmSection(highlight, gamefilm){
   if(!highlight && !gamefilm) return '';
@@ -76,28 +88,29 @@ function openAthlete(id){
   const note = coachNotes[id]||'';
   const nextAction = coachNextActions[id]||'';
   const {highlight, gamefilm} = _getFilmUrls(a);
-  // Check for athlete avatar from juke portal (demo athlete id 2 = Destiny)
-  const avatarSrc = (id===2) ? (localStorage.getItem('juke_avatar')||'') : '';
+  let avatarSrc = a.avatar||'';
+  if(id===2) avatarSrc = localStorage.getItem('juke_avatar')||avatarSrc;
+  try{ if(avatarSrc&&avatarSrc[0]==='"') avatarSrc=JSON.parse(avatarSrc); }catch(e){}
   const avContent = avatarSrc
-    ? `<img src="${avatarSrc}" alt="${a.name}">`
+    ? `<img src="${avatarSrc}" alt="${escHtml(a.name)}">`
     : initials(a.name);
-  // Pull offers from athlete portal for demo athlete
-  let _offerSchools = [];
+  let _offerSchools = Array.isArray(a.offers) ? a.offers : [];
   if(id===2){
     try{ _offerSchools=Object.keys(JSON.parse(localStorage.getItem('juke_offers')||'{}')); }catch(e){}
   }
+  const bannerStyle = a.banner ? ` style="background-image:url('${String(a.banner).replace(/'/g,'%27')}');background-size:cover;background-position:center;"` : '';
   const offersShowcase = _offerSchools.length ? `
     <div class="pp-offers-showcase" style="padding:14px 20px;border-bottom:1px solid var(--border);background:#fffbeb;">
       <div class="pp-offers-showcase-title" style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#92400e;margin-bottom:10px;">Offers Received</div>
       <div class="pp-offers-grid" style="display:flex;flex-wrap:wrap;gap:8px;">
-        ${_offerSchools.map(s=>`<span style="background:linear-gradient(135deg,#f6d365 0%,#c8972a 50%,#f6d365 100%);color:#5c3a00;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;box-shadow:0 1px 4px rgba(180,120,0,.3);text-shadow:0 1px 0 rgba(255,255,255,.25);">${s}</span>`).join('')}
+        ${_offerSchools.map(s=>`<span style="background:linear-gradient(135deg,#f6d365 0%,#c8972a 50%,#f6d365 100%);color:#5c3a00;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;box-shadow:0 1px 4px rgba(180,120,0,.3);text-shadow:0 1px 0 rgba(255,255,255,.25);">${escHtml(s)}</span>`).join('')}
       </div>
     </div>` : '';
   const posWatermark = a.pos[0]||'';
   document.getElementById('sp-title').textContent = a.name;
   document.getElementById('sp-body').innerHTML = `
     ${offersShowcase}
-    <div class="sp-profile-banner">
+    <div class="sp-profile-banner"${bannerStyle}>
       <div class="sp-banner-watermark">${posWatermark}</div>
     </div>
     <div class="sp-profile-av">${avContent}</div>
@@ -126,7 +139,7 @@ function openAthlete(id){
     </div>
     ${_renderFilmSection(highlight, gamefilm)}
     ${(()=>{
-      const ends = getEndorsementForAthlete(a.name);
+      const ends = _athleteRecommendations(a);
       if(!ends.length) return '';
       return '<div class="sp-section"><div class="sp-section-title">Coach Recommendation</div>'
         + ends.map(e=>`<div class="sp-endorsement"><div class="sp-end-coach">— ${e.coachName}, ${e.coachTitle||'Coach'}${e.coachSchool?' · '+e.coachSchool:''}</div><div class="sp-end-text">&#8220;${e.endorsementText}&#8221;</div></div>`).join('')

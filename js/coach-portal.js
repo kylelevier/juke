@@ -234,6 +234,12 @@ async function handlePublishToggle(){
 
   // Snapshot current profile data
   const pd = {...lsGet('juke_player'), _offers:Object.keys(lsGet('juke_offers'))};
+  const avatar = lsGet('juke_avatar');
+  const banner = lsGet('juke_banner');
+  const recs = lsGet('juke_endorsements');
+  pd._avatar = typeof avatar==='string'?avatar:'';
+  pd._banner = typeof banner==='string'?banner:'';
+  pd._recommendations = (Array.isArray(recs)?recs:[]).filter(e=>e&&e.status==='endorsed');
   pd._positions = Array.from(document.querySelectorAll('#pos-grid .pos-chip.selected input')).map(i=>i.value);
   pd['pf-div']    = document.getElementById('pf-div')?.value||'';
   pd['pf-region'] = document.getElementById('pf-region')?.value||'';

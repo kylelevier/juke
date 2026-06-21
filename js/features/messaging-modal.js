@@ -23,6 +23,21 @@
   function _isAthlete() {
     return (typeof JUKE_PORTAL_TYPE==='undefined') || JUKE_PORTAL_TYPE==='athlete';
   }
+  function _openPortalAuth() {
+    if (typeof JUKE_PORTAL_TYPE!=='undefined' && JUKE_PORTAL_TYPE==='hs_coach' && typeof openHsCoachAuth==='function') {
+      openHsCoachAuth();
+      return true;
+    }
+    if (typeof JUKE_PORTAL_TYPE!=='undefined' && JUKE_PORTAL_TYPE==='college_coach' && typeof openCoachAuth==='function') {
+      openCoachAuth();
+      return true;
+    }
+    if (typeof openAuthModal==='function') {
+      openAuthModal('signin');
+      return true;
+    }
+    return false;
+  }
 
   var ROLE_LABELS = {
     athlete:'Athlete', college_coach:'College Coach', hs_coach:'HS / Club Coach',
@@ -223,6 +238,7 @@
   // ── openNewMsg — replaces messaging.js version ────────────
   window.openNewMsg = function(prefillId) {
     if (!sb||!currentUser) {
+      if (_openPortalAuth()) return;
       if (typeof showToast==='function') showToast('Sign in to start a conversation');
       return;
     }
