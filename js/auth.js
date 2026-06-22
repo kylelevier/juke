@@ -90,10 +90,11 @@ async function handleSignUp(){
   else{msg.textContent='Account created! Check your email to confirm, then sign in.';msg.className='auth-msg success';}
 }
 async function _doSignOut(){
-  if(!sb)return;
-  await sb.auth.signOut();
+  if(sb) await sb.auth.signOut();
   currentUser=null;
+  localStorage.removeItem('juke_auth');
   _updateAuthUI();
+  location.replace('../index.html');
 }
 
 // ── CLOUD SAVE ───────────────────────────────────────────

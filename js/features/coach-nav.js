@@ -136,5 +136,7 @@ async function coachSignUp() {
 async function coachSignOut() {
   if (sb) await sb.auth.signOut();
   currentUser = null;
+  localStorage.removeItem('juke_auth');
   _updateCoachAuthUI();
+  location.replace('../index.html');
 }

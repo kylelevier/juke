@@ -101,8 +101,9 @@
   };
 
   window.hsCoachSignOut = async function() {
-    if (!sb) return;
-    await sb.auth.signOut();
+    if (sb) await sb.auth.signOut();
+    localStorage.removeItem('juke_auth');
+    location.replace('../index.html');
   };
 
   // Close overlay on backdrop click
@@ -181,4 +182,4 @@ function switchProfile(profileId){
     location.href=portals[p.type]||'../preview.html';
   }catch(e){}
 }
-function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../preview.html';}
+function jukeLogout(){localStorage.removeItem('juke_auth');location.replace('../index.html');}

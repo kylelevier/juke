@@ -73,4 +73,4 @@ function switchProfile(profileId){
   }catch(e){}
 }
 
-function jukeLogout(){localStorage.removeItem('juke_auth');location.href='../preview.html';}
+function jukeLogout(){localStorage.removeItem('juke_auth');location.replace('../index.html');}

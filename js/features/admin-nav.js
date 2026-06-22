@@ -56,7 +56,7 @@ function _toggleAdminChip() {
 async function adminSignOut() {
   if (sb) await sb.auth.signOut();
   localStorage.removeItem('juke_auth');
-  location.replace('/login.html');
+  location.replace('../index.html');
 }
 
 // ── Tab switcher ───────────────────────────────────────────────────────────────
