@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JUKE — Admin</title>
+<link rel="icon" type="image/png" href="../Juke_favicon.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="../styles/admin-portal.css">
+</head>
+<body>
+
+<script src="../js/data-school-domains.js"></script>
+<script src="../js/school-logo.js"></script>
+<script src="../js/features/admin-portal-init.js"></script>
+<script src="../js/components/dialog-a11y.js"></script>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hd-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:28px;width:auto;display:block"><defs><linearGradient id="jukeGradAdmin" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs><path fill="url(#jukeGradAdmin)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/></svg>
+    <span class="hd-badge">Admin</span>
+  </div>
+  <div class="hd-right">
+    <div class="juke-chip-dd-wrapper" id="admin-user-chip" style="display:none;position:relative;"></div>
+  </div>
+</header>
+
+<!-- ── TAB NAV ── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tab-users"       onclick="adminSwitchTab('users')">Users</button>
+  <button class="tab-btn"        id="tab-profiles"    onclick="adminSwitchTab('profiles')">Profiles</button>
+  <button class="tab-btn"        id="tab-impersonate" onclick="adminSwitchTab('impersonate')">Preview As</button>
+  <button class="tab-btn"        id="tab-programs"    onclick="adminSwitchTab('programs')">Programs</button>
+  <button class="tab-btn"        id="tab-logos"       onclick="adminSwitchTab('logos')">Logos</button>
+</nav>
+
+<!-- ── PAGE WRAP ── -->
+<div class="page-wrap">
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: USERS                                           -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="content-users">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">User Management</div>
+    <button class="admin-ghost-btn" onclick="adminRefreshUsers()">Refresh</button>
+  </div>
+  <div class="admin-search-bar">
+    <div class="admin-search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="admin-search-input" placeholder="Search by name or org…" oninput="adminFilterUsers(this.value)">
+    </div>
+    <select class="admin-select" onchange="adminFilterUserRole(this.value)">
+      <option value="">All Roles</option>
+      <option value="athlete">Athlete</option>
+      <option value="college_coach">Recruiter</option>
+      <option value="hs_coach">HS Coach</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+  <div class="admin-table-wrap">
+    <div id="admin-users-wrap"><div class="admin-loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: PROFILES                                        -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-profiles">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">Profile Inspector</div>
+  </div>
+  <div class="admin-search-bar">
+    <div class="admin-search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="admin-search-input" id="admin-profile-q" placeholder="Search athlete by name…" oninput="adminSearchProfile()" onkeydown="if(event.key==='Enter')adminSearchProfile()">
+    </div>
+    <button class="admin-ghost-btn" onclick="adminSearchProfile()">Search</button>
+  </div>
+  <div id="admin-profile-result">
+    <div class="admin-empty">Search for an athlete above to inspect their profile.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: IMPERSONATE                                     -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-impersonate">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">Preview As Athlete</div>
+    <button class="admin-action-btn warn" id="admin-impersonate-exit" onclick="adminExitImpersonate()" style="display:none">Exit Preview</button>
+  </div>
+  <div class="admin-search-bar">
+    <div class="admin-search-wrap admin-search-rel">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="admin-search-input" id="admin-impersonate-q" placeholder="Search athlete to preview…" oninput="adminImpersonateSearch()">
+      <div class="admin-suggest-list" id="admin-impersonate-suggestions"></div>
+    </div>
+  </div>
+  <div id="admin-impersonate-result">
+    <div class="admin-empty">Search for an athlete to preview their board and profile.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: PROGRAMS                                        -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-programs">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">School / Program Manager</div>
+    <div style="display:flex;gap:8px;">
+      <button class="admin-ghost-btn" onclick="adminRefreshPrograms()">Refresh</button>
+      <button class="admin-primary-btn" onclick="adminOpenAddProgram()">+ Add Program</button>
+    </div>
+  </div>
+  <div class="admin-search-bar">
+    <div class="admin-search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="admin-search-input" placeholder="Search by school or state…" oninput="adminFilterPrograms(this.value)">
+    </div>
+  </div>
+  <div class="admin-table-wrap">
+    <div id="admin-programs-wrap"><div class="admin-loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: LOGOS                                           -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-logos">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">School Logo Manager</div>
+  </div>
+  <div class="admin-search-bar">
+    <div class="admin-search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="admin-search-input" placeholder="Filter by school name…" oninput="adminFilterLogos(this.value)">
+    </div>
+  </div>
+  <div id="admin-school-list"><div class="admin-loading">Loading…</div></div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<!-- ── ADD PROGRAM MODAL ── -->
+<div class="admin-modal-overlay" id="admin-add-program-overlay" onclick="adminCloseAddProgram(event)">
+  <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="add-prog-title">
+    <div class="admin-modal-title" id="add-prog-title">Add Program</div>
+    <div class="admin-form-group">
+      <label class="admin-form-label" for="add-prog-school">School Name *</label>
+      <input class="admin-form-input" id="add-prog-school" placeholder="University of Arizona" onkeydown="if(event.key==='Enter')adminSubmitAddProgram()">
+    </div>
+    <div class="admin-form-group">
+      <label class="admin-form-label" for="add-prog-state">State</label>
+      <input class="admin-form-input" id="add-prog-state" placeholder="AZ" maxlength="2">
+    </div>
+    <div class="admin-form-group">
+      <label class="admin-form-label" for="add-prog-div">Division</label>
+      <select class="admin-form-select" id="add-prog-div">
+        <option value="">Select…</option>
+        <option>NCAA D1</option>
+        <option>NCAA D2</option>
+        <option>NCAA D3</option>
+        <option>NAIA</option>
+        <option>NJCAA</option>
+      </select>
+    </div>
+    <div class="admin-form-msg" id="add-prog-msg"></div>
+    <div class="admin-modal-actions">
+      <button class="admin-ghost-btn" onclick="adminCloseAddProgram()">Cancel</button>
+      <button class="admin-primary-btn" onclick="adminSubmitAddProgram()">Add Program</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/features/admin-nav.js"></script>
+<script src="../js/features/admin-users.js"></script>
+<script src="../js/features/admin-programs.js"></script>
+<script src="../js/features/admin-impersonate.js"></script>
+<script src="../js/features/admin-logo.js"></script>
+<script>window.JUKE_PORTAL_TYPE = 'admin';</script>
+<script>
+  // Boot: init the active tab on load
+  (function(){
+    if (typeof initAdminUsers === 'function') initAdminUsers();
+    if (typeof _updateAdminChip === 'function') _updateAdminChip();
+  })();
+</script>
+<script src="../js/internal/dev-bar.js"></script>
+</body>
+</html>
