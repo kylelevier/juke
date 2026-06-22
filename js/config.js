@@ -12,13 +12,18 @@ const sb = (typeof supabase !== 'undefined')
 let currentUser = null;
 
 // Preview-As mode: admin views the portal as a specific athlete (read-only).
-// Set by ?preview_as=<userId> in the URL, guarded by juke_auth.type === 'admin'.
+// Set by ?preview_as=<userId> in the URL. Guard mirrors admin-portal-init.js:
+// accepts juke_auth.type==='admin' OR a Supabase session belonging to an admin email.
 window.PREVIEW_USER_ID = (function(){
   var uid = new URLSearchParams(location.search).get('preview_as');
   if (!uid) return null;
-  try { if (JSON.parse(localStorage.getItem('juke_auth') || '{}').type !== 'admin') return null; }
-  catch(e) { return null; }
-  return uid;
+  var ADMIN_EMAILS = ['kylelevier@gmail.com'];
+  try { if (JSON.parse(localStorage.getItem('juke_auth') || '{}').type === 'admin') return uid; } catch(e) {}
+  try {
+    var raw = localStorage.getItem('sb-gvxdabtmksxhujeytofv-auth-token');
+    if (raw && ADMIN_EMAILS.indexOf(JSON.parse(raw).user.email) !== -1) return uid;
+  } catch(e) {}
+  return null;
 })();
 
 // Load curated school-logo overrides (school-logos bucket → programs.logo_url).
