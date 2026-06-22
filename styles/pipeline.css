@@ -1,3 +1,9 @@
+/* ── BOARD SYNC NOTICE ── */
+.board-sync-bar{padding:9px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;}
+.board-sync-local{background:rgba(255,153,0,.08);border:1px solid rgba(255,153,0,.25);color:var(--text-muted);}
+.board-sync-link{background:none;border:none;color:#FF9900;font-size:12px;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;}
+.board-sync-link:hover{opacity:.8;}
+
 /* ── PIPELINE TAB ── */
 .pipeline-page{padding:24px;max-width:100%;}
 .pipeline-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}

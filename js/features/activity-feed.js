@@ -20,6 +20,7 @@ function buildFeed(){
   var sd = lsGet('juke_status')||{};
   var endorsements = typeof getEndorsements === 'function' ? getEndorsements() : [];
   var milestones = lsGet('juke_feed_milestones')||{};
+  var isPublished = !!(lsGet('juke_publish')||{}).on;
 
   // read profile value supporting both short + long key formats
   function gp(key){
@@ -110,6 +111,13 @@ function buildFeed(){
         primary:'No headshot — coaches can\'t picture you yet',
         secondary:'Profiles with photos get significantly more engagement. Add a clear, recent headshot from the Identity tab.',
         action:{label:'Add Photo →', fn:'profile'}});
+
+    // ── PUBLISH NUDGE — surfaces discoverability toggle early ──
+    if(!isPublished)
+      items.push({id:_id++, type:'nudge', time:'Now', pri:0.5,
+        primary:'Your profile isn\'t visible to coaches yet',
+        secondary:'Flip the "Make my profile discoverable" toggle on the Recommendations step of your profile to go live. Coaches can\'t find you until you do.',
+        action:{label:'Go Live →', fn:'profile'}});
   }
 
   // ── ENDORSEMENT ITEMS ──
@@ -197,9 +205,21 @@ function filterFeed(filter, btn){
   renderFeed();
 }
 
+function updateFeedStats(){
+  var sd = lsGet('juke_status')||{};
+  var boardCount = Object.keys(sd).length;
+  var offerCount = Object.values(sd).filter(function(s){return s==='offered';}).length;
+  var viewsEl = document.getElementById('feed-views-count');
+  var progEl  = document.getElementById('feed-programs-count');
+  if(viewsEl) viewsEl.textContent = boardCount;
+  if(progEl)  progEl.textContent  = offerCount;
+  // feed-unread-count is managed by updateMsgBadge() in messaging.js
+}
+
 function renderFeed(){
   var el = document.getElementById('feed-list');
   if(!el) return;
+  updateFeedStats();
   var pred = FEED_FILTER_MAP[_activeFeedFilter]||FEED_FILTER_MAP.all;
   var items = buildFeed().filter(pred);
   if(!items.length){

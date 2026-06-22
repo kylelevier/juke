@@ -30,7 +30,7 @@ function renderActivityCards(){
       </div>
       <div class="ac-date">Last active ${act.date}</div>
       <div class="ac-ft">
-        <button class="ac-btn" onclick="openOutreachTo('${act.school}')">Contact This Program →</button>
+        <button class="ac-btn" onclick="openCollegeCoachMessage('${act.school}')">Message College Coaches →</button>
       </div>
     </div>`;
   }).join('');
@@ -53,7 +53,7 @@ function renderActivityTable(){
       <td style="font-size:11px;color:var(--text-muted)">${act.div}</td>
       <td>${athletes.map(a=>`<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0" onclick="openSP(${hsJsArg(a.id)})">${hsEsc(a.fname)} ${hsEsc(a.lname)}</span>`).join('')}</td>
       <td style="font-size:11px;color:var(--text-dim)">${act.date}</td>
-      <td><button class="rt-btn blue" onclick="openOutreachTo('${act.school}')">Contact</button></td>
+      <td><button class="rt-btn blue" onclick="openCollegeCoachMessage('${act.school}')">Message</button></td>
     </tr>`;
   }).join('');
 }
@@ -110,6 +110,14 @@ function openOutreachTo(school){
     el('outreach-to').value = school;
     el('outreach-to').focus();
   },50);
+}
+
+function openCollegeCoachMessage(school){
+  if(typeof openNewMsg==='function'){
+    openNewMsg({role:'college_coach', query:school||''});
+    return;
+  }
+  openOutreachTo(school);
 }
 
 function sendOutreach(){

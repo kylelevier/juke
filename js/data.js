@@ -179,6 +179,35 @@ async function getConversationByProgram(ppId){
 // Returns {schoolName: {ppId, stage, last_contact_date, next_action, next_action_date,
 //                       is_dream_school, is_top_choice, is_in_state, scholarship_opp,
 //                       academic_match, is_christian}}
+// ── RECOMMENDATION REQUESTS ──────────────────────────────
+// Writes to `recommendation_requests` table so HS/club coaches can see pending requests.
+// Table schema (run once in Supabase SQL editor):
+//   create table recommendation_requests (
+//     id bigint generated always as identity primary key,
+//     athlete_user_id uuid references auth.users not null,
+//     athlete_name text, coach_name text not null,
+//     coach_school text, coach_title text, note text,
+//     status text default 'pending',
+//     requested_at timestamptz default now()
+//   );
+//   alter table recommendation_requests enable row level security;
+//   create policy "Athletes manage own requests" on recommendation_requests
+//     for all using (auth.uid() = athlete_user_id);
+async function saveRecommendationRequest(payload){
+  if(!sb||!currentUser) return null;
+  const {data,error}=await sb.from('recommendation_requests').insert({
+    athlete_user_id: currentUser.id,
+    athlete_name:    payload.athleteName||null,
+    coach_name:      payload.coachName,
+    coach_school:    payload.coachSchool||null,
+    coach_title:     payload.coachTitle||null,
+    note:            payload.coachNote||null,
+    status:          'pending',
+  }).select('id').single();
+  if(error) console.warn('recommendation_requests write failed — run the SQL migration:',error.message);
+  return data;
+}
+
 async function loadAllBoardRecords(){
   if(!sb||!currentUser) return {};
   const {data}=await sb.from('player_programs')

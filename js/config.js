@@ -17,7 +17,12 @@ if(sb){
     currentUser = session?.user ?? null;
     if(currentUser && window.JukeOnboarding) JukeOnboarding.start('athlete');
     if(typeof _updateAuthUI === 'function') _updateAuthUI();
-    if(currentUser && event === 'SIGNED_IN' && typeof _syncFromCloud === 'function') await _syncFromCloud();
+    if(currentUser && event === 'SIGNED_IN' && typeof _syncFromCloud === 'function'){
+      await _syncFromCloud();
+      if(typeof showToast==='function') showToast('Board synced to cloud ✓');
+      // Refresh board sync notice now that user is signed in
+      if(typeof _renderBoardCols==='function') _renderBoardCols();
+    }
     if(currentUser && event === 'INITIAL_SESSION' && typeof initMessaging === 'function') await initMessaging();
   });
 }

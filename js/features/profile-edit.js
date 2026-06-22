@@ -77,7 +77,10 @@ function submitEndorsementRequest(){
     status:'pending',
     requestedAt:new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'})
   });
+  var payload=existing[existing.length-1];
   saveEndorsements(existing);
+  // Cloud write — persists request so HS/club coach portals can surface it
+  if(typeof saveRecommendationRequest==='function') saveRecommendationRequest(payload);
   ['end-req-name','end-req-school','end-req-title','end-req-note'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ok=document.getElementById('end-req-success');
   if(ok){ok.style.display='block';setTimeout(function(){ok.style.display='none';},3000);}

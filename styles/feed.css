@@ -1,3 +1,10 @@
+/* ── PUBLISH BANNER (profile view) ── */
+.pv-publish-banner{display:flex;align-items:center;gap:10px;background:rgba(255,0,128,.08);border:1px solid rgba(255,0,128,.25);border-radius:10px;padding:10px 14px;margin-bottom:16px;flex-wrap:wrap;}
+.pv-publish-icon{font-size:16px;flex-shrink:0;}
+.pv-publish-msg{flex:1;font-size:13px;color:var(--text-muted);min-width:160px;}
+.pv-publish-btn{background:#FF0080;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s;}
+.pv-publish-btn:hover{opacity:.85;}
+
 /* ── ACTIVITY FEED ── */
 .feed-wrap{max-width:680px;margin:0 auto;padding:20px 16px 60px;}
 .feed-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}

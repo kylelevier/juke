@@ -57,6 +57,16 @@ function renderProfileView(){
 
   var html='';
 
+  // ── PUBLISH BANNER — visible whenever profile is not yet live ──
+  var isPublished=!!(lsGet('juke_publish')||{}).on;
+  if(!isPublished){
+    html+='<div class="pv-publish-banner">'
+      +'<span class="pv-publish-icon">🔒</span>'
+      +'<span class="pv-publish-msg">Your profile is in draft — coaches can\'t find you yet.</span>'
+      +'<button class="pv-publish-btn" onclick="openProfileEdit();setTimeout(function(){goStep(5);},50)">Go Live →</button>'
+      +'</div>';
+  }
+
   // ── HERO CARD ──
   var fullName=(first+' '+last).trim()||'Your Name';
   var initials=((first[0]||'')+(last[0]||'')).toUpperCase()||'?';

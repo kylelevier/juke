@@ -1,5 +1,27 @@
 // ── TABS ────────────────────────────────────────────────
+function _closeAllOverlays(){
+  // Board detail panel
+  if(typeof closeBoardDetail==='function'){
+    const bd=document.getElementById('bd-panel');
+    if(bd&&bd.classList.contains('open')) closeBoardDetail();
+  }
+  // School workspace drawer
+  if(typeof closeWorkspace==='function'){
+    const ws=document.getElementById('ws-overlay');
+    if(ws&&ws.classList.contains('open')) closeWorkspace();
+  }
+  // Program profile slide-over (finder)
+  if(typeof closeProgramProfile==='function'){
+    const pp=document.getElementById('pp-overlay');
+    if(pp&&pp.classList.contains('open')) closeProgramProfile();
+  }
+  // Compare modal
+  const cm=document.getElementById('compare-modal');
+  if(cm&&cm.classList.contains('open')) cm.classList.remove('open');
+}
+
 function switchTab(t){
+  _closeAllOverlays();
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
@@ -64,7 +86,8 @@ function updateOfferStrip(){
 // ── MILESTONE TIMELINE ────────────────────────────────────
 function recordMilestone(school,statusKey){
   if(!school||!statusKey||statusKey==='none') return;
-  const tl=lsGet('juke_timeline')||[];
+  const raw=lsGet('juke_timeline');
+  const tl=Array.isArray(raw)?raw:[];
   tl.unshift({school,status:statusKey,ts:Date.now()});
   lsSet('juke_timeline',tl.slice(0,50));
 }
@@ -294,6 +317,23 @@ async function renderPipeline(){
 }
 
 function _renderBoardCols(){
+  // ── Signed-out notice ──
+  let syncBar=document.getElementById('board-sync-notice');
+  if(!syncBar){
+    syncBar=document.createElement('div');
+    syncBar.id='board-sync-notice';
+    const colsEl=document.getElementById('pipeline-cols');
+    colsEl.parentNode.insertBefore(syncBar,document.getElementById('pipeline-summary'));
+  }
+  if(!sb||!currentUser){
+    const hasLocal=Object.keys(statusData||{}).length>0;
+    syncBar.innerHTML=hasLocal
+      ?'<div class="board-sync-bar board-sync-local">📱 Your board is saved locally — <button class="board-sync-link" onclick="openAuthModal(\'signin\')">sign in</button> to back it up to the cloud and access it from any device.</div>'
+      :'<div class="board-sync-bar board-sync-local">📱 Sign in to save your board to the cloud. <button class="board-sync-link" onclick="openAuthModal(\'signin\')">Sign in →</button></div>';
+  } else {
+    syncBar.innerHTML=''; // signed in — hide notice
+  }
+
   const schoolsByStage={};
   PIPELINE_STAGES.forEach(s=>schoolsByStage[s.key]=[]);
   Object.entries(statusData).forEach(([school,status])=>{

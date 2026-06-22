@@ -13,6 +13,7 @@
 
   var _searchTimer  = null;
   var _pickedSchool = null;
+  var _recipientMode = null;
 
   function _esc(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -22,6 +23,9 @@
   }
   function _isAthlete() {
     return (typeof JUKE_PORTAL_TYPE==='undefined') || JUKE_PORTAL_TYPE==='athlete';
+  }
+  function _portalType() {
+    return typeof JUKE_PORTAL_TYPE==='undefined' ? 'athlete' : JUKE_PORTAL_TYPE;
   }
   function _openPortalAuth() {
     if (typeof JUKE_PORTAL_TYPE!=='undefined' && JUKE_PORTAL_TYPE==='hs_coach' && typeof openHsCoachAuth==='function') {
@@ -115,12 +119,48 @@
   }
 
   function _genericSearchHtml() {
+    var mode = _recipientMode || (_portalType()==='hs_coach' ? 'college_coach' : (_portalType()==='college_coach' ? 'athlete' : ''));
+    var placeholder = mode==='college_coach'
+      ? 'Search college coaches by name or school…'
+      : mode==='athlete'
+        ? 'Search athletes by name…'
+        : 'Search coaches by name…';
     return '<div class="msg-new-search-wrap">'
       + '<input id="msg-new-search" class="msg-new-search" type="text" '
-      +   'placeholder="Search coaches by name…" autocomplete="off" oninput="searchMsgRecipients(this.value)"/>'
+      +   'placeholder="'+placeholder+'" autocomplete="off" oninput="searchMsgRecipients(this.value)"/>'
       + '</div>'
       + '<div id="msg-new-results" class="msg-new-results"><div class="msg-new-hint">Type to search</div></div>';
   }
+
+  function _roleTabsHtml(active) {
+    if (_portalType()!=='hs_coach') return '';
+    active = active || 'college_coach';
+    return '<div class="msg-role-tabs">'
+      + '<button class="msg-role-tab '+(active==='college_coach'?'active':'')+'" onclick="_msgSetRecipientMode(\'college_coach\')">College Coaches</button>'
+      + '<button class="msg-role-tab '+(active==='athlete'?'active':'')+'" onclick="_msgSetRecipientMode(\'athlete\')">Athletes</button>'
+      + '</div>';
+  }
+
+  function _rolesForSearch() {
+    var portal = _portalType();
+    if (portal==='athlete') return ['college_coach','hs_coach','recruiting_coordinator'];
+    if (portal==='hs_coach') return _recipientMode==='athlete' ? ['athlete'] : ['college_coach'];
+    return ['athlete'];
+  }
+
+  function _searchHint() {
+    if (_portalType()==='hs_coach' && _recipientMode==='college_coach') {
+      return 'Search any college coach by name or school.';
+    }
+    return 'Type to search';
+  }
+
+  window._msgSetRecipientMode = function(mode) {
+    _recipientMode = mode==='athlete' ? 'athlete' : 'college_coach';
+    document.getElementById('msg-nm-body').innerHTML = _roleTabsHtml(_recipientMode) + _genericSearchHtml();
+    var input = document.getElementById('msg-new-search');
+    if (input) input.focus();
+  };
 
   // ── Coach picker — athlete step 2 ─────────────────────────
   window._msgPickSchool = async function(school) {
@@ -208,17 +248,16 @@
   window.searchMsgRecipients = function(q) {
     var res = document.getElementById('msg-new-results');
     if (!res) return;
-    if (!q||q.trim().length<2) { res.innerHTML='<div class="msg-new-hint">Type at least 2 characters</div>'; return; }
+    if (!q||q.trim().length<2) { res.innerHTML='<div class="msg-new-hint">'+_searchHint()+'</div>'; return; }
     clearTimeout(_searchTimer);
     _searchTimer = setTimeout(async function(){
       res.innerHTML = '<div class="msg-new-hint">Searching…</div>';
-      var roles = _isAthlete()
-        ? ['college_coach','hs_coach','recruiting_coordinator']
-        : ['athlete'];
+      var roles = _rolesForSearch();
+      var query = q.trim().replace(/[%_,]/g,' ');
       var r = await sb.from('user_profiles')
         .select('id,display_name,role,org')
         .in('role',roles)
-        .ilike('display_name','%'+q+'%')
+        .or('display_name.ilike.%'+query+'%,org.ilike.%'+query+'%')
         .neq('id',currentUser.id)
         .limit(12);
       if (!r.data||!r.data.length) { res.innerHTML='<div class="msg-new-hint">No matching people found.</div>'; return; }
@@ -242,6 +281,11 @@
       if (typeof showToast==='function') showToast('Sign in to start a conversation');
       return;
     }
+    var opts = (prefillId && typeof prefillId==='object') ? prefillId : null;
+    if (opts) {
+      _recipientMode = opts.role==='athlete' ? 'athlete' : 'college_coach';
+      prefillId = null;
+    }
     if (prefillId) { window._msgStartWithSchool(prefillId); return; }
 
     _ensureModal();
@@ -252,12 +296,19 @@
     } else {
       document.getElementById('msg-nm-back').style.display = 'none';
       document.getElementById('msg-nm-title').textContent  = 'New Message';
-      document.getElementById('msg-nm-body').innerHTML     = _genericSearchHtml();
+      document.getElementById('msg-nm-body').innerHTML     = _roleTabsHtml(_recipientMode) + _genericSearchHtml();
     }
 
     var modal = document.getElementById('msg-new-modal');
     modal.classList.add('open');
     if (window.JukeDialog) window.JukeDialog.open(modal, {close: window._closeNewMsgModal, focus: document.getElementById('msg-new-search')});
+    if (opts && opts.query) {
+      var search = document.getElementById('msg-new-search');
+      if (search) {
+        search.value = opts.query;
+        window.searchMsgRecipients(opts.query);
+      }
+    }
   };
 
 })();
