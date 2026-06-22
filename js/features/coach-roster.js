@@ -34,6 +34,10 @@ function findCoachAthlete(id){
   return ATHLETES.find(a=>coachSameId(a.id,id));
 }
 
+function isDemoAthlete(a){
+  return !!a && !a._live;
+}
+
 function escHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, c=>({
     '&':'&amp;',
@@ -400,13 +404,14 @@ function athleteTableRow(a){
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
   const needBadge = needsMatchBadge(a);
   const evBadge = eventBadge(a);
+  const demo = isDemoAthlete(a);
   const aid = jsArg(a.id);
   const stageBadge = stage
     ? `<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stage.color};color:${stage.color};background:${stage.color}18">${stage.label}</span>`
     : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
-  return `<tr onclick="openAthlete(${aid})">
+  return `<tr class="${demo?'pt-demo-row':''}" onclick="openAthlete(${aid})">
     <td>
-      <div class="pt-name">${a.name}${endorsed?' <span style="font-size:9px;color:#00A040">✓ Recommended</span>':''}</div>
+      <div class="pt-name">${a.name}${demo?' <span class="pt-demo-badge">Demo</span>':''}${endorsed?' <span style="font-size:9px;color:#00A040">✓ Recommended</span>':''}</div>
       <div class="pt-school">${a.school} · ${a.city}, ${a.state}</div>
       ${needBadge||evBadge?`<div class="pt-badge-row">${needBadge}${evBadge}</div>`:''}
     </td>
@@ -486,8 +491,10 @@ function pipelineBadgeHtml(id){
 function athleteCard(a){
   const stage = getPipelineStage(a.id);
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
+  const demo = isDemoAthlete(a);
   const aid = jsArg(a.id);
-  return `<div class="athlete-card" onclick="openAthlete(${aid})">
+  return `<div class="athlete-card${demo?' is-demo':''}" onclick="openAthlete(${aid})">
+    ${demo?'<div class="demo-card-badge">Demo</div>':''}
     ${pipelineBadgeHtml(a.id)}
     <div class="athlete-card-hd">
       <div class="athlete-av"><div class="athlete-av-init">${initials(a.name)}</div></div>
@@ -621,7 +628,7 @@ function renderPipeline(){
       const posText=(a.pos||[]).map(flagPositionLabel).join('/');
       const meta=[posText, `'${String(a.year).slice(2)}`, a.state].filter(Boolean).join(' · ');
       const schoolLine=[a.school, a.city].filter(Boolean).join(' · ');
-      return `<div class="pl-card" draggable="true" data-athlete-id="${escHtml(id)}"
+      return `<div class="pl-card${isDemoAthlete(a)?' is-demo':''}" draggable="true" data-athlete-id="${escHtml(id)}"
           style="border-left-color:${s.color}"
           ondragstart="_onDragStart(event,${jsArg(id)})"
           ondragend="_onDragEnd(event)"
@@ -639,6 +646,7 @@ function renderPipeline(){
         <div class="pl-card-foot">
           <span class="pl-last">${escHtml(laText)}</span>
           ${evaluationBadge(id)}
+          ${isDemoAthlete(a)?'<span class="pl-demo">Demo</span>':''}
           ${a._live?'<span class="pl-live">Live profile</span>':''}
         </div>
         ${boardNames.length?`<div class="pl-board-tags">${boardNames.map(n=>`<span class="pl-board-tag">${escHtml(n)}</span>`).join('')}</div>`:''}

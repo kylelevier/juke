@@ -93,6 +93,15 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .athlete-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;padding:0 24px 24px;}
 .athlete-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s;position:relative;}
 .athlete-card:hover{border-color:var(--border-mid);}
+.athlete-card.is-demo{background:#f7fbff;border-color:#b9d6ff;border-style:dashed;box-shadow:inset 0 0 0 1px rgba(0,87,255,.05);}
+.athlete-card.is-demo:hover{border-color:#7fb3ff;}
+.demo-card-badge{position:absolute;top:12px;right:12px;font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:#0057FF;color:#fff;border:1px solid rgba(0,87,255,.2);box-shadow:0 1px 4px rgba(0,87,255,.18);z-index:1;}
+.athlete-card.is-demo .pipeline-badge{top:38px;}
+.athlete-card.is-demo .athlete-av{background:#e8f2ff;border-color:#b9d6ff;}
+.athlete-card.is-demo .athlete-av-init{color:#0057FF;}
+.athlete-card.is-demo .a-pos-pill{background:#0057FF;}
+.athlete-card.is-demo .ac-btn.primary{background:#0057FF;border-color:#0057FF;}
+.athlete-card.is-demo .ac-btn.primary:hover{background:#0046cc;}
 .athlete-card-hd{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
 .athlete-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#1a0010,#000520);border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .athlete-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
@@ -127,8 +136,11 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .prospect-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s;cursor:pointer;}
 .prospect-table tbody tr:last-child{border-bottom:none;}
 .prospect-table tbody tr:hover{background:var(--surface2);}
+.prospect-table tbody tr.pt-demo-row{background:#f7fbff;}
+.prospect-table tbody tr.pt-demo-row:hover{background:#edf6ff;}
 .prospect-table td{padding:10px 12px;vertical-align:middle;white-space:nowrap;}
 .pt-name{font-family:'Archivo Condensed',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.01em;color:var(--text);line-height:1;}
+.pt-demo-badge{display:inline-flex;margin-left:5px;font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-radius:20px;padding:2px 7px;background:#0057FF;color:#fff;vertical-align:middle;}
 .pt-school{font-size:11px;color:var(--text-dim);margin-top:1px;white-space:normal;max-width:180px;}
 .pt-badge-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
 .pt-pos{display:flex;gap:4px;flex-wrap:wrap;}
@@ -164,6 +176,9 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .pl-cards{display:flex;flex-direction:column;gap:9px;min-height:128px;}
 .pl-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid transparent;border-radius:8px;padding:12px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;}
 .pl-card:hover{border-color:var(--border-mid);box-shadow:0 10px 24px rgba(15,23,42,.08);transform:translateY(-1px);}
+.pl-card.is-demo{background:#f7fbff;border-color:#b9d6ff;border-style:dashed;}
+.pl-card.is-demo:hover{border-color:#7fb3ff;}
+.pl-card.is-demo .pl-av{background:#e8f2ff;color:#0057FF;}
 .pl-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
 .pl-av{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1a0010,#000520);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:13px;color:rgba(255,255,255,.42);}
 .pl-name{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.01em;color:var(--text);line-height:1.1;}
@@ -181,6 +196,7 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .pl-na-arrow{flex-shrink:0;opacity:.7;}
 .pl-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;}
 .pl-live{font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#00A050;background:rgba(0,160,80,.08);border:1px solid rgba(0,160,80,.22);border-radius:999px;padding:2px 6px;white-space:nowrap;}
+.pl-demo{font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#0057FF;border:1px solid rgba(0,87,255,.22);border-radius:999px;padding:2px 6px;white-space:nowrap;}
 /* ── BOARD TAG CHIPS ON CARD ── */
 .pl-board-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
 .pl-board-tag{font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--columbia-bg);border:1px solid var(--columbia-bd);color:var(--columbia);}

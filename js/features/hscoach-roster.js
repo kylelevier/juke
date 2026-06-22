@@ -567,6 +567,7 @@ function renderRoster(){
 function renderRosterCards(athletes){
   const grid = el('roster-grid'); if(!grid) return;
   if(!athletes.length){ grid.innerHTML='<div class="empty-state"><div class="empty-state-title">No matching athletes</div><div class="empty-state-sub">Clear the search or filters to return to the full roster.</div></div>'; return; }
+  const isDemoRoster = _hsRosterSource !== 'live';
   grid.innerHTML = athletes.map(a=>{
     const st = athleteStatus(a);
     const endorsed = endorsements[a.id];
@@ -574,7 +575,8 @@ function renderRosterCards(athletes){
     const stColor  = STAGE_COLORS[st]||'';
     const intCount = a.programs.length;
     const idArg = hsJsArg(a.id);
-    return `<div class="roster-card st-${st}" onclick="openSP(${idArg})">
+    return `<div class="roster-card st-${st}${isDemoRoster?' is-demo':''}" onclick="openSP(${idArg})">
+      ${isDemoRoster?'<div class="demo-card-badge">Demo</div>':''}
       ${endorsed?'<div class="endorse-badge">Recommended</div>':''}
       <div class="rc-hd">
         <div class="rc-av">${a.avatar?`<img src="${hsEsc(a.avatar)}" alt="${hsEsc(a.fname+' '+a.lname)}">`:`<div class="rc-av-init">${initials(a)}</div>`}</div>
@@ -593,8 +595,8 @@ function renderRosterCards(athletes){
       </div>
       <div class="rc-interest">
         ${intCount===0
-          ? '<span class="rc-interest-none">No college interest yet</span>'
-          : `<span class="rc-interest-some">📍 ${intCount} program${intCount!==1?'s':''} interested</span>`}
+          ? `<span class="rc-interest-none">${isDemoRoster?'Demo data: ':''}No college interest yet</span>`
+          : `<span class="rc-interest-some">${isDemoRoster?'Demo: ':''}📍 ${intCount} program${intCount!==1?'s':''} interested</span>`}
       </div>
       <div class="rc-ft" onclick="event.stopPropagation()">
         <button class="rc-btn primary" onclick="openEndorse(${idArg})">${endorsed?'✓ Recommended':'Recommend'}</button>
@@ -608,16 +610,18 @@ function renderRosterCards(athletes){
 function renderRosterTable(athletes){
   const tbody = el('roster-tbody'); if(!tbody) return;
   if(!athletes.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-dim)">No matching athletes. Clear the search or filters to return to the full roster.</td></tr>'; return; }
+  const isDemoRoster = _hsRosterSource !== 'live';
   tbody.innerHTML = athletes.map(a=>{
     const st       = athleteStatus(a);
     const stColor  = STAGE_COLORS[st]||'#ccc';
     const stLabel  = STAGE_LABELS[st]||'No Contact';
     const endorsed = endorsements[a.id];
     const idArg = hsJsArg(a.id);
-    return `<tr>
+    return `<tr class="${isDemoRoster?'rt-demo-row':''}">
       <td><div class="rt-av">${initials(a)}</div></td>
       <td>
         <div class="rt-name" style="cursor:pointer" onclick="openSP(${idArg})">${hsEsc(a.fname)} ${hsEsc(a.lname)}</div>
+        ${isDemoRoster?'<span class="rt-demo-badge">Demo</span>':''}
         ${endorsed?'<span style="font-size:9px;color:#00a03a;font-weight:600">✓ Recommended</span>':''}
       </td>
       <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${hsEsc(hsFlagPositionLabel(p))}</span>`).join('')}</div></td>
