@@ -28,16 +28,16 @@ Loads: `data-school-domains.js` → `config.js` → data files → `auth.js` →
 Auth: Supabase (`sb`, `currentUser` from `config.js`)
 Tabs: Feed, Programs, My Profile, My Board, Readiness, Calendar, Messages.
 
-### College Coach Portal (`pages/coach.html`)
+### Recruiter Portal (`pages/coach.html`)
 Loads: `data-school-domains.js` → `features/coach-portal-init.js` → `features/coach-nav.js` → `features/coach-roster.js` → `features/coach-feed.js` → `features/coach-profile.js` → `messaging.js`
 
 Auth: `localStorage.juke_auth` (separate from Supabase) via `coach-portal-init.js`. Unauthenticated visitors are redirected to `/login.html`.
 ⚠️ Does NOT load `config.js` or `ui.js`. Defines its own `sb`/`SUPABASE_*`/`currentUser` in `coach-nav.js`. `SCHOOL_DOMAINS` IS available via `data-school-domains.js`.
 
-### HS Coach Portal (`pages/hscoach.html`)
+### Coach Portal (`pages/hscoach.html`)
 Loads: `data-school-domains.js` → `features/hscoach-portal-init.js` → `features/hscoach-roster.js` → `features/hscoach-outreach.js` → `features/hscoach-nav.js` → `messaging.js`
 
-Auth: `localStorage.juke_auth` (same as college coach). Unauthenticated visitors are redirected to `/login.html`.
+Auth: `localStorage.juke_auth` (same as recruiter). Unauthenticated visitors are redirected to `/login.html`.
 ⚠️ Does NOT load `config.js` or `ui.js`. Defines its own `sb`/`SUPABASE_*` in `hscoach-nav.js`. `SCHOOL_DOMAINS` IS available via `data-school-domains.js`.
 
 ---
@@ -66,7 +66,7 @@ Auth: `localStorage.juke_auth` (same as college coach). Unauthenticated visitors
 | `js/features/coach-nav.js` | 120 | Coach header nav |
 | `js/features/hscoach-roster.js` | 410 | HS roster data, stage labels, `switchHsTab`, cards, roster render |
 | `js/features/hscoach-outreach.js` | 281 | Outreach activity, slide-over, endorse modal, athlete management |
-| `js/features/hscoach-nav.js` | 177 | HS coach nav + user chip |
+| `js/features/hscoach-nav.js` | 177 | Coach nav + user chip |
 
 ---
 
@@ -76,7 +76,7 @@ These names are in the global scope on the athlete portal. Do not reuse them:
 
 - `PIPELINE_STAGES` — athlete board stages (ui.js). **Coach portal uses `COACH_PIPELINE_STAGES` instead.**
 - `SCHOOL_DOMAINS` — school name → domain map (`data-school-domains.js`, window-scoped; all portals)
-- `switchTab(t)` — athlete tab switcher (pipeline.js). **HS coach uses `switchHsTab(id)` instead.**
+- `switchTab(t)` — athlete tab switcher (pipeline.js). **Coach portal uses `switchHsTab(id)` instead.**
 - `fetchSchoolLogo(name, wrap)` — Google-favicon logo loader with fallback (ui.js)
 - `sb` — Supabase client (config.js)
 - `currentUser` — Supabase auth user (config.js)

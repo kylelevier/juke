@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>JUKE — HS Coach Portal</title>
+<title>JUKE — Coach Portal</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="icon" type="image/x-icon" href="../favicon.ico">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -44,7 +44,7 @@
 <!-- ── TAB NAV ── -->
 <nav class="tab-nav">
   <button class="tab-btn active" id="tab-roster" onclick="switchHsTab('roster')">My Roster</button>
-  <button class="tab-btn" id="tab-activity" onclick="switchHsTab('activity')">College Activity</button>
+  <button class="tab-btn" id="tab-activity" onclick="switchHsTab('activity')">Recruiter Activity</button>
   <button class="tab-btn" id="tab-outreach" onclick="switchHsTab('outreach')">Outreach Tools</button>
   <button class="tab-btn" id="tab-hsprofile" onclick="switchHsTab('hsprofile')">My Profile</button>
   <button class="tab-btn" id="tab-messages" onclick="switchHsTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
@@ -149,7 +149,7 @@
     <div id="end-req-cards"></div>
   </div>
   <div class="section-bar">
-    <div class="section-title">College Activity</div>
+    <div class="section-title">Recruiter Activity</div>
     <div class="section-actions">
       <div class="view-toggle">
         <button class="vtog active" id="activity-vtog-cards" onclick="setActivityView('cards')" title="Card view">
@@ -189,7 +189,7 @@
     <!-- Compose panel -->
     <div class="outreach-compose">
       <div class="outreach-compose-hd">Compose Outreach Email</div>
-      <label class="compose-label">To: College Program / Coach</label>
+      <label class="compose-label">To: Program / Recruiter</label>
       <input class="compose-input" id="outreach-to" placeholder="e.g. Northern Arizona University Flag Football">
       <label class="compose-label">Feature These Athletes</label>
       <div class="athlete-select-row" id="outreach-athlete-row"></div>
@@ -375,7 +375,7 @@
       <div class="modal-title" id="endorse-title">Recommend Athlete</div>
       <button class="modal-close" aria-label="Close" onclick="closeEndorseModal()">✕</button>
     </div>
-    <div class="modal-sub" id="endorse-sub">Your recommendation carries weight. College coaches trust HS/club coach vouches — be specific and honest.</div>
+    <div class="modal-sub" id="endorse-sub">Your recommendation carries weight. Recruiters trust coach vouches — be specific and honest.</div>
     <div class="endorse-traits" id="endorse-traits">
       <span class="endorse-trait" onclick="toggleTrait(this)">High Character</span>
       <span class="endorse-trait" onclick="toggleTrait(this)">Coachable</span>
@@ -407,8 +407,8 @@
 
     <!-- SIGN IN PANEL -->
     <div id="hscoach-signin-panel">
-      <div class="coach-auth-title" id="hscoach-signin-title">HS/Club Coach Sign In</div>
-      <div class="coach-auth-sub">Sign in to message athletes and college coaches on JUKE.</div>
+      <div class="coach-auth-title" id="hscoach-signin-title">Coach Sign In</div>
+      <div class="coach-auth-sub">Sign in to message athletes and recruiters on JUKE.</div>
       <div class="coach-auth-field">
         <label>Email</label>
         <input type="email" id="hscoach-signin-email" placeholder="you@school.edu" autocomplete="email">
@@ -425,7 +425,7 @@
     <!-- SIGN UP PANEL -->
     <div id="hscoach-signup-panel" style="display:none">
       <div class="coach-auth-title" id="hscoach-signup-title">Create Account</div>
-      <div class="coach-auth-sub">Create your HS/Club Coach account to start recruiting on JUKE.</div>
+      <div class="coach-auth-sub">Create your Coach account to start recruiting on JUKE.</div>
       <div class="coach-auth-field">
         <label>Full Name</label>
         <input type="text" id="hscoach-signup-name" placeholder="Your Name" autocomplete="name">

@@ -6,7 +6,7 @@ function renderActivity(){
 function renderActivityCards(){
   const grid = el('activity-grid'); if(!grid) return;
   if(typeof _hsRosterSource!=='undefined' && _hsRosterSource==='live'){
-    grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">No college activity yet</div><div class="empty-state-sub">Live activity for this roster will appear here as college coaches view your athletes.</div></div>';
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">No recruiter activity yet</div><div class="empty-state-sub">Live activity for this roster will appear here as recruiters view your athletes.</div></div>';
     return;
   }
   grid.innerHTML = ACTIVITY.map(act=>{
@@ -30,7 +30,7 @@ function renderActivityCards(){
       </div>
       <div class="ac-date">Last active ${act.date}</div>
       <div class="ac-ft">
-        <button class="ac-btn" onclick="openCollegeCoachMessage('${act.school}')">Message College Coaches →</button>
+        <button class="ac-btn" onclick="openCollegeCoachMessage('${act.school}')">Message Recruiters →</button>
       </div>
     </div>`;
   }).join('');
@@ -39,7 +39,7 @@ function renderActivityCards(){
 function renderActivityTable(){
   const tbody = el('activity-tbody'); if(!tbody) return;
   if(typeof _hsRosterSource!=='undefined' && _hsRosterSource==='live'){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim)">No live college activity yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim)">No live recruiter activity yet.</td></tr>';
     return;
   }
   tbody.innerHTML = ACTIVITY.map(act=>{
@@ -277,7 +277,7 @@ function openEndorse(id){
   endorseTarget = id;
   const a = hsFindAthlete(id); if(!a) return;
   el('endorse-title').textContent = 'Recommend '+a.fname+' '+a.lname;
-  el('endorse-sub').textContent   = 'Your recommendation carries weight. College coaches trust HS/club coach vouches — be specific and honest.';
+  el('endorse-sub').textContent   = 'Your recommendation carries weight. Recruiters trust coach vouches — be specific and honest.';
   el('endorse-text').value        = typeof endorsements[id]==='object' ? (endorsements[id].text||'') : '';
   // Reset traits
   document.querySelectorAll('.endorse-trait').forEach(t=>{

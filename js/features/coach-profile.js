@@ -473,7 +473,7 @@ function updateHeaderStats(){
 function updateCoachCard(){
   const p = coachProfile;
   const el = id=>document.getElementById(id);
-  if(el('coach-display-name')) el('coach-display-name').textContent = p.name||'Coach Name';
+  if(el('coach-display-name')) el('coach-display-name').textContent = p.name||'Recruiter Name';
   if(el('coach-display-title')) el('coach-display-title').textContent = [p.title,p.school].filter(Boolean).join(' · ');
   if(el('coach-display-bio'))  el('coach-display-bio').textContent  = p.bio||'';
   if(el('coach-pill-div'))     el('coach-pill-div').textContent     = p.div||'';

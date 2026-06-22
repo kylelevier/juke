@@ -9,7 +9,7 @@
   if(!chip) return;
   var parts=auth.name.trim().split(' ');
   var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
-  var RL={athlete:'Athlete',college_coach:'College Coach',hs_coach:'HS / Club Coach'};
+  var RL={athlete:'Athlete',college_coach:'Recruiter',hs_coach:'Coach'};
   // Active profile for header subtitle
   var activeProfile=null;
   if(auth.profiles&&auth.profiles.length){

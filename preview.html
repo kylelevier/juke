@@ -140,7 +140,7 @@ footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex
       </div>
     </div>
 
-    <!-- College Coach -->
+    <!-- Recruiter -->
     <div class="card college-card" id="card-college" onclick="enterPortal('college_coach','/coach')">
       <div class="card-accent college"></div>
       <div class="card-top">
@@ -151,7 +151,7 @@ footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex
         </div>
       </div>
       <div class="card-role">Portal 2</div>
-      <div class="card-title">College Coach</div>
+      <div class="card-title">Recruiter</div>
       <div class="card-desc">Search athletes by position and fit, manage your recruitment pipeline, and message prospects.</div>
       <div class="card-session-info" id="info-college"></div>
       <div class="card-enter">
@@ -160,7 +160,7 @@ footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex
       </div>
     </div>
 
-    <!-- HS Coach -->
+    <!-- Coach -->
     <div class="card hs-card" id="card-hs" onclick="enterPortal('hs_coach','/hscoach')">
       <div class="card-accent hs"></div>
       <div class="card-top">
@@ -171,7 +171,7 @@ footer{padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);display:flex
         </div>
       </div>
       <div class="card-role">Portal 3</div>
-      <div class="card-title">HS / Club Coach</div>
+      <div class="card-title">Coach</div>
       <div class="card-desc">Manage your roster, track which athletes are being recruited, and provide endorsements.</div>
       <div class="card-session-info" id="info-hs"></div>
       <div class="card-enter">
@@ -231,7 +231,7 @@ function renderSessions() {
   }
   if (ca) {
     var color = isCollege ? '#7B2FFF' : '#0057FF';
-    var roleLabel = isCollege ? 'College Coach' : 'HS Coach';
+    var roleLabel = isCollege ? 'Recruiter' : 'Coach';
     chips += chip(color, ca.name, roleLabel);
   }
   if (!chips) {
@@ -253,7 +253,7 @@ function renderSessions() {
     setCardInactive('college', ca ? 'Session exists as ' + ca.type : 'No session · will create one');
   }
 
-  // HS coach card
+  // coach card
   if (isHs) {
     setCardActive('hs', ca.name, ca.school ? 'School: <strong>' + ca.school + '</strong>' : '');
   } else {

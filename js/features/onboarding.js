@@ -1,8 +1,8 @@
 (function(){
   const ROLE_LABELS={
     athlete:'Athlete',
-    college_coach:'College Coach',
-    hs_coach:'HS Coach'
+    college_coach:'Recruiter',
+    hs_coach:'Coach'
   };
 
   const DEFAULTS={

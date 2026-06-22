@@ -52,7 +52,7 @@ function _updateCoachAuthUI() {
     + '<div id="juke-chip-dd" class="juke-chip-dd">'
       + '<div class="juke-chip-dd-header">'
         + '<div class="juke-chip-dd-name">' + name + '</div>'
-        + '<div class="juke-chip-dd-role">College Coach' + (org ? ' · ' + org : '') + '</div>'
+        + '<div class="juke-chip-dd-role">Recruiter' + (org ? ' · ' + org : '') + '</div>'
       + '</div>'
       + '<div class="juke-chip-dd-section">'
         + '<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="coachSignOut()">Sign Out</button>'

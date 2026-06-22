@@ -2114,7 +2114,7 @@ a.pp-next-action-item:hover{border-color:var(--columbia-bd);color:var(--columbia
       <div class="publish-toggle-row" style="margin-top:32px">
         <div class="publish-toggle-label">
           Make my profile discoverable to coaches
-          <small>Share your profile with college coaches. Requires sign-in.</small>
+          <small>Share your profile with recruiters. Requires sign-in.</small>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" id="publish-toggle" onchange="handlePublishToggle()"/>
@@ -5798,7 +5798,7 @@ function _ppRenderStatusRow(schoolName){
   if(!chip) return;
   var parts=auth.name.trim().split(' ');
   var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
-  var RL={athlete:'Athlete',college_coach:'College Coach',hs_coach:'HS / Club Coach'};
+  var RL={athlete:'Athlete',college_coach:'Recruiter',hs_coach:'Coach'};
   // Active profile for header subtitle
   var activeProfile=null;
   if(auth.profiles&&auth.profiles.length){

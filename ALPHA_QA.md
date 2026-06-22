@@ -172,7 +172,7 @@ Messages requires Supabase auth. Signed-out users see nothing. This is correct p
 
 The following items were explicitly excluded from this pass:
 
-- Coach portal (`pages/coach.html`) and HS Coach portal (`pages/hscoach.html`) — not part of athlete alpha
+- Coach portal (`pages/coach.html`) and Coach portal (`pages/hscoach.html`) — not part of athlete alpha
 - Admin panel (password-gated, internal-only)
 - Compare modal / CSV export — not a core flow
 - Feed stat cards (hardcoded `4`, `3`, `1`) — mock data, fine for alpha

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>JUKE — HS Coach Portal</title>
+<title>JUKE — Coach Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1049,7 +1049,7 @@ function submitHSEndorsement(id){
       id:'end_demo_pending',
       athleteProfileId:'demo_athlete_2',
       athleteName:'Jordan Rivera',
-      coachName:'HS Coach',
+      coachName:'Coach',
       coachSchool:'DeSoto HS',
       coachTitle:'Head Coach',
       coachNote:'Coach, I\'m reaching out to college programs and could really use your support. A few honest words from you would mean everything to my recruiting process.',
@@ -1575,13 +1575,13 @@ function addAthletePrompt(){
   if(!chip) return;
   var parts=auth.name.trim().split(' ');
   var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
-  var RL={athlete:'Athlete',college_coach:'College Coach',hs_coach:'HS / Club Coach'};
+  var RL={athlete:'Athlete',college_coach:'Recruiter',hs_coach:'Coach'};
   var activeProfile=null;
   if(auth.profiles&&auth.profiles.length){
     var apid=auth.activeProfileId||auth.profiles[0].id;
     activeProfile=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
   }
-  var roleOrg=activeProfile&&activeProfile.org?'HS / Club Coach · '+activeProfile.org:'HS / Club Coach';
+  var roleOrg=activeProfile&&activeProfile.org?'Coach · '+activeProfile.org:'Coach';
   var profilesHTML='';
   if(auth.profiles&&auth.profiles.length){
     profilesHTML+='<div class="juke-chip-dd-divider"></div><div class="juke-chip-dd-section">';
@@ -1650,8 +1650,8 @@ function jukeLogout(){localStorage.removeItem('juke_auth');location.href='login.
 
     <!-- SIGN IN PANEL -->
     <div id="hscoach-signin-panel">
-      <div class="coach-auth-title">HS/Club Coach Sign In</div>
-      <div class="coach-auth-sub">Sign in to message athletes and college coaches on JUKE.</div>
+      <div class="coach-auth-title">Coach Sign In</div>
+      <div class="coach-auth-sub">Sign in to message athletes and recruiters on JUKE.</div>
       <div class="coach-auth-field">
         <label>Email</label>
         <input type="email" id="hscoach-signin-email" placeholder="you@school.edu" autocomplete="email">
@@ -1668,7 +1668,7 @@ function jukeLogout(){localStorage.removeItem('juke_auth');location.href='login.
     <!-- SIGN UP PANEL -->
     <div id="hscoach-signup-panel" style="display:none">
       <div class="coach-auth-title">Create Account</div>
-      <div class="coach-auth-sub">Create your HS/Club Coach account to start recruiting on JUKE.</div>
+      <div class="coach-auth-sub">Create your Coach account to start recruiting on JUKE.</div>
       <div class="coach-auth-field">
         <label>Full Name</label>
         <input type="text" id="hscoach-signup-name" placeholder="Your Name" autocomplete="name">

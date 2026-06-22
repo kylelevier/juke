@@ -25,16 +25,16 @@ Loads: `config.js` → `auth.js` → `data.js` → `ui.js` → `pipeline.js` →
 
 Auth: Supabase (`sb`, `currentUser` from `config.js`)
 
-### College Coach Portal (`pages/coach.html`)
+### Recruiter Portal (`pages/coach.html`)
 Loads: `features/coach-portal-init.js` → `features/coach-roster.js` → `features/coach-profile.js` → `features/coach-feed.js` → `features/coach-nav.js` → `messaging.js` → `features/coach-init2.js`
 
 Auth: `localStorage.juke_auth` (separate from Supabase) via `coach-portal-init.js`
 ⚠️ Does NOT load `config.js` or `ui.js` — shared utilities unavailable here.
 
-### HS Coach Portal (`pages/hscoach.html`)
+### Coach Portal (`pages/hscoach.html`)
 Loads: `features/hscoach-portal-init.js` → `features/hscoach-roster.js` → `features/hscoach-outreach.js` → `features/hscoach-nav.js` → `messaging.js` → `features/hscoach-init2.js`
 
-Auth: `localStorage.juke_auth` (same as college coach)
+Auth: `localStorage.juke_auth` (same as recruiter)
 ⚠️ Does NOT load `config.js` or `ui.js` — shared utilities unavailable here.
 
 ---
@@ -58,7 +58,7 @@ Auth: `localStorage.juke_auth` (same as college coach)
 | `js/features/coach-nav.js` | 120 | Coach header nav |
 | `js/features/hscoach-roster.js` | 410 | HS roster data, stage labels, `switchHsTab`, cards, roster render |
 | `js/features/hscoach-outreach.js` | 281 | Outreach activity, slide-over, endorse modal, athlete management |
-| `js/features/hscoach-nav.js` | 177 | HS coach nav + user chip |
+| `js/features/hscoach-nav.js` | 177 | Coach nav + user chip |
 
 ---
 
@@ -68,7 +68,7 @@ These names are in the global scope on the athlete portal. Do not reuse them:
 
 - `PIPELINE_STAGES` — athlete board stages (ui.js). **Coach portal uses `COACH_PIPELINE_STAGES` instead.**
 - `SCHOOL_DOMAINS` — school name → domain map (config.js)
-- `switchTab(t)` — athlete tab switcher (pipeline.js). **HS coach uses `switchHsTab(id)` instead.**
+- `switchTab(t)` — athlete tab switcher (pipeline.js). **Coach portal uses `switchHsTab(id)` instead.**
 - `fetchSchoolLogo(name, wrap)` — Clearbit logo loader with fallback (ui.js)
 - `sb` — Supabase client (config.js)
 - `currentUser` — Supabase auth user (config.js)

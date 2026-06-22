@@ -44,7 +44,7 @@
   }
 
   var ROLE_LABELS = {
-    athlete:'Athlete', college_coach:'College Coach', hs_coach:'HS / Club Coach',
+    athlete:'Athlete', college_coach:'Recruiter', hs_coach:'Coach',
     parent:'Parent', recruiting_coordinator:'Recruiting Coordinator', admin:'Admin'
   };
   var ROLE_COLORS = {
@@ -114,17 +114,17 @@
 
     body.innerHTML =
       (rows ? '<div class="msg-nm-section-hd">Your Board</div><div class="msg-nm-school-list">'+rows+'</div>' : '')
-      + '<div class="msg-nm-divider"><span>or search all coaches</span></div>'
+      + '<div class="msg-nm-divider"><span>or search all recruiters and coaches</span></div>'
       + _genericSearchHtml();
   }
 
   function _genericSearchHtml() {
     var mode = _recipientMode || (_portalType()==='hs_coach' ? 'college_coach' : (_portalType()==='college_coach' ? 'athlete' : ''));
     var placeholder = mode==='college_coach'
-      ? 'Search college coaches by name or school…'
+      ? 'Search recruiters by name or school…'
       : mode==='athlete'
         ? 'Search athletes by name…'
-        : 'Search coaches by name…';
+        : 'Search recruiters by name…';
     return '<div class="msg-new-search-wrap">'
       + '<input id="msg-new-search" class="msg-new-search" type="text" '
       +   'placeholder="'+placeholder+'" autocomplete="off" oninput="searchMsgRecipients(this.value)"/>'
@@ -136,7 +136,7 @@
     if (_portalType()!=='hs_coach') return '';
     active = active || 'college_coach';
     return '<div class="msg-role-tabs">'
-      + '<button class="msg-role-tab '+(active==='college_coach'?'active':'')+'" onclick="_msgSetRecipientMode(\'college_coach\')">College Coaches</button>'
+      + '<button class="msg-role-tab '+(active==='college_coach'?'active':'')+'" onclick="_msgSetRecipientMode(\'college_coach\')">Recruiters</button>'
       + '<button class="msg-role-tab '+(active==='athlete'?'active':'')+'" onclick="_msgSetRecipientMode(\'athlete\')">Athletes</button>'
       + '</div>';
   }
@@ -150,7 +150,7 @@
 
   function _searchHint() {
     if (_portalType()==='hs_coach' && _recipientMode==='college_coach') {
-      return 'Search any college coach by name or school.';
+      return 'Search any recruiter by name or school.';
     }
     return 'Type to search';
   }
@@ -169,7 +169,7 @@
     document.getElementById('msg-nm-title').textContent  = school;
 
     var body = document.getElementById('msg-nm-body');
-    body.innerHTML = '<div class="msg-new-hint">Finding coaches at '+_esc(school)+'…</div>';
+    body.innerHTML = '<div class="msg-new-hint">Finding recruiters at '+_esc(school)+'…</div>';
 
     var r = await sb.from('user_profiles')
       .select('id,display_name,org')
@@ -183,10 +183,10 @@
       '<div id="msg-new-results" class="msg-new-results">'
         + (coaches.length
             ? coaches.map(function(u){ return _coachRow(u,school); }).join('')
-            : '<div class="msg-new-hint">No matching coaches for this program. Search by name below.</div>')
+            : '<div class="msg-new-hint">No matching recruiters for this program. Search by name below.</div>')
       + '</div>'
       + '<div class="msg-new-search-wrap" style="margin-top:8px">'
-        + '<input class="msg-new-search" type="text" placeholder="Search coaches by name…" '
+        + '<input class="msg-new-search" type="text" placeholder="Search recruiters by name…" '
         +   'autocomplete="off" oninput="_msgSearchInSchool(this.value)"/>'
       + '</div>';
   };
@@ -215,7 +215,7 @@
         .limit(10);
       res.innerHTML = (r.data||[]).length
         ? (r.data||[]).map(function(u){ return _coachRow(u,_pickedSchool||''); }).join('')
-        : '<div class="msg-new-hint">No matching coaches found.</div>';
+        : '<div class="msg-new-hint">No matching recruiters found.</div>';
     }, 280);
   };
 

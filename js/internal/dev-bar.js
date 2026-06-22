@@ -100,8 +100,8 @@
     '<div id="_jdb-div"></div>',
     '<div id="_jdb-tabs">',
       '<button class="_jdb-tab athlete-tab" id="_jdb-t-athlete" onclick="_jdbGo(\'athlete\')">🏃‍♀️ Athlete</button>',
-      '<button class="_jdb-tab coach-tab"   id="_jdb-t-coach"   onclick="_jdbGo(\'coach\')">🏟️ College Coach</button>',
-      '<button class="_jdb-tab hs-tab"      id="_jdb-t-hs"      onclick="_jdbGo(\'hscoach\')">📋 HS Coach</button>',
+      '<button class="_jdb-tab coach-tab"   id="_jdb-t-coach"   onclick="_jdbGo(\'coach\')">🏟️ Recruiter</button>',
+      '<button class="_jdb-tab hs-tab"      id="_jdb-t-hs"      onclick="_jdbGo(\'hscoach\')">📋 Coach</button>',
     '</div>',
     '<div id="_jdb-session">',
       '<div id="_jdb-dot"></div>',
@@ -151,7 +151,7 @@
       var auth = _getCoachAuth();
       if (auth && auth.name) {
         dot.className = '_jdb-dot on';
-        var roleLabel = auth.type === 'college_coach' ? 'College Coach' : 'HS Coach';
+        var roleLabel = auth.type === 'college_coach' ? 'Recruiter' : 'Coach';
         user.innerHTML = '<strong>' + auth.name + '</strong> · ' + roleLabel;
       } else {
         dot.className = '_jdb-dot';

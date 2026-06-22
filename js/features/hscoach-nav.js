@@ -120,13 +120,13 @@
   if(!chip) return;
   var parts=auth.name.trim().split(' ');
   var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
-  var RL={athlete:'Athlete',college_coach:'College Coach',hs_coach:'HS / Club Coach'};
+  var RL={athlete:'Athlete',college_coach:'Recruiter',hs_coach:'Coach'};
   var activeProfile=null;
   if(auth.profiles&&auth.profiles.length){
     var apid=auth.activeProfileId||auth.profiles[0].id;
     activeProfile=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
   }
-  var roleOrg=activeProfile&&activeProfile.org?'HS / Club Coach · '+activeProfile.org:'HS / Club Coach';
+  var roleOrg=activeProfile&&activeProfile.org?'Coach · '+activeProfile.org:'Coach';
   var profilesHTML='';
   if(auth.profiles&&auth.profiles.length){
     profilesHTML+='<div class="juke-chip-dd-divider"></div><div class="juke-chip-dd-section">';

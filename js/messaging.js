@@ -27,8 +27,8 @@
 
   var ROLE_LABELS = {
     athlete:               'Athlete',
-    college_coach:         'College Coach',
-    hs_coach:              'HS / Club Coach',
+    college_coach:         'Recruiter',
+    hs_coach:              'Coach',
     parent:                'Parent',
     recruiting_coordinator:'Recruiting Coordinator',
     admin:                 'Admin'

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>JUKE — Coach Portal</title>
+<title>JUKE — Recruiter Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1379,13 +1379,13 @@ function seedSchoolFromAuth(){
   if(!chip) return;
   var parts=auth.name.trim().split(' ');
   var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
-  var RL={athlete:'Athlete',college_coach:'College Coach',hs_coach:'HS / Club Coach'};
+  var RL={athlete:'Athlete',college_coach:'Recruiter',hs_coach:'Coach'};
   var activeProfile=null;
   if(auth.profiles&&auth.profiles.length){
     var apid=auth.activeProfileId||auth.profiles[0].id;
     activeProfile=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
   }
-  var roleOrg=activeProfile&&activeProfile.org?'College Coach · '+activeProfile.org:'College Coach';
+  var roleOrg=activeProfile&&activeProfile.org?'Recruiter · '+activeProfile.org:'Recruiter';
   var profilesHTML='';
   if(auth.profiles&&auth.profiles.length){
     profilesHTML+='<div class="juke-chip-dd-divider"></div><div class="juke-chip-dd-section">';
@@ -1601,7 +1601,7 @@ function jukeLogout(){localStorage.removeItem('juke_auth');location.href='login.
 </script>
 
 
-<!-- ── AUTH MODAL (college coach portal) ─────────────────────── -->
+<!-- ── AUTH MODAL (recruiter portal) ─────────────────────── -->
 <div class="coach-auth-modal-overlay" id="coach-auth-overlay" onclick="closeCoachAuth(event)">
   <div class="coach-auth-modal">
     <button class="coach-auth-close" onclick="document.getElementById('coach-auth-overlay').classList.remove('open')" aria-label="Close">✕</button>
@@ -1668,7 +1668,7 @@ function _updateCoachAuthUI() {
     + '<div id="juke-chip-dd" class="juke-chip-dd">'
       + '<div class="juke-chip-dd-header">'
         + '<div class="juke-chip-dd-name">' + name + '</div>'
-        + '<div class="juke-chip-dd-role">College Coach' + (org ? ' · ' + org : '') + '</div>'
+        + '<div class="juke-chip-dd-role">Recruiter' + (org ? ' · ' + org : '') + '</div>'
       + '</div>'
       + '<div class="juke-chip-dd-section">'
         + '<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="coachSignOut()">Sign Out</button>'
