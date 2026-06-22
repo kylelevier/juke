@@ -26,6 +26,13 @@ window.PREVIEW_USER_ID = (function(){
   return null;
 })();
 
+// In preview mode, block any signout so the Supabase session (and thus data access)
+// stays intact. signOut would wipe the session from shared localStorage, leaving
+// _syncFromCloud unauthenticated and RLS-blocked for the rest of the preview.
+if(window.PREVIEW_USER_ID && sb){
+  sb.auth.signOut = function(){ return Promise.resolve({error:null}); };
+}
+
 // Load curated school-logo overrides (school-logos bucket → programs.logo_url).
 // The resolver auto-repaints any [data-logo] wrappers once the map arrives.
 if(sb && window.loadSchoolLogoOverrides) loadSchoolLogoOverrides(sb);

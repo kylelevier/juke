@@ -3,152 +3,1140 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JUKE — Recruiting Her Way</title>
+<title>JUKE — Keep Playing.</title>
+<meta name="description" content="Find girls flag football programs, organize your recruiting, and take your next step with confidence."/>
+<link rel="canonical" href="https://shejukes.com/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://shejukes.com/"/>
+<meta property="og:title" content="JUKE — Keep Playing."/>
+<meta property="og:description" content="Find girls flag football programs, organize your recruiting, and take your next step with confidence."/>
+<meta property="og:image" content="https://shejukes.com/images/hero-game.jpg"/>
+<meta property="og:image:alt" content="Girls flag football athletes competing on the field"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="JUKE — Keep Playing."/>
+<meta name="twitter:description" content="Find girls flag football programs, organize your recruiting, and take your next step with confidence."/>
+<meta name="twitter:image" content="https://shejukes.com/images/hero-game.jpg"/>
 <link rel="icon" type="image/png" href="Juke_favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;1,900&family=Archivo:wght@400;500;600;700&family=BBH+Bartle&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
+
+/* ── RESET & TOKENS ── */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:#0D0D0D;color:#fff;font-family:-apple-system,'SF Pro Display',system-ui,sans-serif;}
-body{display:flex;flex-direction:column;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
-
-/* ── GLOW ── */
-.glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(255,0,128,.12) 0%,rgba(123,47,255,.06) 50%,transparent 70%);pointer-events:none;z-index:0;}
-
-/* ── WRAP ── */
-.wrap{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;max-width:520px;width:100%;}
-
-/* ── LOGO ── */
-.logo{margin-bottom:40px;}
-
-/* ── HEADLINE ── */
-.stay{font-family:'Archivo Condensed',sans-serif;font-style:italic;font-weight:900;font-size:clamp(52px,10vw,84px);letter-spacing:-.01em;text-transform:uppercase;line-height:.95;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-
-/* ── SLOGAN ── */
-.slogan{font-family:'Instrument Serif',serif;font-size:28px;font-style:italic;color:rgba(255,255,255,.45);letter-spacing:.01em;margin-bottom:48px;}
-.slogan em{color:rgba(255,255,255,.75);font-style:italic;}
-
-/* ── ROLE SELECT ── */
-.role-select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;color:rgba(255,255,255,.7);font-size:14px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
-.role-select:focus{border-color:rgba(255,0,128,.4);}
-.role-select option{background:#1a1a1a;color:#fff;}
-
-/* ── FORM ── */
-.form-row{display:flex;gap:10px;width:100%;margin-bottom:16px;align-items:stretch;}
-.email-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;color:#fff;font-size:15px;outline:none;transition:border-color .2s;font-family:inherit;}
-.email-input::placeholder{color:rgba(255,255,255,.3);}
-.email-input:focus{border-color:rgba(255,0,128,.4);background:rgba(255,255,255,.08);}
-.submit-btn{background:linear-gradient(135deg,#7B2FFF,#FF0080);border:none;border-radius:12px;padding:14px 24px;color:#fff;font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity .2s,transform .15s;}
-.submit-btn:hover{opacity:.9;}
-.submit-btn:active{transform:scale(.97);}
-.submit-btn:disabled{opacity:.5;cursor:not-allowed;}
-
-/* ── STATUS ── */
-.status{font-size:13px;height:18px;transition:all .3s;}
-.status.success{color:#4ade80;}
-.status.error{color:#f87171;}
-
-/* ── FOOTER ── */
-.footer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);font-family:'Instrument Serif',serif;font-size:12px;color:rgba(255,255,255,.2);white-space:nowrap;}
-
-@media(max-width:540px){
-  .form-row{flex-direction:column;}
-  .submit-btn{width:100%;}
-  .role-select{width:100%;}
+:root{
+  --black:#0d0d0d;
+  --pink:#FF0080;
+  --pink-lt:#ff1a8c;
+  --pink-cta:#d6006b;
+  --pink-cta-hover:#e00070;
+  --purple:#7B2FFF;
+  --white:#ffffff;
+  --hed-hero:'BBH Bartle','Arial Narrow',Arial,sans-serif;
+  --hed:'Archivo Condensed',sans-serif;
+  --body:'Archivo',system-ui,sans-serif;
 }
+html{scroll-behavior:smooth;}
+body{
+  background:var(--black);color:var(--white);
+  font-family:var(--body);font-weight:400;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+.skip-link{
+  position:fixed;top:10px;left:10px;z-index:1000;
+  transform:translateY(-150%);
+  font-family:var(--hed);font-size:12px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--black);background:var(--white);
+  padding:10px 14px;border-radius:4px;text-decoration:none;
+}
+.skip-link:focus{transform:translateY(0);}
+a:focus-visible{
+  outline:2px solid var(--white);
+  outline-offset:4px;
+}
+
+/* ── NAV ── */
+.site-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;gap:16px;
+  padding:0 40px;height:64px;
+  transition:background .3s,backdrop-filter .3s;
+}
+.site-nav.scrolled{
+  background:rgba(13,13,13,.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.nav-logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none;}
+.nav-logo svg{height:26px;width:auto;}
+.nav-logo .logo-black{display:block;}
+.nav-logo .logo-gradient{display:none;}
+.site-nav.scrolled .logo-black{display:none;}
+.site-nav.scrolled .logo-gradient{display:block;}
+.nav-divider{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0;}
+.nav-slogan{
+  font-family:'Instrument Serif',serif;font-style:italic;font-size:13px;
+  color:rgba(255,255,255,.62);white-space:nowrap;
+}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.nav-link{
+  font-family:var(--hed);font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);text-decoration:none;transition:color .15s;
+}
+.nav-link:hover{color:var(--white);}
+.nav-cta{
+  font-family:var(--hed);font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--white);background:var(--pink-cta);
+  border:none;padding:9px 22px;border-radius:4px;
+  cursor:pointer;text-decoration:none;transition:background .15s;display:inline-block;
+}
+.nav-cta:hover{background:var(--pink-cta-hover);}
+
+/* ── BUTTONS ── */
+.btn-primary{
+  font-family:var(--hed);font-size:13px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--white);background:var(--pink-cta);
+  border:none;padding:16px 38px;border-radius:4px;
+  cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:10px;
+  transition:background .15s,transform .1s;
+}
+.btn-primary:hover{background:var(--pink-cta-hover);transform:translateY(-1px);}
+.btn-ghost{
+  font-family:var(--hed);font-size:13px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.65);
+  background:transparent;border:1px solid rgba(255,255,255,.25);
+  padding:16px 38px;border-radius:4px;
+  cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;
+  transition:border-color .15s,color .15s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.6);color:var(--white);}
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+.hero{
+  position:relative;min-height:100svh;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  overflow:hidden;
+}
+
+/* photography layer */
+.hero-photo{
+  position:absolute;inset:0;
+  background:#111;
+}
+.hero-photo img{
+  position:absolute;inset:0;
+  width:100%;height:100%;object-fit:cover;object-position:center top;
+}
+/* cinematic overlays on the photo */
+.hero-photo::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to top, rgba(13,13,13,1) 0%, rgba(13,13,13,.8) 20%, rgba(13,13,13,.35) 55%, rgba(13,13,13,.1) 100%),
+    linear-gradient(to right, rgba(13,13,13,.55) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(255,0,128,.35) 0%, rgba(123,47,255,.45) 45%, transparent 70%);
+}
+
+/* pink stripe top */
+.hero-stripe{
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--pink),var(--purple));z-index:3;
+}
+
+.hero-content{
+  position:relative;z-index:2;padding:0 48px 88px;max-width:1300px;
+}
+
+.hero-eyebrow{
+  font-family:var(--hed);font-size:11px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;
+  color:var(--pink);margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+  opacity:0;transform:translateY(16px);
+  animation:fadeUp .7s .15s forwards;
+}
+.hero-eyebrow::before{
+  content:'';display:block;width:28px;height:2px;
+  background:var(--pink);flex-shrink:0;
+}
+
+.hero-headline{
+  font-family:var(--hed-hero);font-weight:900;font-style:italic;
+  font-size:clamp(56px,9vw,132px);
+  line-height:.87;text-transform:uppercase;letter-spacing:-.01em;
+  color:var(--white);margin-bottom:36px;
+  opacity:0;transform:translateY(24px);
+  animation:fadeUp .8s .25s forwards;
+}
+
+.hero-lower{
+  display:flex;align-items:flex-end;gap:64px;flex-wrap:wrap;
+  opacity:0;transform:translateY(20px);
+  animation:fadeUp .8s .45s forwards;
+}
+.hero-sub{
+  font-size:17px;line-height:1.7;color:rgba(255,255,255,.62);max-width:460px;
+}
+.hero-sub strong{color:var(--white);font-weight:600;}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;}
+
+.hero-plan{
+  display:flex;align-items:center;gap:0;flex-wrap:wrap;
+  margin-top:28px;
+  opacity:0;transform:translateY(20px);
+  animation:fadeUp .8s .58s forwards;
+  list-style:none;
+}
+.hero-plan-step{
+  font-family:var(--hed);font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);padding:0 18px;position:relative;
+}
+.hero-plan-step:first-child{padding-left:0;}
+.hero-plan-step+.hero-plan-step::before{
+  content:'→';position:absolute;left:-2px;top:50%;transform:translateY(-50%);
+  color:var(--pink);font-size:10px;
+}
+
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+
+.scroll-hint{
+  position:absolute;bottom:36px;right:48px;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;animation:fadeUp .6s .9s forwards;
+}
+.scroll-hint-word{
+  font-family:var(--hed);font-size:9px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.25);writing-mode:vertical-lr;
+}
+.scroll-hint-bar{
+  width:1px;height:48px;
+  background:linear-gradient(to bottom,rgba(255,0,128,.7),transparent);
+  animation:barPulse 2s ease-in-out infinite;
+}
+@keyframes barPulse{
+  0%,100%{opacity:.8;transform:scaleY(1);transform-origin:top;}
+  50%{opacity:.25;transform:scaleY(.4);transform-origin:top;}
+}
+
+/* ══════════════════════════════════════════
+   TICKER
+══════════════════════════════════════════ */
+.ticker{
+  background:#0f0f0f;
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  overflow:hidden;position:relative;
+}
+.ticker::before,.ticker::after{
+  content:'';position:absolute;top:0;bottom:0;width:100px;z-index:2;pointer-events:none;
+}
+.ticker::before{left:0;background:linear-gradient(to right,#0f0f0f,transparent);}
+.ticker::after{right:0;background:linear-gradient(to left,#0f0f0f,transparent);}
+.ticker-track{
+  display:flex;width:max-content;
+  animation:tickerScroll 36s linear infinite;
+}
+.ticker-track:hover{animation-play-state:paused;}
+@keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.ticker-item{
+  display:flex;align-items:center;gap:36px;padding:20px 52px;
+  border-right:1px solid rgba(255,255,255,.05);
+  flex-shrink:0;white-space:nowrap;
+}
+.t-num{
+  font-family:var(--hed);font-size:30px;font-weight:900;
+  color:var(--pink);letter-spacing:-.01em;line-height:1;
+}
+.t-num sup{font-size:.55em;color:var(--purple);vertical-align:super;}
+.t-lbl{
+  font-family:var(--hed);font-size:11px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.32);
+}
+.t-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.1);flex-shrink:0;}
+
+/* ══════════════════════════════════════════
+   SHARED UTILITIES
+══════════════════════════════════════════ */
+.sec-label{
+  font-family:var(--hed);font-size:10px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--pink);
+  display:flex;align-items:center;gap:10px;margin-bottom:24px;
+}
+.sec-label-num{color:rgba(255,255,255,.18);}
+
+/* ══════════════════════════════════════════
+   S2 — THE GAME IS GROWING FAST
+══════════════════════════════════════════ */
+.s-growing{padding:160px 0;overflow:hidden;}
+.s-growing-wrap{
+  max-width:1200px;margin:0 auto;padding:0 48px;
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;
+}
+.s-growing-hed{
+  font-family:var(--hed);font-weight:900;font-style:italic;
+  font-size:clamp(56px,7vw,96px);line-height:.88;
+  text-transform:uppercase;color:var(--white);letter-spacing:-.01em;margin-bottom:32px;
+}
+.s-growing-body{font-size:16px;line-height:1.75;color:rgba(255,255,255,.5);}
+.s-growing-body p+p{margin-top:16px;}
+.s-growing-body strong{color:var(--white);}
+
+.stat-stack{display:flex;flex-direction:column;}
+.stat-row{
+  display:flex;align-items:center;gap:24px;
+  padding:28px 0;border-bottom:1px solid rgba(255,255,255,.07);position:relative;
+}
+.stat-row:first-child{border-top:1px solid rgba(255,255,255,.07);}
+.stat-row-bar{
+  position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--pink);transform:scaleY(0);transform-origin:bottom;
+  transition:transform .5s ease;
+}
+.stat-row:hover .stat-row-bar{transform:scaleY(1);}
+.stat-val{
+  font-family:var(--hed);font-size:clamp(44px,4.5vw,68px);
+  font-weight:900;line-height:1;color:var(--white);
+  letter-spacing:-.02em;min-width:130px;flex-shrink:0;
+}
+.stat-val .sfx{font-size:.55em;color:var(--pink);font-style:italic;}
+.stat-name{
+  font-family:var(--hed);font-size:15px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--white);margin-bottom:4px;
+}
+.stat-desc{font-size:12px;color:rgba(255,255,255,.58);line-height:1.5;}
+
+.growth-bar-block{
+  margin-top:36px;padding:24px 28px;
+  border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(255,255,255,.02);
+}
+.gbar-label{
+  font-family:var(--hed);font-size:10px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.58);margin-bottom:14px;
+}
+.gbar-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.gbar-fill{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--pink),var(--purple));border-radius:2px;
+  transition:width 1.8s cubic-bezier(.16,1,.3,1);
+}
+.gbar-legend{
+  display:flex;justify-content:space-between;
+  font-family:var(--hed);font-size:10px;color:rgba(255,255,255,.58);letter-spacing:.04em;
+}
+
+/* ══════════════════════════════════════════
+   FULL-BLEED PHOTO BREAK
+   (between S2 and S3 — editorial strip)
+══════════════════════════════════════════ */
+.photo-break{
+  position:relative;height:70vh;min-height:480px;overflow:hidden;
+  display:flex;align-items:flex-end;
+}
+.photo-break img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 30%;
+}
+.photo-break::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to top,rgba(13,13,13,.8) 0%,rgba(13,13,13,.2) 40%,transparent 70%),
+    linear-gradient(to bottom,rgba(13,13,13,.6) 0%,transparent 25%);
+}
+.photo-break-caption{
+  position:relative;z-index:1;
+  padding:0 48px 40px;
+  font-family:var(--hed);font-size:10px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32);
+}
+
+/* ══════════════════════════════════════════
+   S3 — BUILT FOR GIRLS FLAG FOOTBALL
+══════════════════════════════════════════ */
+.s-built{
+  position:relative;overflow:hidden;
+  min-height:100vh;
+  display:flex;align-items:center;
+}
+.s-built-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 35%;
+  filter:contrast(1.15) brightness(0.55) saturate(0.8);
+}
+.s-built::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to right, rgba(13,13,13,.92) 0%, rgba(13,13,13,.75) 45%, rgba(13,13,13,.2) 75%, rgba(13,13,13,.05) 100%),
+    linear-gradient(to top, rgba(13,13,13,.7) 0%, transparent 40%);
+}
+.s-built-left{
+  position:relative;z-index:1;
+  padding:120px 72px 120px 10%;
+  max-width:660px;margin-left:auto;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.s-built-hed{
+  font-family:var(--hed);font-weight:900;font-style:italic;
+  font-size:clamp(44px,5vw,76px);line-height:.88;
+  text-transform:uppercase;color:var(--white);letter-spacing:-.01em;margin-bottom:28px;
+}
+.s-built-body{font-size:15px;line-height:1.75;color:rgba(255,255,255,.55);}
+.s-built-body p+p{margin-top:16px;}
+.s-built-body strong{color:var(--white);}
+
+.built-list{margin-top:36px;display:flex;flex-direction:column;}
+.built-item{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 0;border-bottom:1px solid rgba(255,255,255,.07);
+}
+.built-item:first-child{border-top:1px solid rgba(255,255,255,.07);}
+.built-item-dot{width:5px;height:5px;border-radius:50%;background:var(--pink);flex-shrink:0;}
+.built-item-text{
+  font-family:var(--hed);font-size:13px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.65);
+}
+.bq-mark{font-size:1.3em;color:var(--pink);line-height:0;vertical-align:-.2em;}
+
+/* ══════════════════════════════════════════
+   S4 — RECRUITING HER WAY
+══════════════════════════════════════════ */
+.s-pillars{padding:160px 0;}
+.s-pillars-top{
+  max-width:1200px;margin:0 auto;padding:0 48px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:48px;
+  margin-bottom:72px;flex-wrap:wrap;
+}
+.s-pillars-hed{
+  font-family:var(--hed);font-weight:900;font-style:italic;
+  font-size:clamp(68px,10vw,136px);
+  line-height:.87;text-transform:uppercase;color:var(--white);letter-spacing:-.01em;
+}
+.s-pillars-hed.headline-serif{
+  font-family:'Instrument Serif',serif;
+  font-weight:400;
+  font-style:normal;
+  letter-spacing:0;
+  text-transform:none;
+}
+.s-pillars-sub{
+  max-width:300px;font-size:15px;line-height:1.7;
+  color:rgba(255,255,255,.62);flex-shrink:0;padding-bottom:6px;
+}
+
+.pillars-grid{
+  max-width:1200px;margin:0 auto;padding:0 48px;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:rgba(255,255,255,.07);
+}
+.pillar{
+  background:var(--black);padding:48px 40px 56px;
+  position:relative;overflow:hidden;transition:background .2s;
+}
+.pillar:hover{background:#0f0f12;}
+.pillar-accent{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--pink),var(--purple));
+  transform:scaleX(0);transform-origin:left;transition:transform .45s ease;
+}
+.pillar:hover .pillar-accent{transform:scaleX(1);}
+.pillar-num{
+  font-family:var(--hed);font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.16);margin-bottom:32px;
+}
+.pillar-icon{width:36px;height:36px;color:var(--pink);margin-bottom:20px;}
+.pillar-hed{
+  font-family:var(--hed);font-size:22px;font-weight:900;
+  letter-spacing:.04em;text-transform:uppercase;
+  color:var(--white);margin-bottom:14px;line-height:1;
+}
+.pillar-body{font-size:14px;line-height:1.7;color:rgba(255,255,255,.62);}
+
+/* ══════════════════════════════════════════
+   S5 — OPPORTUNITY CHANGES EVERYTHING
+══════════════════════════════════════════ */
+.s-opp{
+  background:#0a0a0a;
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+/* two-column: text left, photo right */
+.s-opp-grid{
+  max-width:100%;display:grid;grid-template-columns:1fr 1fr;min-height:700px;
+}
+.s-opp-text{
+  padding:100px 72px 100px 10%;
+  display:flex;flex-direction:column;justify-content:center;
+  max-width:640px;margin-left:auto;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+.s-opp-hed{
+  font-family:var(--hed);font-weight:900;font-style:italic;
+  font-size:clamp(52px,6vw,88px);line-height:.88;
+  text-transform:uppercase;letter-spacing:-.01em;
+  color:var(--white);margin-bottom:32px;
+}
+.s-opp-copy{font-size:16px;line-height:1.8;color:rgba(255,255,255,.5);}
+.s-opp-copy p+p{margin-top:20px;}
+.s-opp-copy strong{color:var(--white);}
+.s-opp-copy .cta-wrap{margin-top:36px;}
+
+.opp-list{margin-top:36px;display:flex;flex-direction:column;}
+.opp-row{
+  display:flex;align-items:flex-start;gap:16px;
+  padding:18px 0;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.opp-row:first-child{border-top:1px solid rgba(255,255,255,.06);}
+.opp-arr{flex-shrink:0;width:18px;height:18px;color:var(--pink);margin-top:4px;}
+.opp-txt{
+  font-family:var(--hed);font-size:16px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;
+  color:rgba(255,255,255,.7);line-height:1.2;
+}
+
+/* photo panel right */
+.s-opp-photo{
+  position:relative;overflow:hidden;min-height:700px;
+}
+.s-opp-photo img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;
+}
+.s-opp-photo::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to left,rgba(10,10,10,.65) 0%,transparent 40%),
+    linear-gradient(to top,rgba(10,10,10,.6) 0%,transparent 40%);
+}
+
+/* ══════════════════════════════════════════
+   S6 — MORE FLAG
+══════════════════════════════════════════ */
+.s-more{
+  position:relative;min-height:90vh;
+  display:flex;align-items:flex-end;overflow:hidden;
+}
+/* photo background */
+.s-more-photo{
+  position:absolute;inset:0;
+}
+.s-more-photo img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 20%;
+}
+.s-more-photo::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to top,rgba(13,13,13,1) 0%,rgba(13,13,13,.8) 20%,rgba(13,13,13,.3) 60%,rgba(13,13,13,.15) 100%),
+    linear-gradient(135deg,rgba(60,0,110,.55) 0%,transparent 60%);
+}
+
+.s-more-wrap{
+  position:relative;z-index:1;
+  max-width:1200px;margin:0 auto;padding:80px 48px 100px;width:100%;
+}
+.s-more-hed{
+  font-family:var(--hed-hero);font-weight:900;font-style:italic;
+  font-size:clamp(88px,16vw,220px);
+  line-height:.84;text-transform:uppercase;
+  letter-spacing:-.01em;color:var(--white);margin-bottom:52px;
+}
+.s-more-body{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;max-width:900px;
+}
+.s-more-copy{font-size:16px;line-height:1.75;color:rgba(255,255,255,.6);}
+.s-more-copy p+p{margin-top:16px;}
+.s-more-copy strong{color:var(--white);}
+.s-more-tags{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;}
+.s-more-tag{
+  font-family:var(--hed);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 16px;border:1px solid rgba(255,255,255,.16);border-radius:100px;
+  color:rgba(255,255,255,.5);cursor:default;transition:border-color .15s,color .15s;
+}
+.s-more-tag:hover{border-color:var(--pink);color:var(--white);}
+.s-more-tag.hi{border-color:rgba(255,0,128,.55);color:rgba(255,0,128,.95);background:rgba(255,0,128,.07);}
+
+/* ══════════════════════════════════════════
+   FINAL CTA
+══════════════════════════════════════════ */
+.s-final{
+  padding:160px 0;text-align:center;
+  position:relative;overflow:hidden;
+}
+.s-final::before{
+  content:'';position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:700px;height:700px;
+  background:radial-gradient(ellipse at center,rgba(255,0,128,.07) 0%,transparent 65%);
+  border-radius:50%;pointer-events:none;
+}
+.s-final-wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 48px;}
+.s-final-hed{
+  font-family:var(--hed);font-weight:900;font-style:italic;
+  font-size:clamp(80px,13vw,180px);
+  line-height:.87;text-transform:uppercase;letter-spacing:-.01em;
+  color:var(--white);margin-bottom:40px;
+}
+.s-final-sub{
+  font-family:'Instrument Serif',serif;font-style:italic;
+  font-size:clamp(18px,2vw,24px);color:rgba(255,255,255,.62);
+  line-height:1.6;margin-bottom:48px;
+}
+.s-final-steps{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  margin-bottom:52px;flex-wrap:wrap;
+  list-style:none;
+}
+.f-step{
+  font-family:var(--hed);font-size:12px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.58);padding:0 18px;position:relative;
+}
+.f-step+.f-step::before{
+  content:'→';position:absolute;left:-2px;top:50%;transform:translateY(-50%);
+  color:var(--pink);font-size:10px;
+}
+.s-final-ctas{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.free-note{
+  margin-top:24px;font-family:var(--hed);font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.58);
+}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer{
+  background:#080808;border-top:1px solid rgba(255,255,255,.06);padding:44px 48px;
+}
+.footer-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;
+}
+.footer-links{display:flex;gap:24px;}
+.footer-link{
+  font-family:var(--hed);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.62);text-decoration:none;transition:color .15s;
+}
+.footer-link:hover{color:rgba(255,255,255,.65);}
+.footer-copy{
+  font-family:var(--hed);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.58);
+}
+
+/* ══════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════ */
+.reveal{
+  opacity:0;transform:translateY(28px);
+  transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1);
+}
+.reveal.in{opacity:1;transform:translateY(0);}
+.d1{transition-delay:.08s;}.d2{transition-delay:.16s;}
+.d3{transition-delay:.24s;}.d4{transition-delay:.32s;}.d5{transition-delay:.44s;}
+
+/* ── LIVE DOT ── */
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--pink);
+  animation:pulseDot 2s ease infinite;
+}
+@keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media(max-width:1024px){
+  .s-growing-wrap{grid-template-columns:1fr;gap:64px;}
+  .s-built-left{padding:80px 32px;max-width:100%;}
+  .s-opp-grid{grid-template-columns:1fr;}
+  .s-opp-text{padding:72px 40px;max-width:100%;border-right:none;border-bottom:1px solid rgba(255,255,255,.06);}
+  .s-opp-photo{min-height:480px;}
+  .s-more-body{grid-template-columns:1fr;gap:40px;}
+  .pillars-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:768px){
+  .site-nav{padding:0 20px;}
+  .nav-slogan,.nav-link{display:none;}
+  .hero-content{padding:0 24px 64px;}
+  .hero-headline{font-size:clamp(72px,18vw,120px);}
+  .hero-lower{flex-direction:column;align-items:flex-start;gap:28px;}
+  .hero-plan{gap:10px;}
+  .hero-plan-step{padding:0 14px 0 0;}
+  .hero-plan-step+.hero-plan-step::before{display:none;}
+  .s-growing{padding:100px 0;}
+  .s-growing-hed{font-size:50px;}
+  .s-growing-wrap{padding:0 24px;}
+  .s-pillars{padding:100px 0;}
+  .s-pillars-top{padding:0 24px;margin-bottom:48px;}
+  .pillars-grid{grid-template-columns:1fr;padding:0 24px;}
+  .pillar{padding:36px 28px 44px;}
+  .s-more-wrap{padding:60px 24px 80px;}
+  .s-final{padding:100px 0;}
+  .s-final-wrap{padding:0 24px;}
+  footer{padding:32px 24px;}
+}
+@media(max-width:480px){
+  .pillars-grid{grid-template-columns:1fr;}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto;}
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+  .reveal,.hero-eyebrow,.hero-headline,.hero-lower,.hero-plan,.scroll-hint{
+    opacity:1!important;
+    transform:none!important;
+  }
+  .ticker-track{animation:none!important;}
+  .gbar-fill{width:87%;}
+}
+
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
-<div class="glow"></div>
-
-<div class="wrap">
-
-  <!-- Logo -->
-  <div class="logo">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" style="height:56px;width:auto;display:block">
-      <defs><linearGradient id="jukeGrad" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs>
-      <path fill="url(#jukeGrad)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
+<!-- ── NAV ── -->
+<nav class="site-nav" id="site-nav" aria-label="Main navigation">
+  <a href="/" class="nav-logo" aria-label="JUKE Home">
+    <!-- Black logo — shown on load over hero -->
+    <svg class="logo-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" aria-hidden="true">
+      <path fill="#ffffff" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
     </svg>
+    <!-- Gradient logo — shown on scroll over black nav -->
+    <svg class="logo-gradient" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" aria-hidden="true">
+      <defs>
+        <linearGradient id="navGrad" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#navGrad)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
+    </svg>
+  </a>
+  <div class="nav-divider" aria-hidden="true"></div>
+  <span class="nav-slogan">Recruiting <em>her</em> way.</span>
+  <div class="nav-right">
+    <a href="pages/athlete.html" class="nav-link">Log In</a>
+    <a href="pages/start.html" class="nav-cta">Get Started Free</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ══════════════════════════════════════════
+     HERO
+     Swap hero-photo img src for your shot.
+     Ideal: wide athlete action, game intensity.
+══════════════════════════════════════════ -->
+<section class="hero" aria-labelledby="hero-hed">
+
+  <div class="hero-stripe" aria-hidden="true"></div>
+
+  <div class="hero-photo" aria-hidden="true">
+    <!--
+      PHOTO PLACEHOLDER — replace src with real photography.
+      Ideal shot: girls flag football game, wide angle, action,
+      natural light. Landscape, ~3:2 or wider crop.
+    -->
+    <img
+      src="https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1920&q=80"
+      alt=""
+      loading="eager"
+      style="object-position:center 32%;transform:translateY(-210px) scale(1.32) rotate(12deg);transform-origin:center top;filter:contrast(1.15) brightness(0.72) saturate(0.6);"
+    />
   </div>
 
-  <!-- Slogan -->
-  <p class="slogan">Recruiting <em>her</em> way.</p>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Girls Flag Football · Recruiting</p>
 
-  <!-- Form -->
-  <div class="form-row">
-    <input class="email-input" type="email" id="email" placeholder="your@email.com" autocomplete="email"/>
-    <select class="role-select" id="role">
-      <option value="athlete">Athlete</option>
-      <option value="college_coach">Recruiter</option>
-      <option value="hs_coach">Coach</option>
-    </select>
-    <button class="submit-btn" id="submitBtn" onclick="submit()">Stay in Touch</button>
+    <h1 class="hero-headline" id="hero-hed">
+      Keep<br>Playing.
+    </h1>
+
+    <div class="hero-lower">
+      <p class="hero-sub">
+        Girls flag football is going to college. <strong>Find your program, build your profile, and get in front of the coaches recruiting right now.</strong>
+      </p>
+      <div class="hero-ctas">
+        <a href="pages/start.html" class="btn-primary">
+          Get Started Free
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="pages/athlete.html" class="btn-ghost">Explore Programs</a>
+      </div>
+    </div>
+    <ol class="hero-plan" aria-label="How Juke works">
+      <li class="hero-plan-step">Create your profile</li>
+      <li class="hero-plan-step">Explore programs</li>
+      <li class="hero-plan-step">Track your recruiting</li>
+    </ol>
   </div>
 
-  <div class="status" id="status"></div>
+  <div class="scroll-hint" aria-hidden="true">
+    <span class="scroll-hint-word">Scroll</span>
+    <div class="scroll-hint-bar"></div>
+  </div>
 
+</section>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true" role="presentation">
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="t-num">10<sup>+</sup></span><span class="t-lbl">NCAA Programs</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num">32<sup>+</sup></span><span class="t-lbl">States Competing</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num">750K<sup>+</sup></span><span class="t-lbl">Girls Playing Flag</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num">2028</span><span class="t-lbl">Olympic Debut</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num" style="color:var(--purple)">↑</span><span class="t-lbl">Growing Every Year</span></div>
+    <div class="t-dot"></div>
+    <!-- loop duplicate -->
+    <div class="ticker-item"><span class="t-num">10<sup>+</sup></span><span class="t-lbl">NCAA Programs</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num">32<sup>+</sup></span><span class="t-lbl">States Competing</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num">750K<sup>+</sup></span><span class="t-lbl">Girls Playing Flag</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num">2028</span><span class="t-lbl">Olympic Debut</span></div>
+    <div class="t-dot"></div>
+    <div class="ticker-item"><span class="t-num" style="color:var(--purple)">↑</span><span class="t-lbl">Growing Every Year</span></div>
+    <div class="t-dot"></div>
+  </div>
 </div>
 
-<div class="footer">© 2026 JUKE · shejukes.com</div>
+<!-- ══════════════════════════════════════════
+     S2 — THE OPPORTUNITIES ARE GROWING
+══════════════════════════════════════════ -->
+<section class="s-growing" aria-labelledby="s2-hed">
+  <div class="s-growing-wrap">
+
+    <div>
+      <p class="sec-label reveal"><span class="sec-label-num">02</span> The Problem</p>
+      <h2 class="s-growing-hed reveal d1" id="s2-hed">
+        The<br>Opportunities<br>Are<br>Growing.
+      </h2>
+      <div class="s-growing-body reveal d2">
+        <p><strong>New programs are announcing scholarships every semester.</strong></p>
+        <p>Most athletes don't hear about them until it's too late. Juke puts every opportunity in one place — so you can find your fit, move first, and stay ahead of the timeline.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-stack reveal d1">
+        <div class="stat-row">
+          <div class="stat-row-bar"></div>
+          <div class="stat-val">10<span class="sfx">+</span></div>
+          <div><div class="stat-name">NCAA Programs</div><div class="stat-desc">More announcing every season</div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-bar"></div>
+          <div class="stat-val">32<span class="sfx">+</span></div>
+          <div><div class="stat-name">States Compete</div><div class="stat-desc">Varsity programs coast to coast</div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-bar"></div>
+          <div class="stat-val">750<span class="sfx">K</span></div>
+          <div><div class="stat-name">Athletes Playing</div><div class="stat-desc">Fastest-growing sport in America</div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-bar"></div>
+          <div class="stat-val">2028</div>
+          <div><div class="stat-name">Olympic Debut</div><div class="stat-desc">Flag football on the world stage</div></div>
+        </div>
+      </div>
+
+      <div class="growth-bar-block reveal d2">
+        <div class="gbar-label">NCAA Program Growth · 2020 → 2025</div>
+        <div class="gbar-track"><div class="gbar-fill" id="gbar"></div></div>
+        <div class="gbar-legend">
+          <span>2020</span><span style="color:var(--pink)">↑ 400%+ growth</span><span>2025</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S3 — BUILT FOR GIRLS FLAG FOOTBALL
+══════════════════════════════════════════ -->
+<section class="s-built" aria-labelledby="s3-hed">
+  <img class="s-built-bg" src="images/game-action.jpg" alt="" loading="lazy" />
+
+  <div class="s-built-left">
+    <p class="sec-label reveal"><span class="sec-label-num">03</span> Your Guide</p>
+    <h2 class="s-built-hed reveal d1" id="s3-hed">
+      Built<br>To Guide<br>Girls Flag<br>Athletes.
+    </h2>
+    <div class="s-built-body reveal d2">
+      <p>Soccer has recruiting platforms built over 20 years. Basketball has a whole industry around it. Flag football has Juke.</p>
+      <p><strong>We built this for you</strong> — because nothing else existed that understood this sport, this moment, or what you're actually trying to do.</p>
+    </div>
+    <div class="built-list reveal d3">
+      <div class="built-item"><div class="built-item-dot"></div><div class="built-item-text">Search programs actually offering flag football</div></div>
+      <div class="built-item"><div class="built-item-dot"></div><div class="built-item-text">Always know what to do next</div></div>
+      <div class="built-item"><div class="built-item-dot"></div><div class="built-item-text">Free for every athlete, always</div></div>
+      <div class="built-item"><div class="built-item-dot"></div><div class="built-item-text">Built as fast as the sport is growing</div></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════
+     S4 — RECRUITING HER WAY
+══════════════════════════════════════════ -->
+<section class="s-pillars" aria-labelledby="s4-hed">
+
+  <div class="s-pillars-top">
+    <div>
+      <p class="sec-label reveal"><span class="sec-label-num">04</span> How It Works</p>
+      <h2 class="s-pillars-hed headline-serif reveal d1" id="s4-hed">
+        Recruiting <em>her</em> way.
+      </h2>
+    </div>
+    <p class="s-pillars-sub reveal d2">
+      Juke gives athletes a simple plan for a recruiting landscape that is still being built.
+    </p>
+  </div>
+
+  <div class="pillars-grid">
+    <div class="pillar reveal">
+      <div class="pillar-accent"></div>
+      <div class="pillar-num">01</div>
+      <svg class="pillar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <h3 class="pillar-hed">Discover Opportunities</h3>
+      <p class="pillar-body">Search every program offering flag football scholarships — NCAA, NAIA, JUCO. See what's out there before someone else does.</p>
+    </div>
+
+    <div class="pillar reveal d1">
+      <div class="pillar-accent"></div>
+      <div class="pillar-num">02</div>
+      <svg class="pillar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <h3 class="pillar-hed">Build Relationships</h3>
+      <p class="pillar-body">Send the right message at the right time. Keep every coach conversation in one place so nothing falls through the cracks.</p>
+    </div>
+
+    <div class="pillar reveal d2">
+      <div class="pillar-accent"></div>
+      <div class="pillar-num">03</div>
+      <svg class="pillar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 11 12 14 22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      <h3 class="pillar-hed">Stay Organized</h3>
+      <p class="pillar-body">Know who you've talked to, who to follow up with, and what's next. Recruiting moves fast — stay on top of it.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════
+     S5 — OPPORTUNITY CHANGES EVERYTHING
+══════════════════════════════════════════ -->
+<section class="s-opp" aria-labelledby="s5-hed">
+  <div class="s-opp-grid">
+
+    <div class="s-opp-text">
+      <p class="sec-label reveal"><span class="sec-label-num">05</span> The Stakes</p>
+      <h2 class="s-opp-hed reveal d1" id="s5-hed">
+        Opportunity<br>Changes<br>Everything.
+      </h2>
+      <div class="s-opp-copy reveal d2">
+        <p>A scholarship to play the sport you love changes your life. The difference between getting one and missing out is often just knowing where to look — and moving before the window closes.</p>
+        <p><strong>Juke keeps you in the game.</strong></p>
+      </div>
+      <div class="opp-list reveal d3">
+        <div class="opp-row">
+          <svg class="opp-arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <div class="opp-txt">Find programs you didn't know were recruiting</div>
+        </div>
+        <div class="opp-row">
+          <svg class="opp-arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <div class="opp-txt">Know exactly what to do next</div>
+        </div>
+        <div class="opp-row">
+          <svg class="opp-arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <div class="opp-txt">Talk to coaches like you belong in the room</div>
+        </div>
+        <div class="opp-row">
+          <svg class="opp-arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <div class="opp-txt">Stay on top of it when timing matters</div>
+        </div>
+        <div class="opp-row">
+          <svg class="opp-arr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <div class="opp-txt">Keep playing. Past high school.</div>
+        </div>
+      </div>
+      <div class="reveal d4" style="margin-top:40px;">
+        <a href="pages/start.html" class="btn-primary">
+          Start Your Profile
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!--
+      PHOTO PANEL — swap for a confident athlete portrait,
+      post-game moment, or coach interaction.
+      Vertical crop preferred.
+    -->
+    <div class="s-opp-photo reveal">
+      <img
+        src="images/team-huddle.jpg"
+        style="filter:contrast(1.2) brightness(0.65) saturate(0.9);"
+        alt=""
+        loading="lazy"
+      />
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S6 — MORE FLAG
+     Photo background: game action, crowd,
+     or a dramatic wide field shot.
+══════════════════════════════════════════ -->
+<section class="s-more" aria-labelledby="s6-hed">
+
+  <div class="s-more-photo" aria-hidden="true">
+    <!--
+      PHOTO PLACEHOLDER — replace with a dramatic game shot.
+      Ideal: action on field, dynamic angle, girls competing.
+    -->
+    <img
+      src="images/hero-game.jpg"
+      alt=""
+      loading="lazy"
+    />
+  </div>
+
+  <div class="s-more-wrap">
+    <h2 class="s-more-hed reveal" id="s6-hed">
+      More<br>Flag.
+    </h2>
+
+    <div class="s-more-body">
+      <div class="s-more-copy reveal d1">
+        <p><strong>The sport is growing. The scholarships are real. The coaches are recruiting right now.</strong></p>
+        <p>This is your moment. And every athlete who builds her profile, finds her program, and makes her move makes the path clearer for the girls coming next.</p>
+      </div>
+      <div class="s-more-tags reveal d2">
+        <span class="s-more-tag hi">Girls Flag Football</span>
+        <span class="s-more-tag">NCAA</span>
+        <span class="s-more-tag">NAIA</span>
+        <span class="s-more-tag">JUCO</span>
+        <span class="s-more-tag">2028 Olympics</span>
+        <span class="s-more-tag">High School</span>
+        <span class="s-more-tag">Recruiting</span>
+        <span class="s-more-tag">Community</span>
+        <span class="s-more-tag hi">Keep Playing</span>
+        <span class="s-more-tag">Grow the Game</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════
+     FINAL CTA
+══════════════════════════════════════════ -->
+<section class="s-final" aria-labelledby="s-final-hed">
+  <div class="s-final-wrap">
+
+    <h2 class="s-final-hed reveal" id="s-final-hed">
+      Keep<br>Playing.
+    </h2>
+
+    <p class="s-final-sub reveal d1">
+      Your next team is out there.<br>
+      Get in front of them.
+    </p>
+
+    <ol class="s-final-steps reveal d2">
+      <li class="f-step">Create your profile</li>
+      <li class="f-step">Explore opportunities</li>
+      <li class="f-step">Track your recruiting</li>
+    </ol>
+
+    <div class="s-final-ctas reveal d3">
+      <a href="pages/start.html" class="btn-primary" style="font-size:14px;padding:18px 52px;">
+        Get Started Free
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <p class="free-note reveal d4">Free for athletes · Always</p>
+
+  </div>
+</section>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <a href="/" class="nav-logo" aria-label="JUKE Home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" aria-hidden="true" style="height:18px;width:auto;">
+        <defs>
+          <linearGradient id="footGrad" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#footGrad)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
+      </svg>
+    </a>
+    <div class="footer-links">
+      <a href="pages/athlete.html" class="footer-link">Athletes</a>
+      <a href="pages/coach.html" class="footer-link">Recruiters</a>
+      <a href="pages/hscoach.html" class="footer-link">HS Coaches</a>
+    </div>
+    <div class="footer-copy">© 2026 JUKE · Girls Flag Football Recruiting</div>
+  </div>
+</footer>
 
 <script>
-const SUPABASE_URL = 'https://jlmppmmyybdwarjclxyg.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsbXBwbW15eWJkd2FyamNseHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMzg4MjgsImV4cCI6MjA5NjYxNDgyOH0.jVS6DBzpjk9UDCP61WCxWSe6LXwc-V6Z9bI4uimMpNE';
+(function(){
+  var nav = document.getElementById('site-nav');
+  window.addEventListener('scroll',function(){ nav.classList.toggle('scrolled',window.scrollY>56); },{passive:true});
+  if(window.scrollY>56) nav.classList.add('scrolled');
 
-async function submit() {
-  const email = document.getElementById('email').value.trim();
-  const selectedRole = document.getElementById('role').value;
-  const btn = document.getElementById('submitBtn');
-  const status = document.getElementById('status');
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    status.textContent = 'Please enter a valid email.';
-    status.className = 'status error';
-    return;
+  var els = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);} });
+    },{threshold:0.08});
+    els.forEach(function(el){io.observe(el);});
+  } else {
+    els.forEach(function(el){el.classList.add('in');});
   }
 
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-  status.textContent = '';
-  status.className = 'status';
-
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ email, role: selectedRole })
-    });
-
-    if (res.ok) {
-      status.textContent = "You're on the list. We'll be in touch.";
-      status.className = 'status success';
-      document.getElementById('email').value = '';
-      btn.textContent = '✓ You\'re in';
-    } else if (res.status === 409) {
-      status.textContent = "You're already on the list.";
-      status.className = 'status success';
-      btn.disabled = false;
-      btn.textContent = 'Notify Me';
-    } else {
-      throw new Error('Server error');
-    }
-  } catch(e) {
-    status.textContent = 'Something went wrong. Try again.';
-    status.className = 'status error';
-    btn.disabled = false;
-    btn.textContent = 'Notify Me';
+  var bar = document.getElementById('gbar');
+  if(bar && 'IntersectionObserver' in window){
+    var bio = new IntersectionObserver(function(entries){
+      if(entries[0].isIntersecting){ setTimeout(function(){bar.style.width='87%';},250); bio.disconnect(); }
+    },{threshold:0.5});
+    bio.observe(bar);
   }
-}
-
-document.getElementById('email').addEventListener('keydown', e => {
-  if (e.key === 'Enter') submit();
-});
+})();
 </script>
+
 </body>
 </html>

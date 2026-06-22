@@ -98,6 +98,18 @@ const PORTAL = {
   hs_coach:      '/pages/hscoach.html',
   admin:         '/pages/admin.html',
 };
+const NEXT_URL = new URLSearchParams(window.location.search).get('next');
+
+function safeNextUrl(url) {
+  if (!url) return '';
+  try {
+    var parsed = new URL(url, window.location.origin);
+    if (parsed.origin !== window.location.origin) return '';
+    return parsed.pathname + parsed.search + parsed.hash;
+  } catch(e) {
+    return '';
+  }
+}
 
 function setStatus(msg, isError) {
   const el = document.getElementById('status');
@@ -111,7 +123,7 @@ async function signInWithGoogle() {
   setStatus('Redirecting to Google…');
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/login.html' }
+    options: { redirectTo: window.location.origin + '/login.html' + (NEXT_URL ? '?next=' + encodeURIComponent(NEXT_URL) : '') }
   });
   if (error) {
     setStatus(error.message, true);
@@ -140,7 +152,8 @@ sb.auth.onAuthStateChange(async (event, session) => {
     profiles: [{ id: 'primary', type: role, org: user.user_metadata?.org || '' }]
   }));
 
-  window.location.replace(PORTAL[role] || PORTAL.athlete);
+  const next = safeNextUrl(NEXT_URL);
+  window.location.replace(next || PORTAL[role] || PORTAL.athlete);
 });
 </script>
 

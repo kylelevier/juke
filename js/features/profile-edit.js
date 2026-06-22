@@ -394,3 +394,39 @@ function initProfileEditor(){
 }
 
 initProfileEditor();
+
+function applyStarterProfileDraft(){
+  var params = new URLSearchParams(location.search);
+  var shouldOpen = params.get('start') === 'profile-edit' || localStorage.getItem('juke_profile_edit_on_arrival') === '1';
+  var draft = null;
+  try{ draft = JSON.parse(localStorage.getItem('juke_start_profile_draft') || 'null'); }catch(e){}
+
+  if(draft){
+    var existing = lsGet('juke_player') || {};
+    var merged = Object.assign({}, existing);
+    ['fname','lname','school','city','gradyr'].forEach(function(key){
+      if(draft[key]) merged[key] = draft[key];
+    });
+    lsSet('juke_player', merged);
+    loadPlayerProfile();
+    profileUpdate();
+    if(typeof saveProfile === 'function') saveProfile();
+  }
+
+  if(shouldOpen){
+    setTimeout(function(){
+      if(typeof switchTab === 'function') switchTab('profile');
+      if(typeof openProfileEdit === 'function') openProfileEdit();
+    }, 120);
+  }
+}
+
+[120, 1000, 2200].forEach(function(delay){
+  setTimeout(function(){
+    applyStarterProfileDraft();
+    if(delay === 2200){
+      localStorage.removeItem('juke_start_profile_draft');
+      localStorage.removeItem('juke_profile_edit_on_arrival');
+    }
+  }, delay);
+});

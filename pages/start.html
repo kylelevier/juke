@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JUKE — Start Your Profile</title>
+<meta name="description" content="Start your girls flag football recruiting profile with JUKE."/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" type="image/png" href="../Juke_favicon.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;1,900&family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles/start.css">
+</head>
+<body>
+<main class="start-shell">
+  <section class="start-panel" aria-labelledby="start-title">
+    <a class="start-logo" href="../index.html" aria-label="JUKE Home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 478.3 75.2" aria-hidden="true">
+        <defs>
+          <linearGradient id="startGrad" x1="108.5" y1="183.7" x2="385.2" y2="-93.1" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ff0080"/><stop offset="1" stop-color="#7b2fff"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#startGrad)" d="M172.2,0h32.5v33.3c0,27.9-21.7,41.9-65.1,41.9s-65.1-14-65.1-41.9V0h32.5v32.2c0,12.5,10.8,18.8,32.5,18.8s32.5-6.3,32.5-18.8h0V0ZM32.5,32.2h0c0,12.5-10.8,18.8-32.5,18.8v24.2c43.4,0,65.1-14,65.1-41.9V0h-32.5v32.2ZM478.3,21.2V0h-130.2v73.5h130.2v-21.2h-97.6v-6.5h86.3v-18h-86.3v-6.5h97.6ZM342.6,0h-47.6l-46.9,29.6V0h-32.5v73.5h32.5v-15.9l19-11.7,33.8,27.5h44.8l-54-42.3L342.6,0Z"/>
+      </svg>
+    </a>
+    <p class="start-kicker">Recruiting <em>her</em> way.</p>
+    <h1 id="start-title">Start your profile.</h1>
+    <p class="start-sub">Give coaches the basics now. Finish the rest inside JUKE.</p>
+
+    <form class="start-form" id="start-form">
+      <label class="start-field">
+        <span>Name</span>
+        <input id="start-name" name="name" type="text" autocomplete="name" required placeholder="Ella Johnson">
+      </label>
+      <label class="start-field">
+        <span>School</span>
+        <input id="start-school" name="school" type="text" autocomplete="organization" required placeholder="Lincoln High School">
+      </label>
+      <div class="start-grid">
+        <label class="start-field">
+          <span>City</span>
+          <input id="start-city" name="city" type="text" autocomplete="address-level2" required placeholder="Dallas">
+        </label>
+        <label class="start-field">
+          <span>State</span>
+          <select id="start-state" name="state" autocomplete="address-level1" required>
+            <option value="">State</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option><option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option><option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option><option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option><option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option><option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option><option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+          </select>
+        </label>
+      </div>
+      <label class="start-field">
+        <span>Graduating Class</span>
+        <select id="start-gradyr" name="gradyr" required>
+          <option value="">Select class</option>
+          <option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option><option>2031</option><option>2032</option>
+        </select>
+      </label>
+
+      <button class="google-btn" id="start-google-btn" type="submit">
+        <svg class="google-icon" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Continue with Google
+      </button>
+      <p class="start-status" id="start-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</main>
+<script src="../js/features/start-profile.js"></script>
+</body>
+</html>

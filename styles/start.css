@@ -1,0 +1,114 @@
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0d0d0d;
+  --white:#fff;
+  --pink:#d6006b;
+  --pink-hover:#e00070;
+  --border:rgba(255,255,255,.12);
+  --body:'Archivo',system-ui,sans-serif;
+  --hed:'Archivo Condensed',sans-serif;
+}
+html,body{min-height:100%;background:var(--black);color:var(--white);font-family:var(--body);-webkit-font-smoothing:antialiased}
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:32px clamp(18px,6vw,84px);
+  background:
+    linear-gradient(to right,rgba(8,8,8,.82) 0%,rgba(8,8,8,.66) 34%,rgba(8,8,8,.38) 58%,rgba(8,8,8,.68) 100%),
+    linear-gradient(to top,rgba(8,8,8,.78) 0%,rgba(8,8,8,.08) 56%),
+    url('../images/start-football-sky.jpg') calc(50% - 260px) 42%/auto 125vh no-repeat;
+}
+.start-shell{width:100%;display:flex;justify-content:flex-start}
+.start-panel{
+  width:min(100%,460px);
+  background:rgba(8,8,8,.64);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:34px;
+  box-shadow:0 24px 80px rgba(0,0,0,.45);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+.start-logo{display:inline-flex;margin-bottom:14px}
+.start-logo svg{width:138px;height:auto;display:block}
+.start-logo:focus-visible,.google-btn:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid #fff;
+  outline-offset:3px;
+}
+.start-kicker{
+  font-family:'Instrument Serif',serif;
+  font-size:16px;
+  color:rgba(255,255,255,.68);
+  margin-bottom:28px;
+}
+.start-kicker em{font-style:italic;color:#fff}
+h1{
+  font-family:var(--hed);
+  font-size:clamp(48px,12vw,76px);
+  font-weight:900;
+  font-style:italic;
+  line-height:.9;
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.start-sub{font-size:15px;line-height:1.6;color:rgba(255,255,255,.68);margin-bottom:26px}
+.start-form{display:flex;flex-direction:column;gap:14px}
+.start-grid{display:grid;grid-template-columns:1fr 116px;gap:12px}
+.start-field{display:flex;flex-direction:column;gap:7px}
+.start-field span{
+  font-family:var(--hed);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.68);
+}
+input,select{
+  width:100%;
+  min-height:46px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  padding:0 13px;
+  font:500 15px var(--body);
+}
+select{appearance:none;background-color:rgba(255,255,255,.06)}
+input::placeholder{color:rgba(255,255,255,.35)}
+.google-btn{
+  margin-top:8px;
+  width:100%;
+  min-height:50px;
+  border:none;
+  border-radius:6px;
+  background:#fff;
+  color:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font:700 14px var(--body);
+  cursor:pointer;
+  transition:background .15s,transform .1s;
+}
+.google-btn:hover{background:#f1f1f1}
+.google-btn:active{transform:translateY(1px)}
+.google-btn:disabled{opacity:.55;cursor:not-allowed}
+.google-icon{width:18px;height:18px;flex-shrink:0}
+.start-status{min-height:18px;font-size:13px;color:rgba(255,255,255,.68);text-align:center}
+.start-status.error{color:#ff8a8a}
+@media(max-width:520px){
+  body{
+    align-items:flex-start;
+    justify-content:center;
+    padding:18px;
+    background:
+      linear-gradient(to bottom,rgba(8,8,8,.76) 0%,rgba(8,8,8,.66) 62%,rgba(8,8,8,.22) 100%),
+      url('../images/start-football-sky.jpg') 58% 6%/auto 112% no-repeat;
+  }
+  .start-shell{justify-content:center}
+  .start-panel{padding:26px 20px}
+  .start-grid{grid-template-columns:1fr}
+}
