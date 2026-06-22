@@ -29,6 +29,14 @@ if(sb && window.loadSchoolLogoOverrides) loadSchoolLogoOverrides(sb);
 if(sb){
   sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
+    // Preview mode: sign-out inside the iframe must not collapse the view —
+    // restore the stub user immediately and re-sync so Ella's data stays visible.
+    if(window.PREVIEW_USER_ID && event === 'SIGNED_OUT'){
+      currentUser = { id: window.PREVIEW_USER_ID, email: '' };
+      if(typeof _updateAuthUI === 'function') _updateAuthUI();
+      if(typeof _syncFromCloud === 'function') await _syncFromCloud();
+      return;
+    }
     // Preview mode: substitute preview athlete's ID so all data reads target their account
     if(window.PREVIEW_USER_ID && currentUser){
       currentUser = Object.assign({}, currentUser, { id: window.PREVIEW_USER_ID });
