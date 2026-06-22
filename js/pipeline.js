@@ -33,6 +33,8 @@ function switchTab(t){
   }
   if(t==='coaches'&&coachUnlocked)filterCoachAthletes();
   if(t==='profile')setTimeout(renderProfileView,0);
+  if(t==='readiness'&&typeof renderReadiness==='function')renderReadiness();
+  if(t==='calendar'&&typeof renderCalendar==='function')renderCalendar();
 }
 
 // ── COMMITTED BANNER ─────────────────────────────────────
@@ -47,12 +49,9 @@ function updateCommittedBanner(){
     if(nameEl) nameEl.textContent=committedSchool;
     const logoWrap=document.getElementById('committed-logo-wrap');
     if(logoWrap){
-      const domain=SCHOOL_DOMAINS[committedSchool]??null;
-      if(domain){
-        logoWrap.innerHTML='<img src="https://logo.clearbit.com/'+domain+'" style="width:32px;height:32px;object-fit:contain;border-radius:6px" onerror="this.parentNode.innerHTML=\'<span style=\\"font-size:11px;color:rgba(255,255,255,.5)\\">'+committedSchool.slice(0,3).toUpperCase()+'</span>\'">';
-      } else {
-        logoWrap.innerHTML='<span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700">'+committedSchool.slice(0,3).toUpperCase()+'</span>';
-      }
+      const ph='<span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700">'+committedSchool.slice(0,3).toUpperCase()+'</span>';
+      if(window.paintSchoolLogo) window.paintSchoolLogo(logoWrap, committedSchool, ph);
+      else logoWrap.innerHTML=ph;
     }
   } else {
     banner.classList.remove('show');

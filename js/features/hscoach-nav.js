@@ -4,6 +4,8 @@
   var sb = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
   window._hsSb = sb; // expose for juke-messaging.js (it looks for window.sb)
   window.sb = sb;
+  // Load curated school-logo overrides (school-logos bucket → programs.logo_url).
+  if (sb && window.loadSchoolLogoOverrides) loadSchoolLogoOverrides(sb);
   var currentUser = null;
   window._hsCurrentUser = null;
 

@@ -137,6 +137,12 @@ function _hsMapPublishedAthlete(row, idx){
     height:_hsProfileField(p,'height','p-height')||'',
     forty:_hsProfileField(p,'forty','p-forty')||'',
     vertical:_hsProfileField(p,'vertical','p-vertical')||'',
+    twenty:_hsProfileField(p,'twenty','p-twenty')||p.verifiedMeasurables?.twenty?.value||'',
+    shuttle:_hsProfileField(p,'shuttle','p-shuttle')||p.verifiedMeasurables?.shuttle?.value||'',
+    broad:_hsProfileField(p,'broad','p-broad')||p.verifiedMeasurables?.broad?.value||'',
+    verifiedSource:p.verifiedSource||p['p-verified-source']||p.verifiedMeasurables?.twenty?.source||p.verifiedMeasurables?.shuttle?.source||p.verifiedMeasurables?.broad?.source||'',
+    verifiedDate:p.verifiedDate||p['p-verified-date']||p.verifiedMeasurables?.twenty?.verifiedAt||p.verifiedMeasurables?.shuttle?.verifiedAt||p.verifiedMeasurables?.broad?.verifiedAt||'',
+    verifiedMeasurables:p.verifiedMeasurables||null,
     school:_hsProfileField(p,'school','p-school')||'',
     state:(parts[1]||p.state||'').toUpperCase(),
     programs,
@@ -492,6 +498,44 @@ function renderLogoPhoto(dataUrl){
 // ──────────────────────────────────────────────
 let selectedPositions = new Set();
 
+const HS_FLAG_POSITION_ALIASES = {
+  C: ['C','Center','OL'],
+  DB: ['DB','CB','Corner','Cornerback'],
+  Rusher: ['Rusher','Rush','LB','Linebacker'],
+  Utility: ['Utility','ATH','Athlete','PR','KR','Returner']
+};
+
+function hsNormalizeFlagPosition(pos){
+  const raw=String(pos||'').trim();
+  if(!raw) return '';
+  for(const [canonical, aliases] of Object.entries(HS_FLAG_POSITION_ALIASES)){
+    if(aliases.map(a=>a.toLowerCase()).includes(raw.toLowerCase())) return canonical;
+  }
+  return raw;
+}
+
+function hsFlagPositionMatches(athletePositions, selected){
+  const selectedNorm=hsNormalizeFlagPosition(selected);
+  return (athletePositions||[]).some(p=>hsNormalizeFlagPosition(p)===selectedNorm);
+}
+
+function hsFlagPositionLabel(pos){
+  return hsNormalizeFlagPosition(pos);
+}
+
+function hsAthleteSearchText(a){
+  return [
+    a.fname,
+    a.lname,
+    a.school,
+    a.state,
+    a.year,
+    ...(a.pos||[]).map(hsFlagPositionLabel),
+    a.bio,
+    ...(a.programs||[]).map(p=>[p.name,p.div,p.stage].filter(Boolean).join(' '))
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
 function toggleRosterPos(chip, pos){
   if(selectedPositions.has(pos)){ selectedPositions.delete(pos); chip.classList.remove('active'); }
   else { selectedPositions.add(pos); chip.classList.add('active'); }
@@ -503,11 +547,10 @@ function filteredAthletes(){
   const year   = el('f-year')?.value||'';
   const status = el('f-status')?.value||'';
   return ATHLETES.filter(a=>{
-    const name = (a.fname+' '+a.lname).toLowerCase();
-    if(q && !name.includes(q)) return false;
+    if(q && !hsAthleteSearchText(a).includes(q)) return false;
     if(year && String(a.year)!==year) return false;
     if(status && athleteStatus(a)!==status) return false;
-    if(selectedPositions.size && !a.pos.some(p=>selectedPositions.has(p))) return false;
+    if(selectedPositions.size && ![...selectedPositions].some(pos=>hsFlagPositionMatches(a.pos,pos))) return false;
     return true;
   });
 }
@@ -541,7 +584,7 @@ function renderRosterCards(athletes){
         </div>
       </div>
       <div class="rc-pills">
-        ${a.pos.map((p,i)=>`<span class="rc-pos">${hsEsc(p)}</span>`).join('')}
+        ${a.pos.map((p,i)=>`<span class="rc-pos">${hsEsc(hsFlagPositionLabel(p))}</span>`).join('')}
         <span class="rc-year">${a.year}</span>
         ${st!=='none'?`<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stColor};color:${stColor};background:${stColor}18;">${stLabel}</span>`:''}
       </div>
@@ -577,7 +620,7 @@ function renderRosterTable(athletes){
         <div class="rt-name" style="cursor:pointer" onclick="openSP(${idArg})">${hsEsc(a.fname)} ${hsEsc(a.lname)}</div>
         ${endorsed?'<span style="font-size:9px;color:#00a03a;font-weight:600">✓ Recommended</span>':''}
       </td>
-      <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${hsEsc(p)}</span>`).join('')}</div></td>
+      <td><div class="rt-pos-row">${a.pos.map(p=>`<span class="rt-pos">${hsEsc(hsFlagPositionLabel(p))}</span>`).join('')}</div></td>
       <td>${a.year}</td>
       <td>${a.gpa||'—'}</td>
       <td>${a.forty||'—'}</td>

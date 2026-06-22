@@ -9,13 +9,6 @@ const WS_STAGE_COLORS={
   offered:    {bg:'rgba(180,140,0,.1)',  text:'#a07a00'},
   committed:  {bg:'rgba(0,180,60,.1)',   text:'#007a30'},
   archived:   {bg:'rgba(107,114,128,.1)',text:'#5c6370'},
-  // ── Legacy compat (pre-migration keys map to nearest new stage) ──
-  contacted:  {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
-  engaged:    {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
-  visit:      {bg:'rgba(123,47,255,.1)', text:'#7b2fff'},
-  offer:      {bg:'rgba(180,140,0,.1)',  text:'#a07a00'},
-  interested: {bg:'rgba(0,87,255,.1)',   text:'#2055cc'},
-  dream_schools:{bg:'rgba(0,87,255,.1)', text:'#2055cc'},
 };
 const WS_LOG_ICONS={mail:'✉',email:'@',message:'◎',phone_call:'☎',juke:'⚡'};
 const WS_LOG_LABELS={mail:'Mail',email:'Email',message:'Message',phone_call:'Phone Call',juke:'Juke'};
@@ -30,7 +23,7 @@ async function openSchoolWorkspace(schoolName){
 
   const sel=document.getElementById('ws-stage-select');
   sel.innerHTML=PIPELINE_STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('');
-  const curStage=statusData[schoolName]||'dream_schools';
+  const curStage=statusData[schoolName]||'saved';
   sel.value=curStage;
 
   const sc=WS_STAGE_COLORS[curStage]||WS_STAGE_COLORS.saved;

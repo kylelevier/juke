@@ -228,7 +228,7 @@ function openSP(id){
           const lbl=STAGE_LABELS[p.stage]||'';
           return `<div class="sp-int-row">
             <div class="sp-int-logo">
-              <img src="https://logo.clearbit.com/${p.name.toLowerCase().replace(/\s+/g,'')}.edu" alt="${p.name}" onerror="this.parentNode.textContent='${p.name[0]}'">
+              <img src="${(window.schoolLogoUrl&&window.schoolLogoUrl(p.name))||('https://logo.clearbit.com/'+p.name.toLowerCase().replace(/\s+/g,'')+'.edu')}" alt="${p.name}" onerror="this.parentNode.textContent='${p.name[0]}'">
             </div>
             <span class="sp-int-school">${hsEsc(p.name)}</span>
             <span class="sp-int-stage" style="background:${col}18;border:1.5px solid ${col};color:${col};font-family:'Archivo Condensed';font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:20px;">${lbl}</span>

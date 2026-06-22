@@ -112,6 +112,7 @@ async function cloudSave(){
     pipeline:lsGet('juke_status'),
     notes:lsGet('juke_notes'),
     fit:_getFitPrefs(),
+    readiness:lsGet('juke_readiness'),
   };
   const {error}=await sb.from('player_data').upsert(payload,{onConflict:'user_id'});
   if(error){
@@ -196,6 +197,10 @@ async function _syncFromCloud(){
     lsSet('juke_notes',adminNotes);
   }
   if(data.fit)_applyFitPrefs(data.fit);
+  if(data.readiness&&Object.keys(data.readiness).length){
+    lsSet('juke_readiness',data.readiness);
+    if(typeof renderReadiness==='function'&&document.getElementById('content-readiness')?.classList.contains('active'))renderReadiness();
+  }
   if(typeof render === 'function') render();
   if(document.getElementById('tab-pipeline')?.classList.contains('active')||
      document.getElementById('content-pipeline')?.style.display!=='none') renderPipeline();

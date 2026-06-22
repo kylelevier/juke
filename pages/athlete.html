@@ -20,6 +20,8 @@
   <link rel="stylesheet" href="../styles/feed.css">
   <link rel="stylesheet" href="../styles/messaging.css?v=msg-coach-search-1">
   <link rel="stylesheet" href="../styles/onboarding.css">
+  <link rel="stylesheet" href="../styles/readiness.css">
+  <link rel="stylesheet" href="../styles/calendar.css">
 </head>
 <body>
 <script src="../js/router.js"></script>
@@ -46,6 +48,8 @@
   <button class="tab-btn" id="tab-finder" onclick="switchTab('finder')">Programs</button>
   <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">My Profile</button>
   <button class="tab-btn" id="tab-pipeline" onclick="switchTab('pipeline')">My Board</button>
+  <button class="tab-btn" id="tab-readiness" onclick="switchTab('readiness')">Readiness</button>
+  <button class="tab-btn" id="tab-calendar" onclick="switchTab('calendar')">Calendar</button>
   <button class="tab-btn" id="tab-messages" onclick="switchTab('messages');renderMsgThreadList();updateMsgBadge()" style="display:none">Messages<span class="msg-tab-badge" id="msg-tab-badge"></span></button>
 </nav>
 
@@ -368,11 +372,9 @@
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="WR"/>WR</label>
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="RB"/>RB</label>
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="C"/>Center</label>
-        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="OL"/>OL</label>
+        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="DB"/>DB</label>
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="Rusher"/>Rusher</label>
-        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="CB"/>CB</label>
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="S"/>Safety</label>
-        <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="LB"/>LB</label>
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="Utility"/>Utility</label>
       </div>
     </div>
@@ -409,8 +411,29 @@
         <div class="form-group"><div class="form-label">Weight (lbs)</div><input class="form-input" id="p-weight" placeholder="145" oninput="saveProfile();profileUpdate()"/></div>
         <div class="form-group"><div class="form-label">40-Yard Dash</div><input class="form-input" id="p-forty" placeholder="4.8s" oninput="saveProfile();profileUpdate()"/></div>
         <div class="form-group"><div class="form-label">Vertical Jump</div><input class="form-input" id="p-vertical" placeholder='24"' oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Broad Jump</div><input class="form-input" id="p-broad" placeholder='7&apos;2"' oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">5-10-5 Shuttle</div><input class="form-input" id="p-shuttle" placeholder="4.4s" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">USA Football Verified Tests</span></div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">20-Yard Dash</div><input class="form-input" id="p-twenty" placeholder="3.12s" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">5-10-5 Shuttle</div><input class="form-input" id="p-shuttle" placeholder="4.38s" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Broad Jump</div><input class="form-input" id="p-broad" placeholder='8&apos;4"' oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Verified Source</div><input class="form-input" id="p-verified-source" placeholder="USA Football Talent ID" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Verified Date</div><input class="form-input" id="p-verified-date" placeholder="Feb 15, 2026" oninput="saveProfile();profileUpdate()"/></div>
+      </div>
+      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Event Attendance</span></div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Event Name</div><input class="form-input" id="p-event-name" placeholder="USA Football Talent ID - Dallas" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Event Date</div><input class="form-input" id="p-event-date" placeholder="Feb 15, 2026" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Event Location</div><input class="form-input" id="p-event-location" placeholder="Dallas, TX" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Event Source</div>
+          <select class="form-select" id="p-event-source" onchange="saveProfile();profileUpdate()">
+            <option value="">Select source</option>
+            <option>USA Football</option>
+            <option>Juke Camp</option>
+            <option>Tournament</option>
+            <option>School Upload</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="wiz-nav">
@@ -771,15 +794,6 @@
   </div>
 </div>
 
-<!-- STATUS POPOVER -->
-<div class="status-popover" id="status-popover">
-  <button class="sp-option" onclick="spSelect('saved')"><div class="sp-pill sp-pill-interested">Saved</div></button>
-  <button class="sp-option" onclick="spSelect('contacted')"><div class="sp-pill sp-pill-contacted">Contacted</div></button>
-  <button class="sp-option" onclick="spSelect('applied')"><div class="sp-pill sp-pill-applied">Applied</div></button>
-  <button class="sp-option" onclick="spSelect('committed')"><div class="sp-pill sp-pill-committed">Committed</div></button>
-  <div class="sp-remove"><button class="sp-option" onclick="spSelect('none')"><div class="sp-pill sp-pill-remove">✕ Remove</div></button></div>
-</div>
-
 <!-- ADMIN MODAL -->
 <div class="admin-modal" id="admin-modal">
   <div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
@@ -833,8 +847,12 @@
     </div>
   </div>
 </div>
+<div class="tab-content" id="content-readiness"></div>
+<div class="tab-content" id="content-calendar"></div>
 <script>window.JUKE_PORTAL_TYPE='athlete';</script>
   <!-- 1. Config + data layer (lsGet/lsSet, globals, RAW, scorecard) -->
+  <script src="../js/data-school-domains.js"></script>
+  <script src="../js/school-logo.js"></script>
   <script src="../js/config.js?v=alpha-ui-5"></script>
   <script src="../js/data-raw.js"></script>
   <script src="../js/data-scorecard.js"></script>
@@ -858,6 +876,8 @@
   <script src="../js/features/profile-view.js?v=alpha-ui-5"></script>
   <script src="../js/features/profile-edit.js?v=alpha-ui-6"></script>
   <script src="../js/features/outreach.js"></script>
+  <script src="../js/features/readiness.js"></script>
+  <script src="../js/features/calendar.js"></script>
   <script src="../js/coach-portal.js?v=alpha-ui-6"></script>
   <script src="../js/messaging.js"></script>
   <script src="../js/features/messaging-modal.js?v=msg-coach-search-1"></script>

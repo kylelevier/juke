@@ -33,7 +33,22 @@ function renderProfileView(){
   var highlight=g('p-highlight'),gamefilm=g('p-gamefilm'),profileurl=g('p-profileurl');
   var gpa=g('p-gpa'),sat=g('p-sat'),act=g('p-act'),major=g('p-major'),honors=g('p-honors');
   var gradyr=g('p-gradyr');
-  var height=g('p-height'),weight=g('p-weight'),forty=g('p-forty'),vertical=g('p-vertical'),broad=g('p-broad'),shuttle=g('p-shuttle');
+  var height=g('p-height'),weight=g('p-weight'),forty=g('p-forty'),vertical=g('p-vertical'),twenty=g('p-twenty'),broad=g('p-broad'),shuttle=g('p-shuttle');
+  var verifiedSource=p.verifiedSource||p['p-verified-source']||p.verifiedMeasurables?.twenty?.source||p.verifiedMeasurables?.shuttle?.source||p.verifiedMeasurables?.broad?.source||'';
+  var verifiedDate=p.verifiedDate||p['p-verified-date']||p.verifiedMeasurables?.twenty?.verifiedAt||p.verifiedMeasurables?.shuttle?.verifiedAt||p.verifiedMeasurables?.broad?.verifiedAt||'';
+  var events=Array.isArray(p.events)?p.events:[];
+  if(!events.length&&(p.eventName||p['p-event-name'])){
+    events=[{
+      name:p.eventName||p['p-event-name']||'',
+      date:p.eventDate||p['p-event-date']||'',
+      location:p.eventLocation||p['p-event-location']||'',
+      source:p.eventSource||p['p-event-source']||'',
+      verified:(p.eventSource||p['p-event-source']||'')==='USA Football'
+    }];
+  }
+  if(!twenty)twenty=p.verifiedMeasurables?.twenty?.value||'';
+  if(!shuttle)shuttle=p.verifiedMeasurables?.shuttle?.value||'';
+  if(!broad)broad=p.verifiedMeasurables?.broad?.value||'';
   var email=g('p-email'),phone=g('p-phone'),parent=g('p-parent'),city=g('p-city'),school=g('p-school');
   var intro=g('p-intro');
   var word1=g('p-word1'),word2=g('p-word2'),word3=g('p-word3');
@@ -174,10 +189,22 @@ function renderProfileView(){
     html+=dsec('Awards &amp; Honors',awHtml);
   }
 
-  // ── MEASURABLES (overflow — broad/shuttle not in identity grid) ──
-  var extraMeas=[[broad,'Broad Jump'],[shuttle,'Shuttle']].filter(function(r){return r[0];});
-  if(extraMeas.length&&(broad||shuttle)){
-    html+=dsec('Measurables (extended)','<div class="dpc-stats-grid">'+extraMeas.map(function(r){return dsbox(r[0],r[1]);}).join('')+'</div>');
+  // ── USA FOOTBALL VERIFIED TESTS ──
+  var verifiedTests=[[twenty,'20-Yard'],[shuttle,'5-10-5'],[broad,'Broad Jump']].filter(function(r){return r[0];});
+  if(verifiedTests.length){
+    var verifiedSub=(verifiedSource||verifiedDate)
+      ? '<div class="dpc-stats-lbl">'+esc([verifiedSource,verifiedDate].filter(Boolean).join(' · '))+'</div>'
+      : '';
+    html+=dsec('USA Football Verified Tests',verifiedSub+'<div class="dpc-stats-grid">'+verifiedTests.map(function(r){return dsbox(r[0],r[1]);}).join('')+'</div>');
+  }
+
+  // ── EVENT ATTENDANCE ──
+  if(events.length){
+    var eventHtml=events.map(function(ev){
+      var meta=[ev.date,ev.location,ev.source].filter(Boolean).map(esc).join(' · ');
+      return '<div class="dpc-award-item">📍 <span>'+esc(ev.name||'Event')+'</span>'+(meta?'<span class="dpc-award-yr">'+meta+'</span>':'')+(ev.verified?' <span class="dpc-meta-pill">Verified</span>':'')+'</div>';
+    }).join('');
+    html+=dsec('Event Attendance',eventHtml);
   }
 
   // ── CONTACT ──
@@ -348,7 +375,8 @@ function profileUpdate(){
   const city=pv('p-city'),school=pv('p-school');
   const gpa=pv('p-gpa'),sat=pv('p-sat'),act=pv('p-act');
   const major=pv('p-major'),honors=pv('p-honors');
-  const forty=pv('p-forty'),vertical=pv('p-vertical'),broad=pv('p-broad'),shuttle=pv('p-shuttle');
+  const forty=pv('p-forty'),vertical=pv('p-vertical'),twenty=pv('p-twenty'),broad=pv('p-broad'),shuttle=pv('p-shuttle');
+  const verifiedSource=pv('p-verified-source'),verifiedDate=pv('p-verified-date');
   const email=pv('p-email'),phone=pv('p-phone');
   const parent=pv('p-parent'),clubCoach=pv('p-club-coach');
   const highlight=pv('p-highlight'),gamefilm=pv('p-gamefilm'),profileurl=pv('p-profileurl');
@@ -395,9 +423,11 @@ function profileUpdate(){
 
   const metricsHTML=metrics.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;border-collapse:collapse"><tr>${metrics.map((m,i)=>`<td width="${Math.floor(100/metrics.length)}%" align="center" style="padding:12px 6px;background:${BLUE_BG};border:1px solid ${BLUE_BD};${i>0?'border-left:none':''}"><div style="font-family:Arial,sans-serif;font-size:20px;font-weight:700;color:${BLUE_DARK};line-height:1">${ph(m.v)}</div><div style="font-family:Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${MUTED};margin-top:3px">${m.l}</div></td>`).join('')}</tr></table>`:'';
 
-  const athleticRows=[infoRow('Position',pos.join(', ')),infoRow('Height',height),infoRow('Weight',weight?weight+' lbs':''),infoRow('40-Yard Dash',forty),infoRow('Vertical',vertical),infoRow('Broad Jump',broad),infoRow('5-10-5',shuttle),infoRow('School / Club',school),infoRow('Location',city)].filter(Boolean);
+  const athleticRows=[infoRow('Position',pos.join(', ')),infoRow('Height',height),infoRow('Weight',weight?weight+' lbs':''),infoRow('40-Yard Dash',forty),infoRow('Vertical',vertical),infoRow('School / Club',school),infoRow('Location',city)].filter(Boolean);
+  const verifiedRows=[infoRow('20-Yard Dash',twenty),infoRow('5-10-5 Shuttle',shuttle),infoRow('Broad Jump',broad),infoRow('Verified By',verifiedSource),infoRow('Verified Date',verifiedDate)].filter(Boolean);
 
   const athleticHTML=athleticRows.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">${secHead('Athletic Profile')}${athleticRows.join('')}</table>`:'';
+  const verifiedHTML=verifiedRows.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">${secHead('USA Football Verified Tests')}${verifiedRows.join('')}</table>`:'';
 
   const statsHTML=allStats.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">${secHead('Season Statistics')}<tr><td colspan="2"><table width="100%" cellpadding="0" cellspacing="4" border="0"><tr>${allStats.map(([v,l])=>`<td style="padding:8px 10px;background:${BLUE_BG};border:1px solid ${BLUE_BD};text-align:center;width:${Math.floor(100/Math.min(allStats.length,4))}%"><div style="font-family:Arial,sans-serif;font-size:16px;font-weight:700;color:${TEXT}">${ph(v)}</div><div style="font-family:Arial,sans-serif;font-size:10px;color:${MUTED};margin-top:2px">${l}</div></td>`).join('')}</tr></table></td></tr></table>`:'';
 
@@ -411,7 +441,7 @@ function profileUpdate(){
   const contactRows=[infoRow('Email',email),infoRow('Phone',phone),parent?infoRow('Parent',parent):'',clubCoach?infoRow('Club Coach',clubCoach):''].filter(Boolean);
   const contactHTML=contactRows.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">${secHead('Contact Information')}${contactRows.join('')}</table>`:'';
 
-  const fullHTML=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ph(name)} — Recruiting Profile</title></head><body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f2f5"><tr><td align="center" style="padding:20px 16px"><table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)"><tr><td height="4" style="background:${BLUE};font-size:0">&nbsp;</td></tr><tr><td style="background:${SEC_BG};padding:20px 28px;border-bottom:1px solid ${DIV}"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle"><div style="font-family:Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:${BLUE_DARK};margin-bottom:5px">Flag Football Recruiting Profile</div><div style="font-family:Arial,sans-serif;font-size:24px;font-weight:700;color:${TEXT};line-height:1.1">${ph(name)}</div>${(pos.length||year)?`<div style="font-family:Arial,sans-serif;font-size:12px;color:${MUTED};margin-top:4px">${[pos.join(' / '),year?'Class of '+year:''].filter(Boolean).join(' &nbsp;·&nbsp; ')}</div>`:''} ${school||city?`<div style="font-family:Arial,sans-serif;font-size:11px;color:#888;margin-top:2px">${[school,city].filter(Boolean).join(' &nbsp;·&nbsp; ')}</div>`:''}</td><td width="44" valign="middle" align="right"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235.34 262.19" width="38" height="43"><path fill="${BLUE}" opacity=".5" d="M88.9,51.24h0l28.56,96.37,28.54-96.69s0-.11,0-.16c4.15-15.96,18.23-15.38,26.7-15.38h27.4l-13.99,22.7-39.72,135.65,2.19,13.69h-62.24l2.84-13.65c-12.76-45.96-27.46-91.73-40.87-137.63l-13.08-20.76h28.28c8.37,0,21.88-.58,25.38,15.86h.01ZM116.02,262.19l-58.46-24.42v-.12C22.45,221.12,0,185.97,0,146.88V0h235.34v146.18c0,41.05-24.58,77.56-62.63,93l-56.69,23ZM70.97,228.84l45.12,18.84,51.57-20.92c32.96-13.38,54.27-45.01,54.27-80.58V13.41H13.41v133.46c0,35.18,20.98,66.67,53.44,80.23l4.12,1.73Z"/></svg></td></tr></table></td></tr>${metricsHTML?`<tr><td style="padding:0 28px">${metricsHTML}</td></tr>`:''}<tr><td style="padding:${metricsHTML?'4':'24'}px 28px 24px">${intro?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px"><tr><td style="font-family:Arial,sans-serif;font-size:14px;color:${TEXT};line-height:1.7"><p style="margin:0 0 8px 0">Dear ${ph(coachName)}${university?', and the '+ph(university)+' coaching staff':''},</p><p style="margin:0;color:#333;line-height:1.8">${ph(intro)}</p></td></tr></table><hr style="border:none;border-top:1px solid ${DIV};margin:0 0 20px 0">`:''} ${athleticHTML}${statsHTML}${academicHTML}${awardsHTML}${filmHTML}${contactHTML}<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:Arial,sans-serif;font-size:13px;color:${TEXT};line-height:1.7"><p style="margin:0 0 14px 0">I would welcome the opportunity to speak with you further. Thank you for your time and consideration.</p><p style="margin:0;font-weight:600">${ph(name)}</p>${email?`<p style="margin:2px 0 0;font-size:12px;color:${MUTED}">${ph(email)}</p>`:''}${phone?`<p style="margin:2px 0 0;font-size:12px;color:${MUTED}">${ph(phone)}</p>`:''}</td></tr></table></td></tr><tr><td style="background:${SEC_BG};border-top:1px solid ${DIV};padding:12px 28px"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:Arial,sans-serif;font-size:10px;color:#aaa">Recruiting profile created with Valor Flag Football &nbsp;·&nbsp; juke.gg</td></tr></table></td></tr><tr><td height="3" style="background:${BLUE};font-size:0">&nbsp;</td></tr></table></td></tr></table>
+  const fullHTML=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ph(name)} — Recruiting Profile</title></head><body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f2f5"><tr><td align="center" style="padding:20px 16px"><table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)"><tr><td height="4" style="background:${BLUE};font-size:0">&nbsp;</td></tr><tr><td style="background:${SEC_BG};padding:20px 28px;border-bottom:1px solid ${DIV}"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle"><div style="font-family:Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:${BLUE_DARK};margin-bottom:5px">Flag Football Recruiting Profile</div><div style="font-family:Arial,sans-serif;font-size:24px;font-weight:700;color:${TEXT};line-height:1.1">${ph(name)}</div>${(pos.length||year)?`<div style="font-family:Arial,sans-serif;font-size:12px;color:${MUTED};margin-top:4px">${[pos.join(' / '),year?'Class of '+year:''].filter(Boolean).join(' &nbsp;·&nbsp; ')}</div>`:''} ${school||city?`<div style="font-family:Arial,sans-serif;font-size:11px;color:#888;margin-top:2px">${[school,city].filter(Boolean).join(' &nbsp;·&nbsp; ')}</div>`:''}</td><td width="44" valign="middle" align="right"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235.34 262.19" width="38" height="43"><path fill="${BLUE}" opacity=".5" d="M88.9,51.24h0l28.56,96.37,28.54-96.69s0-.11,0-.16c4.15-15.96,18.23-15.38,26.7-15.38h27.4l-13.99,22.7-39.72,135.65,2.19,13.69h-62.24l2.84-13.65c-12.76-45.96-27.46-91.73-40.87-137.63l-13.08-20.76h28.28c8.37,0,21.88-.58,25.38,15.86h.01ZM116.02,262.19l-58.46-24.42v-.12C22.45,221.12,0,185.97,0,146.88V0h235.34v146.18c0,41.05-24.58,77.56-62.63,93l-56.69,23ZM70.97,228.84l45.12,18.84,51.57-20.92c32.96-13.38,54.27-45.01,54.27-80.58V13.41H13.41v133.46c0,35.18,20.98,66.67,53.44,80.23l4.12,1.73Z"/></svg></td></tr></table></td></tr>${metricsHTML?`<tr><td style="padding:0 28px">${metricsHTML}</td></tr>`:''}<tr><td style="padding:${metricsHTML?'4':'24'}px 28px 24px">${intro?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px"><tr><td style="font-family:Arial,sans-serif;font-size:14px;color:${TEXT};line-height:1.7"><p style="margin:0 0 8px 0">Dear ${ph(coachName)}${university?', and the '+ph(university)+' coaching staff':''},</p><p style="margin:0;color:#333;line-height:1.8">${ph(intro)}</p></td></tr></table><hr style="border:none;border-top:1px solid ${DIV};margin:0 0 20px 0">`:''} ${athleticHTML}${verifiedHTML}${statsHTML}${academicHTML}${awardsHTML}${filmHTML}${contactHTML}<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:Arial,sans-serif;font-size:13px;color:${TEXT};line-height:1.7"><p style="margin:0 0 14px 0">I would welcome the opportunity to speak with you further. Thank you for your time and consideration.</p><p style="margin:0;font-weight:600">${ph(name)}</p>${email?`<p style="margin:2px 0 0;font-size:12px;color:${MUTED}">${ph(email)}</p>`:''}${phone?`<p style="margin:2px 0 0;font-size:12px;color:${MUTED}">${ph(phone)}</p>`:''}</td></tr></table></td></tr><tr><td style="background:${SEC_BG};border-top:1px solid ${DIV};padding:12px 28px"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:Arial,sans-serif;font-size:10px;color:#aaa">Recruiting profile created with Valor Flag Football &nbsp;·&nbsp; juke.gg</td></tr></table></td></tr><tr><td height="3" style="background:${BLUE};font-size:0">&nbsp;</td></tr></table></td></tr></table>
 </body></html>`;
 
   // Write preview (strip doctype/html/body wrappers for inline render)

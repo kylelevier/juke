@@ -77,6 +77,91 @@ function getAthleteBio(a){
   }
   return a.bio;
 }
+
+function _athleteEvents(a){
+  if(typeof athleteEvents === 'function') return athleteEvents(a);
+  return Array.isArray(a?.events) ? a.events.filter(ev=>ev&&ev.name) : [];
+}
+
+function _renderEventAttendance(a){
+  const events=_athleteEvents(a);
+  if(!events.length) return '';
+  return `<div class="sp-section sp-events-section">
+    <div class="sp-section-title">Event Attendance</div>
+    <div class="sp-event-list">
+      ${events.map(ev=>`
+        <div class="sp-event-card">
+          <div class="sp-event-name">${escHtml(ev.name||'Event')}</div>
+          <div class="sp-event-meta">${[ev.date,ev.location,ev.source].filter(Boolean).map(escHtml).join(' · ')}</div>
+          ${ev.verified?'<span class="sp-event-verified">Verified</span>':''}
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function _evaluationEventField(a, currentYear){
+  const events=_athleteEvents(a);
+  if(!events.length){
+    return `<input id="sp-eval-event" value="USA Football Talent ID - ${currentYear}" placeholder="USA Football Talent ID - Dallas">`;
+  }
+  return `<select id="sp-eval-event">
+    ${events.map(ev=>`<option value="${escHtml(ev.name)}">${escHtml(ev.name)}</option>`).join('')}
+    <option value="Private evaluation">Private evaluation</option>
+  </select>`;
+}
+
+function _coachEvaluationList(id){
+  const key = String(id);
+  return Array.isArray(coachEvaluations[key]) ? coachEvaluations[key] : [];
+}
+
+function _evaluationGradeOptions(selected){
+  return [1,2,3,4,5].map(n=>`<option value="${n}" ${String(selected||'')===String(n)?'selected':''}>${n}</option>`).join('');
+}
+
+function _renderEvaluations(id, a){
+  const aid = typeof jsArg === 'function' ? jsArg(id) : JSON.stringify(id);
+  const evals = _coachEvaluationList(id);
+  const currentYear = new Date().getFullYear();
+  const today = new Date().toISOString().slice(0,10);
+  const cards = evals.length
+    ? `<div class="sp-eval-list">${evals.map(ev=>`
+        <div class="sp-eval-card">
+          <div class="sp-eval-card-hd">
+            <div>
+              <div class="sp-eval-event">${escHtml(ev.eventName||'Private Evaluation')}</div>
+              <div class="sp-eval-meta">${[ev.eventDate, ev.evaluatedPosition, ev.flagFit].filter(Boolean).map(escHtml).join(' · ')}</div>
+            </div>
+            <button class="sp-eval-remove" title="Delete evaluation" onclick="deleteEvaluation(${aid},'${escHtml(ev.id)}')">×</button>
+          </div>
+          <div class="sp-eval-grades">
+            <span>Athletic ${escHtml(ev.grades?.athletic||'—')}</span>
+            <span>Skill ${escHtml(ev.grades?.skill||'—')}</span>
+            <span>Coachability ${escHtml(ev.grades?.coachability||'—')}</span>
+          </div>
+          ${ev.notes?`<div class="sp-eval-notes">${escHtml(ev.notes)}</div>`:''}
+        </div>`).join('')}</div>`
+    : '<div class="sp-eval-empty">No private evaluations saved yet.</div>';
+
+  return `<div class="sp-section sp-eval-section">
+    <div class="sp-section-title">Private Evaluations</div>
+    ${cards}
+    <div class="sp-eval-form">
+      <div class="sp-eval-form-grid">
+        <label class="sp-eval-field"><span>Event / Camp</span>${_evaluationEventField(a, currentYear)}</label>
+        <label class="sp-eval-field"><span>Date</span><input id="sp-eval-date" type="date" value="${today}"></label>
+        <label class="sp-eval-field"><span>Position</span><select id="sp-eval-pos">${(a.pos||['Utility']).map(p=>`<option value="${escHtml(p)}">${escHtml(p)}</option>`).join('')}</select></label>
+        <label class="sp-eval-field"><span>Flag Fit</span><select id="sp-eval-fit"><option>High</option><option>Medium</option><option>Developmental</option></select></label>
+        <label class="sp-eval-field"><span>Athletic</span><select id="sp-eval-athletic">${_evaluationGradeOptions(4)}</select></label>
+        <label class="sp-eval-field"><span>Skill</span><select id="sp-eval-skill">${_evaluationGradeOptions(4)}</select></label>
+        <label class="sp-eval-field"><span>Coachability</span><select id="sp-eval-coachability">${_evaluationGradeOptions(4)}</select></label>
+      </div>
+      <textarea class="sp-eval-notes-input" id="sp-eval-notes-input" placeholder="Private scouting notes for your program only..."></textarea>
+      <button class="sp-eval-save" onclick="saveEvaluation(${aid})">Save Private Evaluation</button>
+    </div>
+  </div>`;
+}
+
 function openAthlete(id){
   _spId = id;
   const a = typeof findCoachAthlete === 'function'
@@ -137,6 +222,7 @@ function openAthlete(id){
       <div class="sp-section-title">About</div>
       <div class="sp-bio">${getAthleteBio(a)}</div>
     </div>
+    ${_renderEventAttendance(a)}
     ${_renderFilmSection(highlight, gamefilm)}
     ${(()=>{
       const ends = _athleteRecommendations(a);
@@ -165,6 +251,7 @@ function openAthlete(id){
         ).join('')}
       </div>
     </div>
+    ${_renderEvaluations(id, a)}
     <div class="sp-section">
       <div class="sp-section-title">Boards</div>
       ${coachBoards.length
@@ -251,6 +338,120 @@ function _saveNextAction(id, val){
   if(document.getElementById('content-pipeline')?.classList.contains('active')) renderPipeline();
 }
 
+function saveEvaluation(id){
+  const fv = fieldId => (document.getElementById(fieldId)||{}).value || '';
+  const key = String(id);
+  const evaluation = {
+    id: 'eval_'+Date.now(),
+    visibility: 'program_private',
+    evaluatorName: coachProfile?.name || 'Coach',
+    programName: coachProfile?.school || '',
+    eventName: fv('sp-eval-event').trim(),
+    eventDate: fv('sp-eval-date'),
+    evaluatedPosition: fv('sp-eval-pos'),
+    flagFit: fv('sp-eval-fit'),
+    grades: {
+      athletic: fv('sp-eval-athletic'),
+      skill: fv('sp-eval-skill'),
+      coachability: fv('sp-eval-coachability')
+    },
+    notes: fv('sp-eval-notes-input').trim(),
+    createdAt: new Date().toISOString()
+  };
+  if(!coachEvaluations[key]) coachEvaluations[key] = [];
+  coachEvaluations[key].unshift(evaluation);
+  lss('evaluations', coachEvaluations);
+  coachLastActivity[id] = {ts:Date.now(), type:'evaluation', text:evaluation.eventName||'Private evaluation'};
+  lss('last_activity', coachLastActivity);
+  if(window.JukeOnboarding) JukeOnboarding.event('college_coach','evaluation_saved',{athleteId:id});
+  openAthlete(id);
+  if(document.getElementById('content-pipeline')?.classList.contains('active')) renderPipeline();
+}
+
+function deleteEvaluation(id, evalId){
+  const key = String(id);
+  coachEvaluations[key] = _coachEvaluationList(id).filter(ev=>ev.id!==evalId);
+  lss('evaluations', coachEvaluations);
+  openAthlete(id);
+  if(document.getElementById('content-pipeline')?.classList.contains('active')) renderPipeline();
+}
+
+function renderProgramNeeds(){
+  const list=document.getElementById('needs-list');
+  if(!list) return;
+  const needs=activeCoachNeeds();
+  if(!needs.length){
+    list.innerHTML='<div class="needs-empty">No needs posted yet.</div>';
+    return;
+  }
+  list.innerHTML=needs.map(need=>`
+    <div class="need-card" data-need-id="${escHtml(need.id)}">
+      <div class="need-card-grid">
+        <label class="need-field"><span>Class</span><input value="${escHtml(need.classYear||'')}" placeholder="2027" oninput="updateProgramNeed('${escHtml(need.id)}','classYear',this.value)"></label>
+        <label class="need-field"><span>Position</span>
+          <select onchange="updateProgramNeed('${escHtml(need.id)}','position',this.value)">
+            ${['QB','WR','RB','C','DB','Rusher','S','Utility'].map(p=>`<option value="${p}" ${need.position===p?'selected':''}>${p==='C'?'Center':p}</option>`).join('')}
+          </select>
+        </label>
+        <label class="need-field"><span>Priority</span>
+          <select onchange="updateProgramNeed('${escHtml(need.id)}','priority',this.value)">
+            ${['High','Medium','Low'].map(v=>`<option ${need.priority===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </label>
+        <label class="need-field"><span>Slot Type</span>
+          <select onchange="updateProgramNeed('${escHtml(need.id)}','slotType',this.value)">
+            ${['Roster spot','Scholarship target','Walk-on target','Developmental'].map(v=>`<option ${need.slotType===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </label>
+        <label class="need-field"><span>Min GPA</span><input value="${escHtml(need.minGpa||'')}" placeholder="3.5" oninput="updateProgramNeed('${escHtml(need.id)}','minGpa',this.value)"></label>
+        <label class="need-field"><span>Region</span><input value="${escHtml(need.region||'')}" placeholder="Any, TX, South..." oninput="updateProgramNeed('${escHtml(need.id)}','region',this.value)"></label>
+      </div>
+      <textarea class="need-notes" placeholder="Describe the profile you need..." oninput="updateProgramNeed('${escHtml(need.id)}','notes',this.value)">${escHtml(need.notes||'')}</textarea>
+      <div class="need-ft">
+        <span class="need-visibility">${escHtml(need.visibility==='public'?'Publish-ready':'Private')}</span>
+        <button class="need-remove" onclick="removeProgramNeed('${escHtml(need.id)}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function persistProgramNeeds(){
+  lss('needs', coachNeeds);
+  if(typeof filterAthletes==='function') filterAthletes();
+  if(document.getElementById('content-pipeline')?.classList.contains('active')) renderPipeline();
+  if(typeof renderCoachFeed==='function') renderCoachFeed();
+}
+
+function addProgramNeed(){
+  const need={
+    id:'need_'+Date.now(),
+    classYear:String(new Date().getFullYear()+1),
+    position:'DB',
+    priority:'High',
+    slotType:'Roster spot',
+    minGpa:'',
+    region:'Any',
+    notes:'',
+    visibility:'program_private',
+    createdAt:new Date().toISOString()
+  };
+  coachNeeds.unshift(need);
+  persistProgramNeeds();
+  renderProgramNeeds();
+}
+
+function updateProgramNeed(id, key, value){
+  const need=activeCoachNeeds().find(n=>String(n.id)===String(id));
+  if(!need) return;
+  need[key]=value;
+  persistProgramNeeds();
+}
+
+function removeProgramNeed(id){
+  coachNeeds=activeCoachNeeds().filter(n=>String(n.id)!==String(id));
+  persistProgramNeeds();
+  renderProgramNeeds();
+}
+
 function closeSP(e){
   const overlay = document.getElementById('sp-overlay');
   if(e&&e.target!==overlay)return;
@@ -295,6 +496,7 @@ function loadProfileForm(){
   if(divEl) divEl.value=p.div||'';
   const seasEl=document.getElementById('p-seasons');
   if(seasEl) seasEl.value=p.seasons||'';
+  renderProgramNeeds();
 }
 
 function profileUpdate(){
@@ -315,6 +517,7 @@ function saveProfile(){
   if(window.JukeOnboarding && coachProfile.school){
     JukeOnboarding.mark('college_coach','setupDone',{school:coachProfile.school});
   }
+  lss('needs', coachNeeds);
   const msg=document.getElementById('save-msg');
   if(msg){msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);}
 }
@@ -359,19 +562,20 @@ function renderLogo(url){
 function loadSchoolLogo(){
   const school = coachProfile.school||'';
   if(!school) return;
-  const domains = {
-    'Northern Arizona University':'nau.edu',
-    'University of Arizona':'arizona.edu',
-    'Arizona State University':'asu.edu',
-    'University of Oregon':'uoregon.edu',
-    'UCLA':'ucla.edu',
-  };
-  const d = Object.entries(domains).find(([k])=>school.toLowerCase().includes(k.toLowerCase()));
-  if(!d) return;
   const wrap = document.getElementById('hd-school-logo-wrap');
   if(!wrap) return;
+  // Prefer the shared resolver (curated override → favicon by exact name).
+  let url = window.schoolLogoUrl ? window.schoolLogoUrl(school) : null;
+  if(!url){
+    // Fall back to a fuzzy domain match for full school names not in the map.
+    const map = window.SCHOOL_DOMAINS||{};
+    const sl = school.toLowerCase();
+    const hit = Object.keys(map).find(k=>sl.includes(k.toLowerCase())||k.toLowerCase().includes(sl));
+    if(hit) url = 'https://www.google.com/s2/favicons?domain='+map[hit]+'&sz=128';
+  }
+  if(!url) return;
   const img = document.createElement('img');
-  img.src = 'https://logo.clearbit.com/'+d[1];
+  img.src = url;
   img.style.cssText='width:100%;height:100%;object-fit:contain;';
   img.onerror=()=>img.remove();
   wrap.innerHTML='';

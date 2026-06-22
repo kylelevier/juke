@@ -1,0 +1,34 @@
+/* ── READINESS TAB ─────────────────────────────────────────── */
+.readiness-wrap{max-width:760px;margin:0 auto;padding:24px 20px 64px;}
+.readiness-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px;}
+.readiness-title{font-size:24px;font-weight:700;margin:0 0 6px;}
+.readiness-sub{font-size:14px;color:#6b7280;margin:0;line-height:1.5;}
+.readiness-score{flex:0 0 auto;text-align:center;border-radius:16px;padding:14px 20px;min-width:120px;}
+.readiness-score-num{font-size:34px;font-weight:800;line-height:1;}
+.readiness-score-num span{font-size:18px;font-weight:700;}
+.readiness-score-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;opacity:.8;}
+.readiness-good{background:rgba(0,180,60,.12);color:#007a30;}
+.readiness-mid{background:rgba(241,196,15,.15);color:#a07a00;}
+.readiness-low{background:rgba(255,69,0,.12);color:#cc3800;}
+
+.readiness-controls{margin-bottom:20px;}
+.readiness-note{font-size:13px;color:#6b7280;line-height:1.5;margin:10px 0 0;}
+.readiness-field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#374151;}
+.readiness-field select,.readiness-field input{font-size:14px;font-weight:500;padding:9px 12px;border:1px solid #d1d5db;border-radius:10px;background:#fff;}
+.readiness-field select{max-width:200px;}
+
+.readiness-list{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:8px;}
+.readiness-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;}
+.readiness-item.ok{border-color:rgba(0,180,60,.4);background:rgba(0,180,60,.04);}
+.readiness-check{flex:0 0 22px;width:22px;height:22px;border-radius:50%;border:2px solid #d1d5db;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+.readiness-item.ok .readiness-check{background:#00b43c;border-color:#00b43c;}
+.readiness-item-body{display:flex;flex-direction:column;gap:2px;}
+.readiness-item-label{font-size:14px;font-weight:600;color:#1d1d1f;}
+.readiness-item-detail{font-size:12px;color:#6b7280;}
+
+.readiness-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+.readiness-toggles{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.readiness-toggle{display:flex;align-items:center;gap:10px;font-size:14px;color:#374151;cursor:pointer;}
+.readiness-toggle input{width:16px;height:16px;}
+.readiness-foot{font-size:12px;color:#9ca3af;line-height:1.5;}
+.readiness-link{color:#0057ff;font-weight:600;}

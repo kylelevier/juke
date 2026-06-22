@@ -1,0 +1,29 @@
+/* ── CALENDAR TAB ──────────────────────────────────────────── */
+.cal-wrap{max-width:760px;margin:0 auto;padding:24px 20px 64px;}
+.cal-head{margin-bottom:20px;}
+.cal-title{font-size:24px;font-weight:700;margin:0 0 6px;}
+.cal-sub{font-size:14px;color:#6b7280;margin:0;line-height:1.5;}
+.cal-loading{padding:40px;text-align:center;color:#9ca3af;font-size:14px;}
+
+.cal-list{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px;}
+.cal-item{display:flex;gap:16px;padding:14px 16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;}
+.cal-soon{border-color:rgba(255,69,0,.4);background:rgba(255,69,0,.04);}
+.cal-date{flex:0 0 96px;text-align:left;}
+.cal-when{font-size:14px;font-weight:700;color:#1d1d1f;}
+.cal-soon .cal-when{color:#cc3800;}
+.cal-range{font-size:11px;color:#9ca3af;margin-top:2px;}
+.cal-body{flex:1;min-width:0;}
+.cal-item-title{font-size:14px;font-weight:600;color:#1d1d1f;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.cal-note{font-size:12px;color:#6b7280;margin-top:3px;line-height:1.4;}
+.cal-empty{padding:32px;text-align:center;color:#9ca3af;font-size:14px;border:1px dashed #e5e7eb;border-radius:12px;}
+
+.cal-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:6px;}
+.cal-tag-contact{background:rgba(0,180,60,.12);color:#007a30;}
+.cal-tag-evaluation{background:rgba(0,87,255,.1);color:#2055cc;}
+.cal-tag-quiet{background:rgba(123,47,255,.1);color:#7b2fff;}
+.cal-tag-dead{background:rgba(107,114,128,.15);color:#5c6370;}
+.cal-tag-signing{background:rgba(241,196,15,.18);color:#a07a00;}
+.cal-tag-you{background:rgba(255,69,0,.12);color:#cc3800;}
+
+.cal-foot{font-size:12px;color:#9ca3af;line-height:1.5;}
+.cal-link{color:#0057ff;font-weight:600;}

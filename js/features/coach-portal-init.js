@@ -1,7 +1,7 @@
 (function(){
   var auth=null;
   try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
-  if(!auth||!auth.name) return;
+  if(!auth||!auth.name){location.replace('/login.html');return;}
   var portals={athlete:'/athlete',college_coach:'/coach',hs_coach:'/hscoach'};
   if(auth.profiles&&auth.profiles.length){
     var apid=auth.activeProfileId||auth.profiles[0].id;

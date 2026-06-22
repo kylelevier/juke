@@ -292,12 +292,17 @@ function ppSetStatus(key){
       JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:key});
     }
   }
+  if(key !== 'none' && typeof recordMilestone === 'function') recordMilestone(_ppCurrent, key);
   lsSet('juke_status', statusData);
   cloudSave();
   // Refresh status row in panel
   _ppRenderStatusRow(_ppCurrent);
   // Refresh table/cards in background
   render();
+  // Keep board-derived UI in sync (previously handled by the status popover)
+  if(typeof updateAthleteHeader === 'function') updateAthleteHeader();
+  if(typeof updateCommittedBanner === 'function') updateCommittedBanner();
+  if(typeof updateOfferStrip === 'function') updateOfferStrip();
   // Update pipeline button
   const inPipe = statusData[_ppCurrent] && statusData[_ppCurrent] !== 'none';
   const btn = document.getElementById('pp-pipeline-btn');

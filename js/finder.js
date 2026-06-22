@@ -114,8 +114,11 @@ function fmtNet(r){
 // ── HELPERS ─────────────────────────────────────────────
 function statusHtml(school){
   const s=statusData[school]||'none';
-  const L={none:'Save to Board',saved:'Saved',contacted:'Contacted',applied:'Applied',committed:'Committed'};
-  return`<span class="status-pill status-${s}" onclick="event.stopPropagation();openStatusPopover('${esc(school)}',this)">${L[s]}</span>`;
+  // Display-only badge. Stage is set from the program slide-over (ppSetStatus)
+  // and the board — no inline popover. Labels derive from PIPELINE_STAGES.
+  const labels=Object.fromEntries((window.PIPELINE_STAGES||[]).map(st=>[st.key,st.label]));
+  const txt=s==='none'?'Save to Board':(labels[s]||s);
+  return`<span class="status-pill status-${s}">${txt}</span>`;
 }
 function _getFitTags(r){
   const tags=[];
@@ -134,8 +137,6 @@ function _getFitTags(r){
   if(!tags.length&&r['Scholarship Available (Y/N/Partial)']==='Yes')tags.push('Scholarships available');
   return[...new Set(tags)].slice(0,2);
 }
-let _spSchool = null;
-
 // Used by pipeline board cards (cycle through stages without a popover)
 function cycleStatus(school){
   const o=['none','saved','contacted','applied','committed'];
@@ -144,56 +145,6 @@ function cycleStatus(school){
   lsSet('juke_status',statusData);cloudSave();
 }
 
-function openStatusPopover(school, el){
-  _spSchool = school;
-  const pop = document.getElementById('status-popover');
-  const rect = el.getBoundingClientRect();
-  pop.style.top  = (rect.bottom + 6) + 'px';
-  pop.style.left = rect.left + 'px';
-  // Keep within viewport
-  setTimeout(function(){
-    const pr = pop.getBoundingClientRect();
-    if(pr.right > window.innerWidth - 8)
-      pop.style.left = (window.innerWidth - pr.width - 8) + 'px';
-  }, 0);
-  pop.classList.add('open');
-}
-
-function spSelect(key){
-  if(!_spSchool) return;
-
-  if(key === 'none'){
-    delete statusData[_spSchool];
-  } else {
-    statusData[_spSchool] = key;
-  }
-  lsSet('juke_status', statusData);
-  if(key !== 'none') recordMilestone(_spSchool, key);
-  if(key !== 'none' && window.JukeOnboarding){
-    JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_spSchool,stage:key});
-  }
-  cloudSave();
-  closeStatusPopover();
-  render();
-  updateAthleteHeader();
-  updateCommittedBanner();
-  updateOfferStrip();
-  // Sync profile panel if open
-  if(_ppCurrent === _spSchool) _ppRenderStatusRow(_spSchool);
-}
-
-function closeStatusPopover(){
-  document.getElementById('status-popover').classList.remove('open');
-  _spSchool = null;
-}
-
-// Close on outside click
-document.addEventListener('click', function(e){
-  const pop = document.getElementById('status-popover');
-  if(pop && pop.classList.contains('open') && !pop.contains(e.target)){
-    closeStatusPopover();
-  }
-}, true);
 function getNote(s){return adminNotes[s]||'';}
 function ppSaveNote(val){
   if(!_ppCurrent)return;

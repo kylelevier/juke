@@ -15,6 +15,8 @@
 
 </head>
 <body>
+  <script src="../js/data-school-domains.js"></script>
+  <script src="../js/school-logo.js"></script>
   <script src="../js/features/coach-portal-init.js?v=auth-gate-2"></script>
   <script src="../js/components/dialog-a11y.js"></script>
 
@@ -105,11 +107,11 @@
     <span class="fchip" onclick="togglePos(this,'QB')">QB</span>
     <span class="fchip" onclick="togglePos(this,'WR')">WR</span>
     <span class="fchip" onclick="togglePos(this,'RB')">RB</span>
-    <span class="fchip" onclick="togglePos(this,'CB')">CB</span>
+    <span class="fchip" onclick="togglePos(this,'C')">Center</span>
+    <span class="fchip" onclick="togglePos(this,'DB')">DB</span>
+    <span class="fchip" onclick="togglePos(this,'Rusher')">Rusher</span>
     <span class="fchip" onclick="togglePos(this,'S')">S</span>
-    <span class="fchip" onclick="togglePos(this,'LB')">LB</span>
-    <span class="fchip" onclick="togglePos(this,'PR')">PR</span>
-    <span class="fchip" onclick="togglePos(this,'KR')">KR</span>
+    <span class="fchip" onclick="togglePos(this,'Utility')">Utility</span>
   </div>
   <div class="athlete-grid" id="athlete-grid"></div>
   <div class="prospect-table-wrap" id="prospect-table-wrap" style="display:none">
@@ -120,9 +122,9 @@
           <th onclick="sortProspects('pos')">Pos <span class="sort-arrow">↕</span></th>
           <th onclick="sortProspects('year')">Class <span class="sort-arrow">↕</span></th>
           <th onclick="sortProspects('gpa')">GPA <span class="sort-arrow">↕</span></th>
-          <th onclick="sortProspects('forty')">40-Yd <span class="sort-arrow">↕</span></th>
-          <th onclick="sortProspects('vertical')">Vert <span class="sort-arrow">↕</span></th>
-          <th onclick="sortProspects('state')">State <span class="sort-arrow">↕</span></th>
+          <th onclick="sortProspects('twenty')">20-Yd <span class="sort-arrow">↕</span></th>
+          <th onclick="sortProspects('shuttle')">5-10-5 <span class="sort-arrow">↕</span></th>
+          <th onclick="sortProspects('broad')">Broad <span class="sort-arrow">↕</span></th>
           <th>Board</th>
           <th></th>
         </tr>
@@ -137,7 +139,7 @@
   <div class="section-bar">
     <div>
       <div class="section-title">Recruiting Board</div>
-      <div class="section-subtitle">Move athletes through your recruiting workflow.</div>
+      <div class="section-subtitle">Track flag prospects from watch list to offer.</div>
     </div>
   </div>
   <div class="board-summary-row" id="board-summary-row"></div>
@@ -202,6 +204,16 @@
     <div class="form-group"><div class="form-label">Location</div><input class="form-input" id="p-loc" placeholder="Flagstaff, AZ" oninput="profileUpdate()"/></div>
     <div class="form-group"><div class="form-label">Seasons Coaching</div><input class="form-input" id="p-seasons" type="number" placeholder="5" oninput="profileUpdate()"/></div>
     <div class="form-group form-full"><div class="form-label">Program Bio</div><textarea class="form-textarea" id="p-bio" rows="4" placeholder="Tell athletes about your program, coaching philosophy, and what you're recruiting for…" oninput="profileUpdate()"></textarea></div>
+  </div>
+  <div class="needs-panel">
+    <div class="needs-panel-hd">
+      <div>
+        <div class="needs-title">Program Needs</div>
+        <div class="needs-sub">Private recruiting targets for your staff. Publishing can come later.</div>
+      </div>
+      <button class="needs-add-btn" onclick="addProgramNeed()">+ Need</button>
+    </div>
+    <div class="needs-list" id="needs-list"></div>
   </div>
   <div class="save-bar">
     <button class="save-btn" onclick="saveProfile()">Save Profile</button>

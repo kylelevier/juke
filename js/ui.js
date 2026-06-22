@@ -23,14 +23,11 @@ function _logoPlaceholder(name){
 }
 
 function fetchSchoolLogo(name,wrap){
-  if(_logoUrlCache[name]){
-    _paintLogo(wrap,_logoUrlCache[name],name);
-    return;
-  }
-  const domain=SCHOOL_DOMAINS[name];
-  if(!domain)return;
-  const url=`https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  // Resolve via the shared resolver: curated override (school-logos bucket) → favicon.
+  const url=window.schoolLogoUrl?window.schoolLogoUrl(name):null;
+  if(!url)return;
   _logoUrlCache[name]=url;
+  if(wrap)_paintLogo(wrap,url,name);
   // paint all current wraps for this school
   document.querySelectorAll('[data-logo]').forEach(w=>{
     if(w.dataset.logo===name)_paintLogo(w,url,name);

@@ -97,7 +97,7 @@ function bioApplyFormula(key){
   const ta=document.getElementById('p-intro');
   if(!ta)return;
   // Try to pre-fill position from selected chips
-  const pos=[...document.querySelectorAll('.pos-chip.selected')].map(el=>el.querySelector('input').value).join('/');
+  const pos=[...document.querySelectorAll('#pos-grid .pos-chip.selected')].map(el=>el.querySelector('input').value).join('/');
   let tpl=BIO_FORMULAS[key];
   if(pos&&key==='stats')tpl=pos+'. [Stat 1], [Stat 2]. [What makes you rare].';
   if(pos&&key==='identity')tpl=pos+' with [key trait]. [Proof].';
@@ -143,7 +143,20 @@ function togglePos(el){
   saveProfile();
 }
 function getPositions(){
-  return [...document.querySelectorAll('.pos-chip.selected')].map(el=>el.querySelector('input').value);
+  return [...document.querySelectorAll('#pos-grid .pos-chip.selected')].map(el=>el.querySelector('input').value);
+}
+function getProfileEvents(){
+  const fv=id=>(document.getElementById(id)||{}).value||'';
+  const name=fv('p-event-name').trim();
+  if(!name) return [];
+  return [{
+    id:'event_primary',
+    name,
+    date:fv('p-event-date').trim(),
+    location:fv('p-event-location').trim(),
+    source:fv('p-event-source').trim(),
+    verified:fv('p-event-source').trim()==='USA Football' || fv('p-verified-source').trim().toLowerCase().includes('usa football')
+  }];
 }
 // ── AWARDS (dynamic rows) ──────────────────────────────────
 function addAward(val=''){
@@ -174,7 +187,15 @@ function saveProfile(){
     parent:fv('p-parent'),clubCoach:fv('p-club-coach'),
     positions:getPositions(),
     height:fv('p-height'),weight:fv('p-weight'),forty:fv('p-forty'),
-    vertical:fv('p-vertical'),broad:fv('p-broad'),shuttle:fv('p-shuttle'),
+    vertical:fv('p-vertical'),twenty:fv('p-twenty'),broad:fv('p-broad'),shuttle:fv('p-shuttle'),
+    verifiedSource:fv('p-verified-source'),verifiedDate:fv('p-verified-date'),
+    verifiedMeasurables:{
+      twenty:{value:fv('p-twenty'),source:fv('p-verified-source'),verifiedAt:fv('p-verified-date')},
+      shuttle:{value:fv('p-shuttle'),source:fv('p-verified-source'),verifiedAt:fv('p-verified-date')},
+      broad:{value:fv('p-broad'),source:fv('p-verified-source'),verifiedAt:fv('p-verified-date')}
+    },
+    eventName:fv('p-event-name'),eventDate:fv('p-event-date'),eventLocation:fv('p-event-location'),eventSource:fv('p-event-source'),
+    events:getProfileEvents(),
     gp:fv('s-gp'),comp:fv('s-comp'),att:fv('s-att'),
     ptd:fv('s-ptd'),pyds:fv('s-pyds'),int:fv('s-int'),
     rec:fv('s-rec'),ryds:fv('s-ryds'),rtd:fv('s-rtd'),
@@ -199,11 +220,32 @@ function loadPlayerProfile(){
   // Normalize: if data uses long keys, remap to short keys so all code below works
   if(!d.fname&&d['p-fname']){
     ['fname','lname','gradyr','city','school','gpa','sat','act','major','honors',
-     'email','phone','parent','height','weight','forty','vertical','broad','shuttle',
+     'email','phone','parent','height','weight','forty','vertical','twenty','broad','shuttle',
+     'verifiedSource','verifiedDate','eventName','eventDate','eventLocation','eventSource',
      'highlight','gamefilm','profileurl','intro'].forEach(k=>{
       if(d['p-'+k]!==undefined&&d[k]===undefined)d[k]=d['p-'+k];
     });
     if(!d.positions&&d._positions)d.positions=d._positions;
+  }
+  if(d.verifiedMeasurables){
+    if(d.twenty===undefined)d.twenty=d.verifiedMeasurables.twenty?.value||'';
+    if(d.shuttle===undefined)d.shuttle=d.verifiedMeasurables.shuttle?.value||'';
+    if(d.broad===undefined)d.broad=d.verifiedMeasurables.broad?.value||'';
+    if(d.verifiedSource===undefined)d.verifiedSource=
+      d.verifiedMeasurables.twenty?.source||
+      d.verifiedMeasurables.shuttle?.source||
+      d.verifiedMeasurables.broad?.source||'';
+    if(d.verifiedDate===undefined)d.verifiedDate=
+      d.verifiedMeasurables.twenty?.verifiedAt||
+      d.verifiedMeasurables.shuttle?.verifiedAt||
+      d.verifiedMeasurables.broad?.verifiedAt||'';
+  }
+  if((!d.eventName&&!d.eventDate&&!d.eventLocation&&!d.eventSource)&&Array.isArray(d.events)&&d.events.length){
+    const ev=d.events[0]||{};
+    d.eventName=ev.name||'';
+    d.eventDate=ev.date||'';
+    d.eventLocation=ev.location||'';
+    d.eventSource=ev.source||'';
   }
   const fields=[
     ['p-fname','fname'],['p-lname','lname'],['p-gradyr','gradyr'],['p-city','city'],
@@ -211,7 +253,9 @@ function loadPlayerProfile(){
     ['p-major','major'],['p-honors','honors'],
     ['p-email','email'],['p-phone','phone'],['p-parent','parent'],['p-club-coach','clubCoach'],
     ['p-height','height'],['p-weight','weight'],['p-forty','forty'],
-    ['p-vertical','vertical'],['p-broad','broad'],['p-shuttle','shuttle'],
+    ['p-vertical','vertical'],['p-twenty','twenty'],['p-broad','broad'],['p-shuttle','shuttle'],
+    ['p-verified-source','verifiedSource'],['p-verified-date','verifiedDate'],
+    ['p-event-name','eventName'],['p-event-date','eventDate'],['p-event-location','eventLocation'],['p-event-source','eventSource'],
     ['s-gp','gp'],['s-comp','comp'],['s-att','att'],['s-ptd','ptd'],['s-pyds','pyds'],
     ['s-int','int'],['s-rec','rec'],['s-ryds','ryds'],['s-rtd','rtd'],
     ['s-ruyds','ruyds'],['s-rutd','rutd'],

@@ -1,13 +1,13 @@
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
 const ATHLETES = [
-  {id:1,name:"Camryn Wells",pos:["WR","PR"],year:2026,gpa:3.9,state:"TX",city:"Dallas",height:"5'6\"",forty:"4.38",vertical:"32\"",school:"DeSoto HS",division:"D1",sports:["Track","Soccer"],bio:"3× All-State WR. 89 catches for 1,240 yards in 2024. Track star with 4.38 speed.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+  {id:1,name:"Camryn Wells",pos:["WR","PR"],year:2026,gpa:3.9,state:"TX",city:"Dallas",height:"5'6\"",forty:"4.38",vertical:"32\"",twenty:"3.08",shuttle:"4.24",broad:"8'8\"",verifiedSource:"USA Football Talent ID",verifiedDate:"Feb 2026",events:[{name:"USA Football Talent ID - Dallas",date:"Feb 2026",location:"Dallas, TX",source:"USA Football",verified:true}],school:"DeSoto HS",division:"D1",sports:["Track","Soccer"],bio:"3× All-State WR. 89 catches for 1,240 yards in 2024. Track star with 4.38 speed.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
   {id:2,name:"Destiny Okafor",pos:["QB"],year:2025,gpa:3.7,state:"FL",city:"Miami",height:"5'9\"",forty:"4.62",vertical:"28\"",school:"Miami Central HS",division:"D1",sports:["Basketball"],bio:"Dual-threat QB with D1 upside. 24 TDs, 4 INTs. Committed football IQ."},
-  {id:3,name:"Maya Thornton",pos:["CB","S"],year:2026,gpa:4.0,state:"CA",city:"Inglewood",height:"5'7\"",forty:"4.44",vertical:"30\"",school:"Inglewood HS",division:"D1",sports:["Soccer","Basketball"],bio:"2024 SoCal Defensive POY. 12 INTs. Lockdown corner with elite instincts.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+  {id:3,name:"Maya Thornton",pos:["CB","S"],year:2026,gpa:4.0,state:"CA",city:"Inglewood",height:"5'7\"",forty:"4.44",vertical:"30\"",twenty:"3.16",shuttle:"4.31",broad:"8'2\"",verifiedSource:"USA Football Talent ID",verifiedDate:"Mar 2026",events:[{name:"USA Football Talent ID - Los Angeles",date:"Mar 2026",location:"Los Angeles, CA",source:"USA Football",verified:true}],school:"Inglewood HS",division:"D1",sports:["Soccer","Basketball"],bio:"2024 SoCal Defensive POY. 12 INTs. Lockdown corner with elite instincts.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
   {id:4,name:"Jayla Monroe",pos:["RB","WR"],year:2027,gpa:3.5,state:"GA",city:"Atlanta",height:"5'5\"",forty:"4.41",vertical:"31\"",school:"Westlake HS",division:"D2",sports:["Soccer"],bio:"Explosive playmaker. 900 rush yards + 40 catches in 2024. Makes people miss."},
   {id:5,name:"Simone Reeves",pos:["QB","WR"],year:2026,gpa:3.8,state:"OH",city:"Columbus",height:"5'8\"",forty:"4.55",vertical:"29\"",school:"Dublin Jerome HS",division:"D1",sports:["Volleyball"],bio:"72% completion rate, 1,800 yards. Elite IQ and composure under pressure.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
   {id:6,name:"Imani Clarke",pos:["S","LB"],year:2025,gpa:3.6,state:"TX",city:"Houston",height:"5'8\"",forty:"4.51",vertical:"33\"",school:"Klein Oak HS",division:"D1",sports:["Track","Soccer"],bio:"Rangy safety with closing speed. 8 sacks from LB. Elite athlete."},
-  {id:7,name:"Taylor Brooks",pos:["WR","KR"],year:2026,gpa:3.4,state:"AZ",city:"Phoenix",height:"5'5\"",forty:"4.35",vertical:"34\"",school:"Desert Vista HS",division:"D1",sports:["Track"],bio:"Fastest player in AZ. Track sprinter. Can take any touch to the house."},
+  {id:7,name:"Taylor Brooks",pos:["WR","KR"],year:2026,gpa:3.4,state:"AZ",city:"Phoenix",height:"5'5\"",forty:"4.35",vertical:"34\"",twenty:"3.02",shuttle:"4.18",broad:"8'10\"",verifiedSource:"USA Football Talent ID",verifiedDate:"Nov 2025",events:[{name:"USA Football Talent ID - Phoenix",date:"Nov 2025",location:"Phoenix, AZ",source:"USA Football",verified:true}],school:"Desert Vista HS",division:"D1",sports:["Track"],bio:"Fastest player in AZ. Track sprinter. Can take any touch to the house."},
   {id:8,name:"Nia Washington",pos:["QB"],year:2027,gpa:4.0,state:"NC",city:"Charlotte",height:"5'10\"",forty:"4.68",vertical:"27\"",school:"Providence Day School",division:"D1",sports:["Basketball"],bio:"Top-ranked 2027 QB. Strong arm, high IQ, exceptional leader on and off the field."},
 ];
 
@@ -53,6 +53,14 @@ function _coachMapPublishedAthlete(row, idx){
   const parts=cityState.split(',').map(x=>x.trim()).filter(Boolean);
   const positions=p.positions||p._positions||[];
   const div=(p.divisions&&p.divisions[0]) || p['pf-div'] || p.division || '';
+  const events=Array.isArray(p.events) ? p.events : [];
+  const mappedEvents=events.length ? events : (p.eventName||p['p-event-name'] ? [{
+    name:p.eventName||p['p-event-name']||'',
+    date:p.eventDate||p['p-event-date']||'',
+    location:p.eventLocation||p['p-event-location']||'',
+    source:p.eventSource||p['p-event-source']||'',
+    verified:(p.eventSource||p['p-event-source']||'')==='USA Football'
+  }] : []);
   return {
     id:'live_'+(row.user_id||row.id||idx),
     _userId:row.user_id||'',
@@ -65,6 +73,13 @@ function _coachMapPublishedAthlete(row, idx){
     height:_coachProfileField(p,'height','p-height')||'',
     forty:_coachProfileField(p,'forty','p-forty')||'',
     vertical:_coachProfileField(p,'vertical','p-vertical')||'',
+    twenty:_coachProfileField(p,'twenty','p-twenty')||p.verifiedMeasurables?.twenty?.value||'',
+    shuttle:_coachProfileField(p,'shuttle','p-shuttle')||p.verifiedMeasurables?.shuttle?.value||'',
+    broad:_coachProfileField(p,'broad','p-broad')||p.verifiedMeasurables?.broad?.value||'',
+    verifiedSource:p.verifiedSource||p['p-verified-source']||p.verifiedMeasurables?.twenty?.source||p.verifiedMeasurables?.shuttle?.source||p.verifiedMeasurables?.broad?.source||'',
+    verifiedDate:p.verifiedDate||p['p-verified-date']||p.verifiedMeasurables?.twenty?.verifiedAt||p.verifiedMeasurables?.shuttle?.verifiedAt||p.verifiedMeasurables?.broad?.verifiedAt||'',
+    verifiedMeasurables:p.verifiedMeasurables||null,
+    events:mappedEvents.filter(ev=>ev&&ev.name),
     school:_coachProfileField(p,'school','p-school')||'',
     division:div.replace('Division ','D')||'',
     sports:[p.sport1,p.sport2].filter(Boolean),
@@ -109,11 +124,11 @@ async function loadPublishedAthletes(){
 }
 
 const COACH_PIPELINE_STAGES = [
-  {key:"identified", label:"Identified",    color:"#888888"},
-  {key:"evaluating", label:"Evaluating",    color:"#7B2FFF"},
-  {key:"contacting", label:"Contacting",    color:"#0057FF"},
-  {key:"recruiting", label:"Recruiting",    color:"#FF6B00"},
-  {key:"offer",      label:"Offer Extended",color:"#FF0080"},
+  {key:"identified", label:"Watch",        color:"#888888"},
+  {key:"evaluating", label:"Evaluate",     color:"#7B2FFF"},
+  {key:"contacting", label:"Contacted",    color:"#0057FF"},
+  {key:"recruiting", label:"Active Recruit",color:"#FF6B00"},
+  {key:"offer",      label:"Offer",        color:"#FF0080"},
   {key:"committed",  label:"Committed",     color:"#00E050"},
 ];
 
@@ -159,9 +174,136 @@ let coachTags = ls('tags') || _defaultCoachTags();
 let coachNotes        = ls('notes')        || {};
 let coachNextActions  = ls('next_actions') || {};
 let coachLastActivity = ls('last_activity')|| {};
+let coachEvaluations  = ls('evaluations')  || {};
+let coachNeeds        = ls('needs')        || [
+  {id:1,classYear:'2027',position:'DB',priority:'High',slotType:'Roster spot',minGpa:'3.4',region:'Any',notes:'Can cover slot receivers and close space quickly.',visibility:'program_private'},
+  {id:2,classYear:'2026',position:'QB',priority:'Medium',slotType:'Roster spot',minGpa:'3.5',region:'South',notes:'Decision maker with short-area mobility.',visibility:'program_private'}
+];
 let activePos = new Set();
 let activeBoardFilter = null; // null = All Pipeline
 let _spId = null;
+
+const FLAG_POSITION_ALIASES = {
+  C: ['C','Center','OL'],
+  DB: ['DB','CB','Corner','Cornerback'],
+  Rusher: ['Rusher','Rush','LB','Linebacker'],
+  Utility: ['Utility','ATH','Athlete','PR','KR','Returner']
+};
+
+const REGION_GROUPS = {
+  south: ['AL','AR','FL','GA','KY','LA','MS','NC','OK','SC','TN','TX','VA','WV'],
+  southeast: ['AL','FL','GA','MS','NC','SC','TN'],
+  southwest: ['AZ','NM','OK','TX'],
+  west: ['AK','AZ','CA','CO','HI','ID','MT','NV','NM','OR','UT','WA','WY'],
+  midwest: ['IA','IL','IN','KS','MI','MN','MO','ND','NE','OH','SD','WI'],
+  northeast: ['CT','DE','MA','MD','ME','NH','NJ','NY','PA','RI','VT','DC']
+};
+
+function normalizeFlagPosition(pos){
+  const raw=String(pos||'').trim();
+  if(!raw) return '';
+  for(const [canonical, aliases] of Object.entries(FLAG_POSITION_ALIASES)){
+    if(aliases.map(a=>a.toLowerCase()).includes(raw.toLowerCase())) return canonical;
+  }
+  return raw;
+}
+
+function flagPositionMatches(athletePositions, selected){
+  const selectedNorm=normalizeFlagPosition(selected);
+  return (athletePositions||[]).some(p=>normalizeFlagPosition(p)===selectedNorm);
+}
+
+function flagPositionLabel(pos){
+  return normalizeFlagPosition(pos);
+}
+
+function coachAthleteSearchText(a){
+  return [
+    a.name,
+    a.school,
+    a.city,
+    a.state,
+    a.year,
+    a.division,
+    a.twenty,
+    a.shuttle,
+    a.broad,
+    a.verifiedSource,
+    a.verifiedDate,
+    ...athleteEvents(a).flatMap(ev=>[ev.name,ev.date,ev.location,ev.source,ev.verified?'verified':'']),
+    ...(a.pos||[]).map(flagPositionLabel),
+    ...(a.sports||[]),
+    a.bio
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function verifiedValue(a, key){
+  return a?.verifiedMeasurables?.[key]?.value || a?.[key] || '';
+}
+
+function verifiedMeta(a){
+  const src=a?.verifiedSource || a?.verifiedMeasurables?.twenty?.source || a?.verifiedMeasurables?.shuttle?.source || a?.verifiedMeasurables?.broad?.source || '';
+  const date=a?.verifiedDate || a?.verifiedMeasurables?.twenty?.verifiedAt || a?.verifiedMeasurables?.shuttle?.verifiedAt || a?.verifiedMeasurables?.broad?.verifiedAt || '';
+  return {src,date, isVerified: !!(src||date)};
+}
+
+function verifiedBadge(a){
+  const meta=verifiedMeta(a);
+  if(!meta.isVerified) return '';
+  const label=meta.src || 'USA Football';
+  return `<span class="coach-verified-badge">Verified: ${escHtml(label)}</span>`;
+}
+
+function athleteEvents(a){
+  if(Array.isArray(a?.events)) return a.events.filter(ev=>ev&&ev.name);
+  return [];
+}
+
+function primaryEvent(a){
+  return athleteEvents(a)[0] || null;
+}
+
+function eventBadge(a){
+  const ev=primaryEvent(a);
+  if(!ev) return '';
+  const label=ev.source==='USA Football' ? ev.name.replace(/^USA Football\s*/i,'USAF ') : ev.name;
+  return `<span class="coach-event-badge">${escHtml(label)}</span>`;
+}
+
+function evaluationCount(athleteId){
+  return (coachEvaluations[String(athleteId)]||[]).length;
+}
+
+function evaluationBadge(athleteId){
+  const count=evaluationCount(athleteId);
+  return count ? `<span class="coach-eval-badge">${count} Eval${count===1?'':'s'}</span>` : '';
+}
+
+function activeCoachNeeds(){
+  return Array.isArray(coachNeeds) ? coachNeeds : [];
+}
+
+function needMatchesAthlete(need, athlete){
+  if(!need||!athlete) return false;
+  const classOk=!need.classYear || String(need.classYear)===String(athlete.year);
+  const posOk=!need.position || flagPositionMatches(athlete.pos||[], need.position);
+  const gpaOk=!need.minGpa || (parseFloat(athlete.gpa)||0) >= (parseFloat(need.minGpa)||0);
+  const region=String(need.region||'').toLowerCase();
+  const state=String(athlete.state||'').toUpperCase();
+  const regionOk=!region || region==='any' || region==='open' || String(athlete.state||'').toLowerCase()===region || String(athlete.city||'').toLowerCase().includes(region) || (REGION_GROUPS[region]||[]).includes(state);
+  return classOk && posOk && gpaOk && regionOk;
+}
+
+function matchingNeedsForAthlete(athlete){
+  return activeCoachNeeds().filter(n=>needMatchesAthlete(n, athlete));
+}
+
+function needsMatchBadge(athlete){
+  const matches=matchingNeedsForAthlete(athlete);
+  if(!matches.length) return '';
+  const top=matches[0];
+  return `<span class="coach-need-match-badge">${escHtml(top.classYear||'Open')} ${escHtml(top.position||'Need')} Match</span>`;
+}
 
 // ── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(tab){
@@ -205,7 +347,7 @@ function sortProspects(key){
     const arrow=th.querySelector('.sort-arrow');
     if(arrow) arrow.textContent='↕';
   });
-  const idx = ['name','pos','year','gpa','forty','vertical','state'].indexOf(key);
+  const idx = ['name','pos','year','gpa','twenty','shuttle','broad'].indexOf(key);
   if(idx>=0){
     const ths = document.querySelectorAll('.prospect-table thead th');
     if(ths[idx]){
@@ -225,10 +367,10 @@ function filterAthletes(){
   const div = ((document.getElementById('f-div')||{}).value||'');
   const sport = ((document.getElementById('f-sport')||{}).value||'');
   let results = ATHLETES.filter(a=>{
-    if(q && !a.name.toLowerCase().includes(q) && !a.school.toLowerCase().includes(q) && !a.city.toLowerCase().includes(q)) return false;
+    if(q && !coachAthleteSearchText(a).includes(q)) return false;
     if(yr && a.year !== parseInt(yr)) return false;
     if(st && a.state !== st) return false;
-    if(activePos.size > 0 && !a.pos.some(p=>activePos.has(p))) return false;
+    if(activePos.size > 0 && ![...activePos].some(pos=>flagPositionMatches(a.pos,pos))) return false;
     if(gpaMin > 0 && (a.gpa||0) < gpaMin) return false;
     if(div && a.division !== div) return false;
     if(sport && !(a.sports||[]).includes(sport)) return false;
@@ -237,8 +379,11 @@ function filterAthletes(){
   if(_sortKey){
     results = [...results].sort((a,b)=>{
       let av = a[_sortKey], bv = b[_sortKey];
-      if(_sortKey==='pos') { av=a.pos[0]||''; bv=b.pos[0]||''; }
-      if(_sortKey==='forty'||_sortKey==='vertical') { av=parseFloat(av)||0; bv=parseFloat(bv)||0; }
+      if(_sortKey==='pos') { av=flagPositionLabel(a.pos[0])||''; bv=flagPositionLabel(b.pos[0])||''; }
+      if(_sortKey==='twenty'||_sortKey==='shuttle'||_sortKey==='broad'||_sortKey==='forty'||_sortKey==='vertical') {
+        av=parseFloat(verifiedValue(a,_sortKey)||av)||0;
+        bv=parseFloat(verifiedValue(b,_sortKey)||bv)||0;
+      }
       if(typeof av==='string') return av.localeCompare(bv)*_sortDir;
       return (av-bv)*_sortDir;
     });
@@ -253,21 +398,24 @@ function filterAthletes(){
 function athleteTableRow(a){
   const stage = getPipelineStage(a.id);
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
+  const needBadge = needsMatchBadge(a);
+  const evBadge = eventBadge(a);
   const aid = jsArg(a.id);
   const stageBadge = stage
     ? `<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stage.color};color:${stage.color};background:${stage.color}18">${stage.label}</span>`
     : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
   return `<tr onclick="openAthlete(${aid})">
     <td>
-      <div class="pt-name">${a.name}${endorsed?' <span style="font-size:9px;color:#00A040">✓</span>':''}</div>
+      <div class="pt-name">${a.name}${endorsed?' <span style="font-size:9px;color:#00A040">✓ Recommended</span>':''}</div>
       <div class="pt-school">${a.school} · ${a.city}, ${a.state}</div>
+      ${needBadge||evBadge?`<div class="pt-badge-row">${needBadge}${evBadge}</div>`:''}
     </td>
-    <td><div class="pt-pos">${a.pos.map(p=>`<span class="a-pos-pill">${p}</span>`).join('')}</div></td>
+    <td><div class="pt-pos">${a.pos.map(p=>`<span class="a-pos-pill">${flagPositionLabel(p)}</span>`).join('')}</div></td>
     <td><span class="a-year-pill">'${String(a.year).slice(2)}</span></td>
     <td class="pt-stat">${a.gpa}</td>
-    <td class="pt-meas">${a.forty}</td>
-    <td class="pt-meas">${a.vertical}</td>
-    <td class="pt-meas">${a.state}</td>
+    <td class="pt-meas">${escHtml(verifiedValue(a,'twenty')||'—')}</td>
+    <td class="pt-meas">${escHtml(verifiedValue(a,'shuttle')||'—')}</td>
+    <td class="pt-meas">${escHtml(verifiedValue(a,'broad')||'—')}</td>
     <td>${stageBadge}</td>
     <td onclick="event.stopPropagation()">
       <div class="pt-actions">
@@ -300,10 +448,20 @@ function fitScore(a){
   let score = 0;
   const gpa = parseFloat(a.gpa)||0;
   if(gpa>=4.0)score+=25; else if(gpa>=3.8)score+=22; else if(gpa>=3.5)score+=18; else if(gpa>=3.0)score+=12;
+  const twenty = parseFloat(verifiedValue(a,'twenty'))||0;
   const forty = parseFloat(a.forty)||5.0;
-  if(forty<=4.35)score+=30; else if(forty<=4.45)score+=25; else if(forty<=4.55)score+=18; else if(forty<=4.65)score+=12; else score+=5;
+  if(twenty){
+    if(twenty<=3.05)score+=30; else if(twenty<=3.15)score+=25; else if(twenty<=3.3)score+=18; else if(twenty<=3.45)score+=12; else score+=5;
+  } else {
+    if(forty<=4.35)score+=30; else if(forty<=4.45)score+=25; else if(forty<=4.55)score+=18; else if(forty<=4.65)score+=12; else score+=5;
+  }
+  const shuttle = parseFloat(verifiedValue(a,'shuttle'))||0;
   const vert = parseInt(a.vertical)||0;
-  if(vert>=34)score+=20; else if(vert>=30)score+=16; else if(vert>=26)score+=12; else score+=6;
+  if(shuttle){
+    if(shuttle<=4.15)score+=20; else if(shuttle<=4.35)score+=16; else if(shuttle<=4.55)score+=12; else score+=6;
+  } else {
+    if(vert>=34)score+=20; else if(vert>=30)score+=16; else if(vert>=26)score+=12; else score+=6;
+  }
   if(a.division==='D1')score+=15; else if(a.division==='D2')score+=10;
   if(a.year>=2026)score+=10;
   return Math.min(99, score);
@@ -339,11 +497,15 @@ function athleteCard(a){
       </div>
     </div>
     <div class="athlete-pos-row">
-      ${a.pos.map(p=>`<span class="a-pos-pill">${p}</span>`).join('')}
+      ${a.pos.map(p=>`<span class="a-pos-pill">${flagPositionLabel(p)}</span>`).join('')}
       <span class="a-year-pill">'${String(a.year).slice(2)}</span>
-      ${endorsed?'<span class="coach-verified-badge">✓ Coach Verified</span>':''}
+      ${endorsed?'<span class="coach-verified-badge">✓ Recommended</span>':''}
+      ${evaluationBadge(a.id)}
+      ${needsMatchBadge(a)}
+      ${eventBadge(a)}
     </div>
-    <div class="athlete-stats-line">GPA <span>${a.gpa}</span> &nbsp;·&nbsp; ${a.height} &nbsp;·&nbsp; 40yd <span>${a.forty}</span> &nbsp;·&nbsp; Vert <span>${a.vertical}</span></div>
+    <div class="athlete-stats-line">GPA <span>${a.gpa}</span> &nbsp;·&nbsp; ${a.height} &nbsp;·&nbsp; 20yd <span>${escHtml(verifiedValue(a,'twenty')||'—')}</span> &nbsp;·&nbsp; 5-10-5 <span>${escHtml(verifiedValue(a,'shuttle')||'—')}</span> &nbsp;·&nbsp; Broad <span>${escHtml(verifiedValue(a,'broad')||'—')}</span></div>
+    ${verifiedBadge(a)}
     <div class="athlete-card-ft">
       <button class="ac-btn" onclick="event.stopPropagation();openAthlete(${aid})">View</button>
       <button class="ac-btn${stage?' primary':''}" onclick="event.stopPropagation();openAthlete(${aid});document.getElementById('sp-stage-row').scrollIntoView({behavior:'smooth'})">${stage?stage.label:'+ Board'}</button>
@@ -370,7 +532,7 @@ function toggleAthleteBoard(athleteId, boardId){
   openAthlete(athleteId);
 }
 function newBoard(){
-  const name=prompt('Board name (e.g. "2026 QBs", "Priority Targets"):');
+  const name=prompt('Board name (e.g. "2027 DB/Rushers", "Priority Targets"):');
   if(!name||!name.trim()) return;
   const b={id:Date.now(),name:name.trim()};
   coachBoards.push(b);
@@ -400,12 +562,14 @@ function renderBoardSummary(){
   const activeCount=[...(coachPipeline.contacting||[]),...(coachPipeline.recruiting||[]),...(coachPipeline.offer||[])].length;
   const nextActionCount=allIds.filter(id=>coachNextActions[id]).length;
   const boardCount=coachBoards.length;
+  const needsCount=activeCoachNeeds().length;
   row.innerHTML=[
     {num:allIds.length,lbl:'On Board',tone:'dark'},
-    {num:activeCount,lbl:'Active',tone:'blue'},
+    {num:activeCount,lbl:'Active Recruits',tone:'blue'},
     {num:nextActionCount,lbl:'Next Actions',tone:'pink'},
     {num:liveCount,lbl:'Live Profiles',tone:'green'},
-    {num:boardCount,lbl:'Lists',tone:'gray'}
+    {num:boardCount,lbl:'Lists',tone:'gray'},
+    {num:needsCount,lbl:'Needs',tone:'purple'}
   ].map(s=>`<div class="board-summary-card ${s.tone}">
     <div class="board-summary-num">${s.num}</div>
     <div class="board-summary-lbl">${s.lbl}</div>
@@ -454,7 +618,7 @@ function renderPipeline(){
       const fitHtml = fs>=80
         ? `<span class="pl-fit">${fs}</span>`
         : '';
-      const posText=(a.pos||[]).join('/');
+      const posText=(a.pos||[]).map(flagPositionLabel).join('/');
       const meta=[posText, `'${String(a.year).slice(2)}`, a.state].filter(Boolean).join(' · ');
       const schoolLine=[a.school, a.city].filter(Boolean).join(' · ');
       return `<div class="pl-card" draggable="true" data-athlete-id="${escHtml(id)}"
@@ -474,6 +638,7 @@ function renderPipeline(){
         ${na?`<div class="pl-na"><span class="pl-na-arrow">→</span>${escHtml(na)}</div>`:''}
         <div class="pl-card-foot">
           <span class="pl-last">${escHtml(laText)}</span>
+          ${evaluationBadge(id)}
           ${a._live?'<span class="pl-live">Live profile</span>':''}
         </div>
         ${boardNames.length?`<div class="pl-board-tags">${boardNames.map(n=>`<span class="pl-board-tag">${escHtml(n)}</span>`).join('')}</div>`:''}

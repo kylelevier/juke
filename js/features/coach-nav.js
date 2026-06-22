@@ -13,6 +13,11 @@ if (sb) {
   });
 }
 
+// Load curated school-logo overrides (school-logos bucket → programs.logo_url).
+if (sb && window.loadSchoolLogoOverrides) {
+  loadSchoolLogoOverrides(sb, function(){ if (typeof loadSchoolLogo === 'function') loadSchoolLogo(); });
+}
+
 function _updateCoachAuthUI() {
   var chip    = document.getElementById('juke-user-chip');
   var signinBtn = document.getElementById('coach-signin-btn');

@@ -285,6 +285,8 @@ function _buildActivityRows(){
       rows.push({name:a.name, action:'Note added', badge:null, color:'#888', time:_relTime(la.ts), ts:la.ts});
     } else if(la.type==='action'){
       rows.push({name:a.name, action:`Next action set: ${la.text}`, badge:null, color:'#888', time:_relTime(la.ts), ts:la.ts});
+    } else if(la.type==='evaluation'){
+      rows.push({name:a.name, action:`Private evaluation saved${la.text?': '+la.text:''}`, badge:'Evaluation', color:'#7B2FFF', time:_relTime(la.ts), ts:la.ts});
     }
   });
 
