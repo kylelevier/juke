@@ -36,8 +36,11 @@ async function trackAlphaVisit(){
 }
 
 // ── LOCAL STORAGE HELPERS ────────────────────────────────────
-function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return{}}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+// In preview mode the iframe uses sessionStorage (per-tab, starts blank) so it
+// never reads the admin's cached localStorage data for another athlete.
+function _ls(){ return window.PREVIEW_USER_ID ? sessionStorage : localStorage; }
+function lsGet(k){try{return JSON.parse(_ls().getItem(k))||{}}catch(e){return{}}}
+function lsSet(k,v){try{_ls().setItem(k,JSON.stringify(v))}catch(e){}}
 
 // ── PERSISTED APP STATE ──────────────────────────────────────
 let statusData   = lsGet('juke_status');
