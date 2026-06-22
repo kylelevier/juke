@@ -34,7 +34,7 @@
       var name = ((pd['p-fname'] || '') + ' ' + (pd['p-lname'] || '')).trim() || row.user_id;
       var pos  = (pd.positions || []).join(', ') || '';
       var school = pd['p-school'] || '';
-      html += '<div class="admin-suggest-item" onclick="adminStartImpersonate(' + JSON.stringify(row.user_id) + ',' + JSON.stringify(name) + ')">'
+      html += '<div class="admin-suggest-item" onclick="adminStartImpersonate(\'' + row.user_id + '\',' + JSON.stringify(name).replace(/"/g, '&quot;') + ')">'
         + '<span class="admin-suggest-name">' + _esc(name) + '</span>'
         + '<span class="admin-suggest-meta">' + _esc([pos, school].filter(Boolean).join(' · ')) + '</span>'
         + '</div>';

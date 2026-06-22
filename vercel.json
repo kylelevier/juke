@@ -3,6 +3,7 @@
     { "source": "/athlete", "destination": "/pages/athlete.html" },
     { "source": "/coach", "destination": "/pages/coach.html" },
     { "source": "/hscoach", "destination": "/pages/hscoach.html" },
-    { "source": "/preview", "destination": "/preview.html" }
+    { "source": "/preview", "destination": "/preview.html" },
+    { "source": "/admin", "destination": "/pages/admin.html" }
   ]
 }

@@ -30,6 +30,37 @@
          + '</div>';
   };
 
+  // ── Upload status panel ──────────────────────────────────────────────────────
+  var _log = [];   // [{school, url, ok, err, ts}]
+
+  function _logEntry(school, url, ok, err) {
+    _log.unshift({ school: school, url: url, ok: ok, err: err, ts: new Date() });
+    _renderStatusPanel();
+  }
+
+  function _renderStatusPanel() {
+    var panel = document.getElementById('admin-logo-status');
+    if (!panel) return;
+    if (!_log.length) { panel.hidden = true; return; }
+    panel.hidden = false;
+    panel.innerHTML = '<div class="als-hd">Recent uploads</div>'
+      + _log.map(function(e){
+          var time = e.ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+          var thumb = e.url
+            ? '<img class="als-thumb" src="'+_attr(e.url)+'" alt="">'
+            : '<span class="als-thumb-empty"></span>';
+          var badge = e.ok
+            ? '<span class="als-badge ok">Saved ✓</span>'
+            : '<span class="als-badge err">'+(e.err ? _attr(String(e.err)) : 'Failed')+'</span>';
+          return '<div class="als-row">'
+            + thumb
+            + '<span class="als-school">'+_attr(e.school)+'</span>'
+            + badge
+            + '<span class="als-time">'+time+'</span>'
+            + '</div>';
+        }).join('');
+  }
+
   function _setPreview(cell,url){
     var p = cell.querySelector('.admin-logo-prev');
     if(p) p.innerHTML = url ? '<img src="'+url+'" alt="">' : '<span>—</span>';
@@ -52,26 +83,32 @@
     var path = _slug(school) + '.' + _ext(file);
     try{
       var up = await client.storage.from(BUCKET).upload(path, file, {upsert:true, contentType:file.type});
-      if(up.error){ _msg(cell, up.error.message || 'Upload failed', 'err'); return; }
+      if(up.error){ _msg(cell, up.error.message || 'Upload failed', 'err'); _logEntry(school, null, false, up.error.message || 'Upload failed'); return; }
 
       var pub = client.storage.from(BUCKET).getPublicUrl(path);
       var url = (pub.data && pub.data.publicUrl) + '?v=' + Date.now();   // cache-bust
 
       var upd = await client.from('programs').update({logo_url:url}).eq('school', school).select('school');
-      if(upd.error){ _msg(cell, upd.error.message || 'Save failed', 'err'); return; }
-      if(!upd.data || !upd.data.length){ _msg(cell,'No matching program row','err'); return; }
+      if(upd.error){ _msg(cell, upd.error.message || 'Save failed', 'err'); _logEntry(school, url, false, upd.error.message || 'Save failed'); return; }
+      if(!upd.data || !upd.data.length){ _msg(cell,'No matching program row','err'); _logEntry(school, url, false, 'No matching program row'); return; }
 
       window.SCHOOL_LOGO_OVERRIDES = window.SCHOOL_LOGO_OVERRIDES || {};
       window.SCHOOL_LOGO_OVERRIDES[school] = url;
-      _setPreview(cell, url);
+      var prev = cell.querySelector('.admin-logo-prev');
+      if (prev && window.paintSchoolLogo) {
+        window.paintSchoolLogo(prev, school, '<span>—</span>');
+      } else {
+        _setPreview(cell, url);
+      }
       _msg(cell,'Saved ✓','ok');
+      _logEntry(school, url, true, null);
 
       // Repaint this school wherever it is shown.
       document.querySelectorAll('[data-logo]').forEach(function(w){
         if(w.dataset.logo===school && window.paintSchoolLogo) window.paintSchoolLogo(w, school, w.innerHTML);
       });
       if(typeof render==='function') render();
-    }catch(e){ _msg(cell, 'Upload failed', 'err'); }
+    }catch(e){ _msg(cell, 'Upload failed', 'err'); _logEntry(school, null, false, 'Upload failed'); }
   }
 
   // Delegated listeners on the (persistent) list container — attach once.

@@ -63,9 +63,9 @@
         + '<td class="admin-dim">' + date + '</td>'
         + '<td class="admin-actions">'
           + (u.role === 'athlete'
-            ? '<button class="admin-action-btn" onclick="adminViewProfile(' + JSON.stringify(u.id) + ')">View Profile</button>'
+            ? '<button class="admin-action-btn" onclick="adminViewProfile(\'' + u.id + '\')">View Profile</button>'
             : '')
-          + '<button class="admin-action-btn warn" onclick="adminDeactivateUser(' + JSON.stringify(u.id) + ',' + JSON.stringify(u.display_name || u.id) + ')">Deactivate</button>'
+          + '<button class="admin-action-btn warn" onclick="adminDeactivateUser(\'' + u.id + '\',' + JSON.stringify(u.display_name || u.id).replace(/"/g, '&quot;') + ')">Deactivate</button>'
         + '</td>'
         + '</tr>';
     });
@@ -143,7 +143,7 @@
       var name = ((pd['p-fname'] || '') + ' ' + (pd['p-lname'] || '')).trim() || row.user_id;
       var school = pd['p-school'] || '—';
       var pos = (pd.positions || []).join(', ') || '—';
-      html += '<div class="admin-profile-pick" onclick="adminLoadProfile(' + JSON.stringify(row.user_id) + ')">'
+      html += '<div class="admin-profile-pick" onclick="adminLoadProfile(\'' + row.user_id + '\')">'
         + '<div class="admin-profile-pick-name">' + _esc(name) + '</div>'
         + '<div class="admin-profile-pick-meta">' + _esc(school) + ' · ' + _esc(pos) + '</div>'
         + '</div>';

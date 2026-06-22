@@ -154,6 +154,19 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .admin-logo-msg{font-size:12px;color:var(--text-dim);}
 .admin-logo-thumb{width:28px;height:28px;object-fit:contain;border-radius:4px;background:var(--surface3);}
 
+/* ── LOGO UPLOAD STATUS PANEL ── */
+#admin-logo-status{margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface2);}
+.als-hd{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface3);}
+.als-row{display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+.als-row:last-child{border-bottom:none;}
+.als-thumb{width:32px;height:32px;object-fit:contain;border-radius:5px;background:var(--surface3);flex-shrink:0;}
+.als-thumb-empty{width:32px;height:32px;border-radius:5px;background:var(--surface3);flex-shrink:0;display:block;}
+.als-school{flex:1;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.als-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;flex-shrink:0;}
+.als-badge.ok{background:rgba(0,160,58,.12);color:#00a03a;}
+.als-badge.err{background:rgba(192,57,43,.10);color:#c0392b;}
+.als-time{font-size:11px;color:var(--text-dim);flex-shrink:0;}
+
 /* ── ADD PROGRAM MODAL ── */
 .admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;}
 .admin-modal-overlay.open{display:flex;}
