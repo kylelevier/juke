@@ -66,12 +66,14 @@ if(sb){
     }
     if(currentUser && event === 'INITIAL_SESSION' && typeof initMessaging === 'function') await initMessaging();
   });
-  // Fallback: if admin has no Supabase session, bootstrap preview with a stub user
+  // Preview mode: _syncFromCloud may not exist yet when INITIAL_SESSION fires
+  // (auth.js loads after config.js). Always re-run it once scripts are ready.
   if(window.PREVIEW_USER_ID){
     setTimeout(async function(){
-      if(currentUser) return;
-      currentUser = { id: window.PREVIEW_USER_ID, email: '' };
-      if(typeof _updateAuthUI === 'function') _updateAuthUI();
+      if(!currentUser){
+        currentUser = { id: window.PREVIEW_USER_ID, email: '' };
+        if(typeof _updateAuthUI === 'function') _updateAuthUI();
+      }
       if(typeof _syncFromCloud === 'function') await _syncFromCloud();
     }, 800);
   }
