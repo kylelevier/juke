@@ -136,6 +136,19 @@ async function _syncPublishedAthleteProfile(profile){
   pd._avatar=typeof avatar==='string'?avatar:'';
   pd._banner=typeof banner==='string'?banner:'';
   pd._recommendations=(Array.isArray(recs)?recs:[]).filter(e=>e&&e.status==='endorsed');
+
+  // If avatar or banner are absent locally (different device / cleared storage),
+  // fetch the existing Supabase value so we don't silently wipe photos.
+  if(!pd._avatar||!pd._banner){
+    const {data:existing}=await sb.from('athlete_profiles')
+      .select('profile_data')
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+    if(existing?.profile_data){
+      if(!pd._avatar) pd._avatar=existing.profile_data._avatar||'';
+      if(!pd._banner) pd._banner=existing.profile_data._banner||'';
+    }
+  }
   pd['pf-div']=document.getElementById('pf-div')?.value||'';
   pd['pf-region']=document.getElementById('pf-region')?.value||'';
   ['p-fname','p-lname','p-email','p-gradyr','p-gpa','p-height','p-forty','p-vertical',
