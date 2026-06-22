@@ -21,7 +21,7 @@
 Three separate portals — each is a standalone page with its own script set:
 
 ### Athlete Portal (`pages/athlete.html`)
-Loads: `config.js` → `auth.js` → `data.js` → `ui.js` → `pipeline.js` → `finder.js` → `program-finder.js` → `features/activity-feed.js` → `features/workspace.js` → `features/profile-edit.js` → `features/profile-view.js` → `features/outreach.js` → `coach-portal.js` → `messaging.js`
+Loads: `config.js` → `auth.js` → `data.js` → `ui.js` → `pipeline.js` → `finder.js` → `program-finder.js` → `features/activity-feed.js` → `features/athlete-chip.js` → `features/workspace.js` → `features/board-detail.js` → `features/board-detail-draft.js` → `features/profile-edit.js` → `features/profile-view.js` → `features/outreach.js` → `coach-portal.js` → `messaging.js`
 
 Auth: Supabase (`sb`, `currentUser` from `config.js`)
 
@@ -43,14 +43,17 @@ Auth: `localStorage.juke_auth` (same as college coach)
 
 | File | Lines | Owns |
 |------|-------|------|
-| `js/pipeline.js` | 317 | Athlete board: tab switching, committed banner, offer strip, milestone timeline, drag-drop handlers, renderPipeline, buildPipelineCard |
+| `js/pipeline.js` | 572 | Athlete board: tab switching, overlay cleanup, committed banner, offer strip, milestone timeline, drag-drop handlers, renderPipeline, buildPipelineCard |
 | `js/finder.js` | 397 | Program finder: profile state, fit filters, compare bar, render results, admin toggle |
 | `js/program-finder.js` | 301 | Program slide-over panel, map (Leaflet), contact outreach |
-| `js/coach-portal.js` | 293 | Athlete-side coach unlock gate |
-| `js/features/activity-feed.js` | 211 | Feed filter map, feed item HTML, feed render |
-| `js/features/workspace.js` | 548 | School workspace drawer, user chip, stage colors, cloud save |
+| `js/coach-portal.js` | 293 | Athlete-side coach unlock gate; also owns `handlePublishToggle` (⚠️ candidate to move to `features/athlete-publish.js`) |
+| `js/features/activity-feed.js` | 232 | Feed filter map, feed item HTML, feed render, feed stats, publish nudge |
+| `js/features/athlete-chip.js` | 76 | Header user chip IIFE, `switchProfile`, `jukeLogout` — athlete portal only |
+| `js/features/workspace.js` | 479 | School workspace drawer, stage colors, cloud save |
+| `js/features/board-detail.js` | 582 | Per-school recruiting detail panel: overview, coaches, comms, notes, visits, application, offer, deadlines |
+| `js/features/board-detail-draft.js` | 213 | Outreach draft templates inside board detail |
 | `js/features/profile-edit.js` | 360 | Wizard steps, endorsements, bio builder, save/load profile, photo uploads |
-| `js/features/profile-view.js` | 459 | Read-only profile card, completeness score, athlete header |
+| `js/features/profile-view.js` | 453 | Read-only profile card, completeness score, athlete header, publish banner |
 | `js/features/outreach.js` | 146 | Email templates, highlight rail, profile copy |
 | `js/features/coach-roster.js` | 337 | Coach athlete data, `COACH_PIPELINE_STAGES`, storage, tabs, search/filter, boards, analytics |
 | `js/features/coach-profile.js` | 278 | Athlete slide-over, coach card/form, photo uploads, school logo |
