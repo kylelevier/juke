@@ -105,6 +105,7 @@ function _getFitPrefs(){
 }
 async function cloudSave(){
   if(!sb||!currentUser)return;
+  if(window.PREVIEW_USER_ID)return;
   const profile=lsGet('juke_player');
   const payload={
     user_id:currentUser.id,

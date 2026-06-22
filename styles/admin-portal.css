@@ -167,6 +167,9 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .als-badge.err{background:rgba(192,57,43,.10);color:#c0392b;}
 .als-time{font-size:11px;color:var(--text-dim);flex-shrink:0;}
 
+/* ── PREVIEW AS IFRAME ── */
+.admin-preview-iframe{display:block;width:100%;height:82vh;border:none;border-radius:10px;background:var(--surface2);}
+
 /* ── ADD PROGRAM MODAL ── */
 .admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;}
 .admin-modal-overlay.open{display:flex;}

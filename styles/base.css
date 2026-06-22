@@ -92,6 +92,11 @@ header{background:#0D0D0D;border-bottom:none;padding:0 24px;position:sticky;top:
 .tab-content.active{display:block;}
 #content-finder{padding:0 16px;}
 
+/* ── PREVIEW MODE BANNER ── */
+#preview-mode-banner{position:sticky;top:0;z-index:9999;display:flex;align-items:center;gap:10px;padding:7px 18px;background:#7b2fff;color:#fff;font-size:12px;font-weight:600;}
+#preview-mode-label{background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px;letter-spacing:.04em;text-transform:uppercase;font-size:11px;}
+#preview-mode-notice{opacity:.85;font-weight:400;}
+
 /* ── HERO ── */
 .hero{background:var(--surface);border-bottom:1px solid var(--border);padding:36px 24px 32px;display:flex;align-items:center;gap:32px;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(24,95,165,.04) 0%,transparent 60%);pointer-events:none;}
