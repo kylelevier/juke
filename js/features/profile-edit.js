@@ -73,18 +73,33 @@ function renderEndorsementSection(){
   }).join('');
 }
 
+function setEndTeamType(type){
+  var typeInput=document.getElementById('end-req-team-type');
+  var label=document.getElementById('end-req-school-label');
+  var schoolInput=document.getElementById('end-req-school');
+  var hsBtn=document.getElementById('end-type-hs');
+  var clubBtn=document.getElementById('end-type-club');
+  if(typeInput) typeInput.value=type;
+  if(hsBtn) hsBtn.classList.toggle('active', type==='hs');
+  if(clubBtn) clubBtn.classList.toggle('active', type==='club');
+  if(label) label.textContent=type==='hs'?'High School':'Club Team';
+  if(schoolInput) schoolInput.placeholder=type==='hs'?'Lincoln High School':'JUKE Elite';
+}
+
 async function submitEndorsementRequest(){
   if(window.PREVIEW_TARGET_USER_ID){alert('Preview mode is read-only.');return;}
   var name=(document.getElementById('end-req-name')||{}).value||'';
   var school=(document.getElementById('end-req-school')||{}).value||'';
   var title=(document.getElementById('end-req-title')||{}).value||'';
   var note=(document.getElementById('end-req-note')||{}).value||'';
+  var teamType=(document.getElementById('end-req-team-type')||{}).value||'hs';
   if(!name.trim()){alert('Please enter your coach\'s name.');return;}
   var payload={
     coachName:name.trim(),
     coachSchool:school.trim(),
     coachTitle:title.trim(),
-    coachNote:note.trim()
+    coachNote:note.trim(),
+    teamType:teamType
   };
   var btn=document.querySelector('.end-send-btn');
   if(btn){btn.disabled=true;btn.textContent='Sending...';}
@@ -197,7 +212,7 @@ function saveProfile(){
   const fv=id=>(document.getElementById(id)||{}).value||'';
   const d={
     fname:fv('p-fname'),lname:fv('p-lname'),gradyr:fv('p-gradyr'),
-    city:fv('p-city'),school:fv('p-school'),
+    city:fv('p-city'),school:fv('p-school'),clubTeam:fv('p-club-team'),
     gpa:fv('p-gpa'),sat:fv('p-sat'),act:fv('p-act'),
     major:fv('p-major'),honors:fv('p-honors'),
     email:fv('p-email'),phone:fv('p-phone'),
@@ -243,6 +258,7 @@ function loadPlayerProfile(){
       if(d['p-'+k]!==undefined&&d[k]===undefined)d[k]=d['p-'+k];
     });
     if(!d.positions&&d._positions)d.positions=d._positions;
+    if(!d.clubTeam&&d['p-club-team'])d.clubTeam=d['p-club-team'];
   }
   if(d.verifiedMeasurables){
     if(d.twenty===undefined)d.twenty=d.verifiedMeasurables.twenty?.value||'';
@@ -266,7 +282,7 @@ function loadPlayerProfile(){
   }
   const fields=[
     ['p-fname','fname'],['p-lname','lname'],['p-gradyr','gradyr'],['p-city','city'],
-    ['p-school','school'],['p-gpa','gpa'],['p-sat','sat'],['p-act','act'],
+    ['p-school','school'],['p-club-team','clubTeam'],['p-gpa','gpa'],['p-sat','sat'],['p-act','act'],
     ['p-major','major'],['p-honors','honors'],
     ['p-email','email'],['p-phone','phone'],['p-parent','parent'],['p-club-coach','clubCoach'],
     ['p-height','height'],['p-weight','weight'],['p-forty','forty'],

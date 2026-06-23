@@ -178,7 +178,7 @@ function buildPublicAthleteProfile(profile, opts){
   const pd={};
   [
     ['p-fname',['p-fname','fname']],['p-lname',['p-lname','lname']],['p-gradyr',['p-gradyr','gradyr']],
-    ['p-city',['p-city','city']],['p-school',['p-school','school']],['p-gpa',['p-gpa','gpa']],
+    ['p-city',['p-city','city']],['p-school',['p-school','school']],['p-club-team',['p-club-team','clubTeam']],['p-gpa',['p-gpa','gpa']],
     ['p-sat',['p-sat','sat']],['p-act',['p-act','act']],['p-major',['p-major','major']],['p-honors',['p-honors','honors']],
     ['p-height',['p-height','height']],['p-weight',['p-weight','weight']],['p-forty',['p-forty','forty']],
     ['p-vertical',['p-vertical','vertical']],['p-twenty',['p-twenty','twenty']],['p-broad',['p-broad','broad']],['p-shuttle',['p-shuttle','shuttle']],

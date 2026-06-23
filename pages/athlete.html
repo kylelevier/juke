@@ -375,7 +375,8 @@
             <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option>
           </select></div>
         <div class="form-group"><div class="form-label">City, State</div><input class="form-input" id="p-city" placeholder="Dallas, TX" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">High School / Club Team</div><input class="form-input" id="p-school" placeholder="Lincoln HS / JUKE Elite" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">High School Team</div><input class="form-input" id="p-school" placeholder="Lincoln High School" oninput="saveProfile();profileUpdate()"/></div>
+        <div class="form-group"><div class="form-label">Club Team <span style="font-weight:400;color:var(--text-muted)">(optional)</span></div><input class="form-input" id="p-club-team" placeholder="JUKE Elite" oninput="saveProfile();profileUpdate()"/></div>
       </div>
       <details class="wiz-contact-details">
         <summary class="wiz-contact-summary">+ Add contact info <span class="wiz-contact-hint">(coaches use this to reach you directly)</span></summary>
@@ -646,15 +647,20 @@
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">When a coach adds a text recommendation, a <strong style="color:#00A050">✓ Coach Verified</strong> badge appears on your profile card. College coaches weigh this heavily — it means someone in the game vouches for you.</div>
       <div id="end-cards-list"></div>
       <div class="end-request-form">
-        <div class="end-form-title">Request a recommendation from your HS or club coach</div>
+        <div class="end-form-title">Request a recommendation from a coach</div>
+        <div class="end-team-type-row">
+          <button class="end-team-type-btn active" id="end-type-hs" onclick="setEndTeamType('hs')">High School Coach</button>
+          <button class="end-team-type-btn" id="end-type-club" onclick="setEndTeamType('club')">Club Coach</button>
+        </div>
+        <input type="hidden" id="end-req-team-type" value="hs">
         <div class="end-form-grid">
           <div class="end-form-group">
             <label class="end-form-label">Coach's Name *</label>
             <input class="end-form-input" id="end-req-name" placeholder="Coach Johnson">
           </div>
           <div class="end-form-group">
-            <label class="end-form-label">School / Club</label>
-            <input class="end-form-input" id="end-req-school" placeholder="DeSoto HS">
+            <label class="end-form-label" id="end-req-school-label">High School</label>
+            <input class="end-form-input" id="end-req-school" placeholder="Lincoln High School">
           </div>
           <div class="end-form-group">
             <label class="end-form-label">Title</label>

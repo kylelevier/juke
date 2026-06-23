@@ -145,6 +145,7 @@ function _hsMapPublishedAthlete(row, idx){
     verifiedDate:p.verifiedDate||p['p-verified-date']||p.verifiedMeasurables?.twenty?.verifiedAt||p.verifiedMeasurables?.shuttle?.verifiedAt||p.verifiedMeasurables?.broad?.verifiedAt||'',
     verifiedMeasurables:p.verifiedMeasurables||null,
     school:_hsProfileField(p,'school','p-school')||'',
+    clubTeam:_hsProfileField(p,'clubTeam','p-club-team')||'',
     state:(parts[1]||p.state||'').toUpperCase(),
     programs,
     bio:p.intro||p.bio||'',
@@ -418,19 +419,22 @@ function updateHSCard(){
   if(el('hd-school-short'))  el('hd-school-short').textContent = school.length>14 ? school.slice(0,12)+'…' : (school||'Your School');
   if(el('coach-logo-init'))  el('coach-logo-init').textContent = abbr[0]||'?';
 
-  // Update stats
-  const endorsed = Object.keys(endorsements).length;
-  const withInterest = ATHLETES.filter(a=>a.programs.length>0).length;
-  setText('hs-stat-roster', ATHLETES.length);
-  setText('hs-stat-roster-summary', ATHLETES.length);
-  setText('hs-stat-seniors', ATHLETES.filter(a=>a.year===2025).length);
-  setText('hs-stat-seniors-summary', ATHLETES.filter(a=>a.year===2025).length);
+  // Update stats — show zeros when no live athletes are loaded yet
+  const isLive = _hsRosterSource === 'live';
+  const endorsed = isLive ? Object.keys(endorsements).length : 0;
+  const withInterest = isLive ? ATHLETES.filter(a=>a.programs.length>0).length : 0;
+  const rosterCount = isLive ? ATHLETES.length : 0;
+  const seniorCount = isLive ? ATHLETES.filter(a=>a.year===2025).length : 0;
+  setText('hs-stat-roster', rosterCount);
+  setText('hs-stat-roster-summary', rosterCount);
+  setText('hs-stat-seniors', seniorCount);
+  setText('hs-stat-seniors-summary', seniorCount);
   setText('hs-stat-interest', withInterest);
   setText('hs-stat-interest-summary', withInterest);
   setText('hs-stat-endorsed', endorsed);
   setText('hs-stat-endorsed-summary', endorsed);
   const countEl = el('roster-count');
-  if(countEl && _hsRosterSource==='live') countEl.textContent = ATHLETES.length+' live athlete'+(ATHLETES.length!==1?'s':'');
+  if(countEl) countEl.textContent = isLive ? ATHLETES.length+' live athlete'+(ATHLETES.length!==1?'s':'') : '';
   renderRosterAttention();
 }
 
@@ -442,6 +446,11 @@ function setText(id, value){
 function renderRosterAttention(){
   const list = el('roster-attention-list');
   if(!list) return;
+
+  if(_hsRosterSource !== 'live'){
+    list.innerHTML = '<div class="roster-attention-empty">Athletes from your school who publish their profile will appear here.</div>';
+    return;
+  }
 
   const seniors = ATHLETES.filter(a=>a.year===2025);
   const seniorsNoInterest = seniors.filter(a=>!a.programs.length);

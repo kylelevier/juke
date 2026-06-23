@@ -49,7 +49,7 @@ function renderProfileView(){
   if(!twenty)twenty=p.verifiedMeasurables?.twenty?.value||'';
   if(!shuttle)shuttle=p.verifiedMeasurables?.shuttle?.value||'';
   if(!broad)broad=p.verifiedMeasurables?.broad?.value||'';
-  var email=g('p-email'),phone=g('p-phone'),parent=g('p-parent'),city=g('p-city'),school=g('p-school');
+  var email=g('p-email'),phone=g('p-phone'),parent=g('p-parent'),city=g('p-city'),school=g('p-school'),clubTeam=g('p-club-team');
   var intro=g('p-intro');
   var word1=g('p-word1'),word2=g('p-word2'),word3=g('p-word3');
   var sport1=g('p-sport1'),sport1pos=g('p-sport1pos'),sport2=g('p-sport2'),sport2pos=g('p-sport2pos');
@@ -111,7 +111,9 @@ function renderProfileView(){
     +'<div class="dpc-info">'
     +'<div class="dpc-name">'+esc(fullName)+'</div>'
     +(posPills||metaPills?'<div class="dpc-pill-row">'+posPills+metaPills+'</div>':'')
-    +(school?'<div class="dpc-school">'+esc(school)+'</div>':'')
+    +([school,clubTeam].filter(Boolean).map(function(t){return '<span class="dpc-school-tag">'+esc(t)+'</span>';}).join('')
+      ? '<div class="dpc-school">'+[school,clubTeam].filter(Boolean).map(function(t){return '<span class="dpc-school-tag">'+esc(t)+'</span>';}).join('')+'</div>'
+      : '')
     +'</div></div></div>';
 
   // ── FILM CTA ──
@@ -269,7 +271,7 @@ function updateCompletenessScore(){
   var highlight=pv('p-highlight');
   var intro=pv('p-intro');
   var gp=pv('s-gp');
-  var school=pv('p-school');
+  var school=pv('p-school'),clubTeam=pv('p-club-team');
   var sat=pv('p-sat'),act=pv('p-act');
   var score=0,missing=[];
   if(first&&last){score+=10;}else{missing.push('Add your full name');}
@@ -280,7 +282,7 @@ function updateCompletenessScore(){
   if(highlight){score+=25;}else{missing.push('Add a highlight reel — it\'s the #1 thing coaches watch');}
   if(intro){score+=15;}else{missing.push('Write an intro message to coaches');}
   if(gp){score+=10;}else{missing.push('Add your season stats');}
-  if(school){score+=5;}else{missing.push('Add your school / club team');}
+  if(school||clubTeam){score+=5;}else{missing.push('Add your high school or club team');}
   if(sat||act){score+=5;}else{missing.push('Add your SAT or ACT score');}
   score=Math.min(100,score);
   if(score>=40 && window.JukeOnboarding){
@@ -393,7 +395,7 @@ function profileUpdate(){
   const name=(first+' '+last).trim()||'Athlete Name';
   const pos=getPositions();
   const year=pv('p-gradyr'),height=pv('p-height'),weight=pv('p-weight');
-  const city=pv('p-city'),school=pv('p-school');
+  const city=pv('p-city'),school=pv('p-school'),clubTeam=pv('p-club-team');
   const gpa=pv('p-gpa'),sat=pv('p-sat'),act=pv('p-act');
   const major=pv('p-major'),honors=pv('p-honors');
   const forty=pv('p-forty'),vertical=pv('p-vertical'),twenty=pv('p-twenty'),broad=pv('p-broad'),shuttle=pv('p-shuttle');
@@ -444,7 +446,7 @@ function profileUpdate(){
 
   const metricsHTML=metrics.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;border-collapse:collapse"><tr>${metrics.map((m,i)=>`<td width="${Math.floor(100/metrics.length)}%" align="center" style="padding:12px 6px;background:${BLUE_BG};border:1px solid ${BLUE_BD};${i>0?'border-left:none':''}"><div style="font-family:Arial,sans-serif;font-size:20px;font-weight:700;color:${BLUE_DARK};line-height:1">${ph(m.v)}</div><div style="font-family:Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${MUTED};margin-top:3px">${m.l}</div></td>`).join('')}</tr></table>`:'';
 
-  const athleticRows=[infoRow('Position',pos.join(', ')),infoRow('Height',height),infoRow('Weight',weight?weight+' lbs':''),infoRow('40-Yard Dash',forty),infoRow('Vertical',vertical),infoRow('School / Club',school),infoRow('Location',city)].filter(Boolean);
+  const athleticRows=[infoRow('Position',pos.join(', ')),infoRow('Height',height),infoRow('Weight',weight?weight+' lbs':''),infoRow('40-Yard Dash',forty),infoRow('Vertical',vertical),infoRow('High School',school),infoRow('Club Team',clubTeam),infoRow('Location',city)].filter(Boolean);
   const verifiedRows=[infoRow('20-Yard Dash',twenty),infoRow('5-10-5 Shuttle',shuttle),infoRow('Broad Jump',broad),infoRow('Verified By',verifiedSource),infoRow('Verified Date',verifiedDate)].filter(Boolean);
 
   const athleticHTML=athleticRows.length?`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">${secHead('Athletic Profile')}${athleticRows.join('')}</table>`:'';

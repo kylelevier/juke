@@ -65,7 +65,10 @@
 .et-chip.active{background:var(--columbia);border-color:var(--columbia);color:#fff;}
 /* ── COACH ENDORSEMENTS ── */
 .end-request-form{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:4px;}
-.end-form-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.end-form-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;}
+.end-team-type-row{display:flex;gap:8px;margin-bottom:12px;}
+.end-team-type-btn{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;}
+.end-team-type-btn.active{background:var(--columbia);border-color:var(--columbia);color:#fff;}
 .end-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 @media(max-width:480px){.end-form-grid{grid-template-columns:1fr;}}
 .end-form-group{display:flex;flex-direction:column;gap:4px;}
@@ -146,7 +149,8 @@
 .dpc-pill-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
 .dpc-pos-pill{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:rgba(255,0,128,.1);color:#FF0080;border:1px solid rgba(255,0,128,.25);}
 .dpc-meta-pill{font-family:'Archivo Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
-.dpc-school{font-size:12px;color:var(--text-dim);margin-top:3px;}
+.dpc-school{font-size:12px;color:var(--text-dim);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px;}
+.dpc-school-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:1px 7px;font-size:11px;}
 .dpc-film{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .dpc-film-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-right:auto;white-space:nowrap;}
 .dpc-film-pri{font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:10px 20px;border-radius:9px;background:#FF0080;color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:opacity .15s;box-shadow:0 2px 12px rgba(255,0,128,.25);}
