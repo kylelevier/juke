@@ -259,19 +259,26 @@ function ppInitMap(schoolName,state){
 }
 
 
-function ppTogglePipeline(){
+async function ppTogglePipeline(){
   if(!_ppCurrent) return;
   const status = lsGet('juke_status');
   const cur = status[_ppCurrent];
+  let res;
   if(cur && cur !== 'none'){
-    status[_ppCurrent] = 'none';
+    res=typeof removeBoardProgram==='function'
+      ? await removeBoardProgram(_ppCurrent)
+      : await saveBoardStage(_ppCurrent,'none');
+  } else {
+    res=await saveBoardStage(_ppCurrent,'saved');
+    // Also show a brief toast
+  }
+  if(res?.error) return;
+  if(cur && cur !== 'none'){
+    delete status[_ppCurrent];
   } else {
     status[_ppCurrent] = 'saved';
-    // Also show a brief toast
     showToast(`${_ppCurrent} added to your board`);
-    if(window.JukeOnboarding){
-      JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:'saved'});
-    }
+    if(window.JukeOnboarding) JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:'saved'});
   }
   lsSet('juke_status', status);
   const inPipe = status[_ppCurrent] !== 'none';
@@ -282,15 +289,21 @@ function ppTogglePipeline(){
 }
 
 
-function ppSetStatus(key){
+async function ppSetStatus(key){
   if(!_ppCurrent) return;
+  let res;
   if(key === 'none'){
-    delete statusData[_ppCurrent];
+    res=typeof removeBoardProgram==='function'
+      ? await removeBoardProgram(_ppCurrent)
+      : await saveBoardStage(_ppCurrent,'none');
   } else {
+    res=await saveBoardStage(_ppCurrent,key);
+  }
+  if(res?.error) return;
+  if(key === 'none') delete statusData[_ppCurrent];
+  else {
     statusData[_ppCurrent] = key;
-    if(window.JukeOnboarding){
-      JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:key});
-    }
+    if(window.JukeOnboarding) JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:key});
   }
   if(key !== 'none' && typeof recordMilestone === 'function') recordMilestone(_ppCurrent, key);
   lsSet('juke_status', statusData);

@@ -138,11 +138,14 @@ function _getFitTags(r){
   return[...new Set(tags)].slice(0,2);
 }
 // Used by pipeline board cards (cycle through stages without a popover)
-function cycleStatus(school){
+async function cycleStatus(school){
   const o=['none','saved','contacted','applied','committed'];
-  statusData[school]=o[(o.indexOf(statusData[school]||'none')+1)%o.length];
-  if(statusData[school]==='none') delete statusData[school];
-  lsSet('juke_status',statusData);cloudSave();
+  const next=o[(o.indexOf(statusData[school]||'none')+1)%o.length];
+  const res=next==='none'&&typeof removeBoardProgram==='function'
+    ? await removeBoardProgram(school)
+    : await saveBoardStage(school,next);
+  if(res?.error) return;
+  cloudSave();
 }
 
 function getNote(s){return adminNotes[s]||'';}

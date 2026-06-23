@@ -145,20 +145,7 @@ async function _syncPublishedAthleteProfile(profile){
   if(!sb||!currentUser)return;
   const publish=lsGet('juke_publish');
   if(!publish?.on)return;
-  const pd=Object.assign({}, profile||{});
-  const avatar=lsGet('juke_avatar');
-  const banner=lsGet('juke_banner');
-  const recs=lsGet('juke_endorsements');
-  pd._offers=Object.keys(lsGet('juke_offers'));
-  pd._positions=pd.positions||pd._positions||[];
-  pd._avatar=typeof avatar==='string'?avatar:'';
-  pd._banner=typeof banner==='string'?banner:'';
-  const athleteName=((pd['p-fname']||pd.fname||'')+' '+(pd['p-lname']||pd.lname||'')).trim().toLowerCase();
-  pd._recommendations=(Array.isArray(recs)?recs:[]).filter(e=>{
-    if(!e||e.status!=='endorsed')return false;
-    const recAthlete=(e.athleteName||'').trim().toLowerCase();
-    return !recAthlete||!athleteName||recAthlete===athleteName;
-  });
+  const pd=buildPublicAthleteProfile(profile, {shareContact: !!publish.shareContact});
 
   // If avatar or banner are absent locally (different device / cleared storage),
   // fetch the existing Supabase value so we don't silently wipe photos.
@@ -172,12 +159,6 @@ async function _syncPublishedAthleteProfile(profile){
       if(!pd._banner) pd._banner=existing.profile_data._banner||'';
     }
   }
-  pd['pf-div']=document.getElementById('pf-div')?.value||'';
-  pd['pf-region']=document.getElementById('pf-region')?.value||'';
-  ['p-fname','p-lname','p-email','p-gradyr','p-gpa','p-height','p-forty','p-vertical',
-   'p-city','p-school','p-major','p-highlight','p-gamefilm','p-phone'].forEach(id=>{
-    pd[id]=document.getElementById(id)?.value||pd[id]||'';
-  });
   const {error}=await sb.from('athlete_profiles').upsert({
     user_id:currentUser.id,
     profile_data:pd,
@@ -185,6 +166,55 @@ async function _syncPublishedAthleteProfile(profile){
     updated_at:new Date().toISOString()
   },{onConflict:'user_id'});
   if(error) console.error('JUKE publish sync failed:', error);
+}
+
+function _profilePick(profile, keys){
+  for(const key of keys){
+    const el=document.getElementById(key);
+    if(el&&el.value) return el.value;
+    if(profile&&profile[key]) return profile[key];
+  }
+  return '';
+}
+
+function buildPublicAthleteProfile(profile, opts){
+  opts=opts||{};
+  profile=profile||{};
+  const pd={};
+  [
+    ['p-fname',['p-fname','fname']],['p-lname',['p-lname','lname']],['p-gradyr',['p-gradyr','gradyr']],
+    ['p-city',['p-city','city']],['p-school',['p-school','school']],['p-gpa',['p-gpa','gpa']],
+    ['p-sat',['p-sat','sat']],['p-act',['p-act','act']],['p-major',['p-major','major']],['p-honors',['p-honors','honors']],
+    ['p-height',['p-height','height']],['p-weight',['p-weight','weight']],['p-forty',['p-forty','forty']],
+    ['p-vertical',['p-vertical','vertical']],['p-twenty',['p-twenty','twenty']],['p-broad',['p-broad','broad']],['p-shuttle',['p-shuttle','shuttle']],
+    ['p-verified-source',['p-verified-source','verifiedSource']],['p-verified-date',['p-verified-date','verifiedDate']],
+    ['p-event-name',['p-event-name','eventName']],['p-event-date',['p-event-date','eventDate']],['p-event-location',['p-event-location','eventLocation']],['p-event-source',['p-event-source','eventSource']],
+    ['p-highlight',['p-highlight','highlight']],['p-gamefilm',['p-gamefilm','gamefilm']],['p-profileurl',['p-profileurl','profileurl']],
+    ['p-intro',['p-intro','intro']],['p-word1',['p-word1','word1']],['p-word2',['p-word2','word2']],['p-word3',['p-word3','word3']],
+    ['p-sport1',['p-sport1','sport1']],['p-sport1pos',['p-sport1pos','sport1pos']],['p-sport2',['p-sport2','sport2']],['p-sport2pos',['p-sport2pos','sport2pos']],
+    ['s-gp',['s-gp','gp']],['s-comp',['s-comp','comp']],['s-att',['s-att','att']],['s-ptd',['s-ptd','ptd']],['s-pyds',['s-pyds','pyds']],
+    ['s-int',['s-int','int']],['s-rec',['s-rec','rec']],['s-ryds',['s-ryds','ryds']],['s-rtd',['s-rtd','rtd']],
+    ['s-ruyds',['s-ruyds','ruyds']],['s-rutd',['s-rutd','rutd']],['s-flags',['s-flags','flags']],['s-def-int',['s-def-int','defint']],
+    ['s-sacks',['s-sacks','sacks']],['s-dtd',['s-dtd','dtd']]
+  ].forEach(([out,keys])=>{ const val=_profilePick(profile,keys); if(val) pd[out]=val; });
+
+  pd._positions=profile.positions||profile._positions||[];
+  pd.positions=pd._positions;
+  pd.divisions=profile.divisions||[];
+  pd.awards=Array.isArray(profile.awards)?profile.awards.filter(Boolean):[];
+  pd.events=Array.isArray(profile.events)?profile.events:[];
+  pd.verifiedMeasurables=profile.verifiedMeasurables||null;
+  pd._offers=Object.keys(lsGet('juke_offers'));
+  const avatar=lsGet('juke_avatar');
+  const banner=lsGet('juke_banner');
+  pd._avatar=typeof avatar==='string'?avatar:'';
+  pd._banner=typeof banner==='string'?banner:'';
+  pd._contact_public=!!opts.shareContact;
+  if(opts.shareContact){
+    [['p-email',['p-email','email']],['p-phone',['p-phone','phone']],['p-parent',['p-parent','parent']],['p-club-coach',['p-club-coach','clubCoach']]]
+      .forEach(([out,keys])=>{ const val=_profilePick(profile,keys); if(val) pd[out]=val; });
+  }
+  return pd;
 }
 
 // ── CLOUD LOAD ───────────────────────────────────────────
@@ -211,14 +241,18 @@ async function _syncFromCloud(){
       readiness: bundle.readiness || playerData.readiness || null
     };
   } else {
-  const cloudRes=await sb.from('player_data').select('*').eq('user_id',currentUser.id).maybeSingle();
-  if(cloudRes.error){
-    if(cloudRes.error.code !== 'PGRST116') console.error('JUKE cloud load failed:', cloudRes.error);
-  }else{
-    data=cloudRes.data;
+    const cloudRes=await sb.from('player_data').select('*').eq('user_id',currentUser.id).maybeSingle();
+    if(cloudRes.error){
+      if(cloudRes.error.code !== 'PGRST116') console.error('JUKE cloud load failed:', cloudRes.error);
+    }else{
+      data=cloudRes.data;
+    }
   }
+  if(!data)data={};
+  if(!window.PREVIEW_TARGET_USER_ID && typeof migrateLocalBoardDraftIfNeeded === 'function'){
+    const migratedPipeline=await migrateLocalBoardDraftIfNeeded(data.pipeline||{});
+    if(migratedPipeline&&Object.keys(migratedPipeline).length) data.pipeline=migratedPipeline;
   }
-  if(!data)return;
   if(data.profile&&Object.keys(data.profile).length){
     if(window.PREVIEW_USER_ID){
       window.PREVIEW_PROFILE=data.profile;

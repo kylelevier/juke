@@ -55,6 +55,7 @@
   var _profiles      = {};        // userId → {display_name, role, org}
   var _pollTimer     = null;
   var _searchTimer   = null;
+  var _lastThreadLoadError = null;
 
   // ── PORTAL DETECTION ─────────────────────────────────────────
   function _portalType() {
@@ -171,6 +172,7 @@
   async function _fetchThreads() {
     if (!sb || !currentUser) return [];
     var uid = currentUser.id;
+    _lastThreadLoadError = null;
 
     // All conversations this user is in, with school context when linked
     var r = await sb
@@ -179,7 +181,11 @@
       .or('participant_a.eq.' + uid + ',participant_b.eq.' + uid)
       .order('last_message_at', { ascending: false, nullsFirst: false });
 
-    if (r.error || !r.data || !r.data.length) return [];
+    if (r.error) {
+      _lastThreadLoadError = r.error.message || 'Could not load conversations.';
+      return [];
+    }
+    if (!r.data || !r.data.length) return [];
     var convs = r.data;
 
     // Other participants
@@ -225,6 +231,11 @@
 
     _threads  = await _fetchThreads();
     _filtered = _threads.slice();
+    if (_lastThreadLoadError) {
+      list.innerHTML = '<div class="msg-load-error">Couldn\'t load conversations. '
+        + '<button onclick="renderMsgThreadList()">Retry</button></div>';
+      return;
+    }
     _paintThreads(_filtered);
   }
 
@@ -533,20 +544,21 @@
     if (!sb || !currentUser) return;
     if (window.PREVIEW_TARGET_USER_ID) return;
 
-    var r = await sb.from('messages')
-      .insert({ conversation_id: convId, sender_id: currentUser.id, body: body })
-      .select('id,sender_id,body,created_at,read_at')
-      .single();
+    var r = await sb.rpc('send_message', { conversation_id: convId, body: body });
 
     if (r.error) {
+      if (_isMissingRpc(r.error)) {
+        _markSendFailed(tempId);
+        _toast('Secure messaging backend is not configured.');
+        delete _pending[tempId];
+        return;
+      }
       if (attempt < MAX_RETRIES) {
         var delay = RETRY_BASE_MS * Math.pow(2, attempt);
         setTimeout(function(){ _trySend(tempId, body, convId, attempt + 1); }, delay);
       } else {
         // Mark as failed in UI
-        var m = _messages.find(function(x){ return x.id === tempId; });
-        if (m) { m._pending = false; m._failed = true; }
-        _paintBubbles(); _scrollBottom();
+        _markSendFailed(tempId);
         delete _pending[tempId];
         _toast('Message failed to send. Tap Retry.');
       }
@@ -554,9 +566,10 @@
     }
 
     // Success — swap optimistic with real row
-    _sentIds[r.data.id] = true;          // prevent realtime double-render
+    var sent = _normalizeSentMessage(r.data, tempId, body);
+    _sentIds[sent.id] = true;          // prevent realtime double-render
     var idx = _messages.findIndex(function(x){ return x.id === tempId; });
-    if (idx > -1) _messages[idx] = r.data;
+    if (idx > -1) _messages[idx] = sent;
     delete _pending[tempId];
     _paintBubbles(); _scrollBottom();
     _bumpThreadPreview(convId, body);
@@ -574,6 +587,30 @@
     p.retries = 0;
     _paintBubbles();
     _trySend(tempId, p.body, p.convId, 0);
+  }
+
+  function _markSendFailed(tempId) {
+    var m = _messages.find(function(x){ return x.id === tempId; });
+    if (m) { m._pending = false; m._failed = true; }
+    _paintBubbles(); _scrollBottom();
+  }
+
+  function _normalizeSentMessage(data, tempId, body) {
+    var row = Array.isArray(data) ? data[0] : data;
+    row = row || {};
+    return {
+      id: row.id || tempId,
+      conversation_id: row.conversation_id || _activeConvId,
+      sender_id: row.sender_id || currentUser.id,
+      body: row.body || body,
+      created_at: row.created_at || new Date().toISOString(),
+      read_at: row.read_at || null
+    };
+  }
+
+  function _isMissingRpc(error) {
+    var msg = (error && (error.message || error.details || error.hint)) || '';
+    return error && (error.code === 'PGRST202' || /function .*not found|could not find.*function/i.test(msg));
   }
 
   function _bumpThreadPreview(convId, body) {
@@ -608,7 +645,10 @@
     } else if (sb && !window.PREVIEW_TARGET_USER_ID) {
       sb.from('player_programs')
         .update({ last_contact_date: today, updated_at: new Date().toISOString() })
-        .eq('id', ppId);
+        .eq('id', ppId)
+        .then(function(res){
+          if(res && res.error) showToast?.('Message sent, but board momentum could not be updated.');
+        });
     }
     // Refresh visible board card so momentum dot updates instantly
     if (school && typeof RAW !== 'undefined' && typeof buildPipelineCard === 'function') {
@@ -742,6 +782,10 @@
     var modal = document.getElementById('msg-new-modal');
     if (modal) modal.classList.remove('open');
     if (!sb || !currentUser) return;
+    if (window.PREVIEW_TARGET_USER_ID) {
+      _toast('Preview mode is read-only.');
+      return;
+    }
 
     var cid = await _getOrCreate(userId);
     if (!cid) { _toast('Could not start conversation'); return; }

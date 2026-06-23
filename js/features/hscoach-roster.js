@@ -39,8 +39,9 @@ const STAGE_COLORS = {saved:'#0057FF',interested:'#0057FF',contacted:'#7B2FFF',a
 let _hsLiveProfilesLoaded = false;
 let _hsRosterSource = 'demo';
 
-// Endorsements stored in localStorage
-let endorsements = ls('endorsements') || {};
+// Recommendations are backend-owned. This cache is only for immediate UI updates
+// after a successful submit in the current session.
+let endorsements = {};
 
 // ──────────────────────────────────────────────
 // HELPERS
@@ -267,23 +268,49 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── ENDORSEMENT REQUESTS ─────────────────────────────────
 function escEnd(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function hsInitials(name){return(name||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();}
+let _hsRecommendationRequests = [];
 
-function loadEndorsementRequests(){
-  var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
-  var pending=all.filter(function(e){return e.status==='pending';});
+function hsMissingRecommendationsBackend(error){
+  var msg=(error&&(error.message||error.details||error.hint))||'';
+  return error&&(error.code==='PGRST202'||/function .*not found|could not find.*function/i.test(msg));
+}
+
+async function loadEndorsementRequests(){
   var panel=document.getElementById('end-req-panel');
   var cards=document.getElementById('end-req-cards');
   var badge=document.getElementById('end-req-badge');
   if(!panel||!cards) return;
+  panel.style.display='';
+  cards.innerHTML='<div class="end-req-none">Loading recommendation requests...</div>';
+  const client=window.sb||window._hsSb||null;
+  if(!client){
+    badge.style.display='none';
+    cards.innerHTML='<div class="end-req-none">Sign in to review recommendation requests.</div>';
+    return;
+  }
+  const {data,error}=await client.rpc('list_recommendation_requests');
+  if(error){
+    badge.style.display='none';
+    cards.innerHTML='<div class="end-req-none">'
+      +(hsMissingRecommendationsBackend(error)
+        ? 'Recommendation backend is not configured yet.'
+        : 'Could not load recommendation requests.')
+      +'</div>';
+    return;
+  }
+  _hsRecommendationRequests=data||[];
+  var pending=_hsRecommendationRequests.filter(function(e){return (e.status||'pending')==='pending';});
   if(pending.length){
-    panel.style.display='';
+    badge.style.display='';
     badge.textContent=pending.length+' pending';
     cards.innerHTML=pending.map(function(e){
+      var athleteName=e.athlete_name||e.athleteName||'Athlete';
+      var note=e.note||e.coachNote||'';
       return '<div class="end-pending-card" id="endcard-'+escEnd(e.id)+'">'
         +'<div class="epc-athlete-row">'
-        +'<div class="epc-av">'+hsInitials(e.athleteName)+'</div>'
-        +'<div><div class="epc-name">'+escEnd(e.athleteName||'Athlete')+'</div>'
-        +(e.coachNote?'<div class="epc-note">&#8220;'+escEnd(e.coachNote)+'&#8221;</div>':'')
+        +'<div class="epc-av">'+hsInitials(athleteName)+'</div>'
+        +'<div><div class="epc-name">'+escEnd(athleteName)+'</div>'
+        +(note?'<div class="epc-note">&#8220;'+escEnd(note)+'&#8221;</div>':'')
         +'</div></div>'
         +'<label class="epc-label">Your recommendation</label>'
         +'<textarea class="epc-textarea" id="endtext-'+escEnd(e.id)+'" placeholder="What makes this athlete stand out? What will a college program be getting?"></textarea>'
@@ -293,23 +320,31 @@ function loadEndorsementRequests(){
         +'</div></div>';
     }).join('');
   } else {
-    panel.style.display='';
     badge.style.display='none';
     cards.innerHTML='<div class="end-req-none">No recommendation requests need review right now.</div>';
   }
 }
 
-function submitHSEndorsement(id){
+async function submitHSEndorsement(id){
   var textEl=document.getElementById('endtext-'+id);
   var text=textEl?textEl.value.trim():'';
   if(!text){alert('Please write a recommendation before submitting.');return;}
-  var all=[];try{all=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
-  var idx=all.findIndex(function(e){return e.id===id;});
-  if(idx<0)return;
-  all[idx].status='endorsed';
-  all[idx].endorsementText=text;
-  all[idx].submittedAt=new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
-  try{localStorage.setItem('juke_endorsements',JSON.stringify(all));}catch(e){}
+  const client=window.sb||window._hsSb||null;
+  if(!client){alert('Sign in to submit recommendations.');return;}
+  var btn=document.querySelector('#endcard-'+CSS.escape(id)+' .epc-submit-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting...';}
+  const {error}=await client.rpc('submit_recommendation', {
+    request_id:id,
+    recommendation_text:text,
+    traits:[]
+  });
+  if(btn){btn.disabled=false;btn.textContent='Submit Recommendation';}
+  if(error){
+    alert(hsMissingRecommendationsBackend(error)
+      ? 'Recommendation submission is not configured yet. Ask an admin to deploy submit_recommendation.'
+      : 'Could not submit recommendation: '+error.message);
+    return;
+  }
   var ok=document.getElementById('endsuccess-'+id);
   if(ok)ok.style.display='inline';
   setTimeout(function(){

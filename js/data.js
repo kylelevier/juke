@@ -67,6 +67,57 @@ let playerData=lsGet('juke_player');
 // In-memory cache: { schoolName: { ppId, stage, attrs, lastContactDate, nextAction, nextActionDate } }
 let _boardCache={};
 
+function _boardSaveError(message,error){
+  const detail=error?.message?`: ${error.message}`:'';
+  console.error(`JUKE board save failed: ${message}`, error||'');
+  showToast?.(`${message}${detail}`);
+}
+
+function _pipelineFromBoardMeta(meta){
+  const pipeline={};
+  Object.entries(meta||{}).forEach(([school,row])=>{
+    if(row?.stage) pipeline[school]=row.stage;
+  });
+  return pipeline;
+}
+
+function _samePipeline(a,b){
+  const ak=Object.keys(a||{}).sort();
+  const bk=Object.keys(b||{}).sort();
+  if(ak.length!==bk.length) return false;
+  return ak.every((k,i)=>k===bk[i]&&(a||{})[k]===(b||{})[k]);
+}
+
+async function migrateLocalBoardDraftIfNeeded(playerDataPipeline){
+  if(!sb||!currentUser||window.PREVIEW_TARGET_USER_ID) return playerDataPipeline||{};
+  const local=lsGet('juke_status')||{};
+  const hasLocal=Object.keys(local).length>0;
+  const meta=await loadAllBoardRecords({silent:true});
+  const relational=_pipelineFromBoardMeta(meta||{});
+  const cloud=Object.keys(relational).length ? relational : (playerDataPipeline||{});
+  if(!hasLocal) return cloud;
+  if(!Object.keys(cloud).length){
+    for(const [school,stage] of Object.entries(local)){
+      if(stage&&stage!=='none') await saveBoardStage(school,stage);
+    }
+    showToast?.('Local board draft moved to your cloud account.');
+    return _pipelineFromBoardMeta(await loadAllBoardRecords({silent:true})||{});
+  }
+  if(!_samePipeline(local,cloud)){
+    lsSet('juke_status_draft_backup',{saved_at:new Date().toISOString(),pipeline:local});
+    const useLocal=typeof confirm==='function' && confirm('This device has a local board draft, but your cloud board already has saved programs. Use this device draft to update your cloud board? Cancel keeps the cloud board and saves this draft as a backup.');
+    if(useLocal){
+      for(const [school,stage] of Object.entries(local)){
+        if(stage&&stage!=='none') await saveBoardStage(school,stage);
+      }
+      showToast?.('Local board draft merged into your cloud board.');
+      return _pipelineFromBoardMeta(await loadAllBoardRecords({silent:true})||{});
+    }
+    showToast?.('Cloud board loaded. Local board draft saved as backup.');
+  }
+  return cloud;
+}
+
 // Resolve or create the player_programs row for a given school name.
 // Returns the row id (ppId) or null if not logged in / program not found.
 async function _resolvePPId(schoolName){
@@ -74,13 +125,25 @@ async function _resolvePPId(schoolName){
   if(window.PREVIEW_TARGET_USER_ID) return _boardCache[schoolName]?.ppId || null;
   if(_boardCache[schoolName]?.ppId) return _boardCache[schoolName].ppId;
   // Look up program id
-  const {data:prog}=await sb.from('programs').select('id').eq('school',schoolName).maybeSingle();
-  if(!prog) return null;
-  // Upsert player_programs row
+  const {data:prog,error:progError}=await sb.from('programs').select('id').eq('school',schoolName).maybeSingle();
+  if(progError){_boardSaveError('Could not find this program',progError);return null;}
+  if(!prog){_boardSaveError('Could not find this program');return null;}
+  const {data:existing,error:existingError}=await sb.from('player_programs')
+    .select('id,stage')
+    .eq('user_id',currentUser.id)
+    .eq('program_id',prog.id)
+    .maybeSingle();
+  if(existingError){_boardSaveError('Could not load board record',existingError);return null;}
+  if(existing){
+    _boardCache[schoolName]=Object.assign(_boardCache[schoolName]||{},{ppId:existing.id,stage:existing.stage});
+    return existing.id;
+  }
+  // Create a player_programs row only when it does not exist.
   const stage=statusData[schoolName]||'saved';
-  const {data:pp}=await sb.from('player_programs')
-    .upsert({user_id:currentUser.id,program_id:prog.id,stage},{onConflict:'user_id,program_id'})
+  const {data:pp,error}=await sb.from('player_programs')
+    .insert({user_id:currentUser.id,program_id:prog.id,stage})
     .select('id').single();
+  if(error){_boardSaveError('Could not create board record',error);return null;}
   if(!pp) return null;
   _boardCache[schoolName]=Object.assign(_boardCache[schoolName]||{},{ppId:pp.id});
   return pp.id;
@@ -98,15 +161,14 @@ async function loadBoardRecord(schoolName){
 
 // Persist card attribute toggles for a school to Supabase + localStorage.
 async function saveBoardAttrs(schoolName,attrs){
-  if(window.PREVIEW_TARGET_USER_ID) return;
-  // Merge into localStorage cache immediately (optimistic)
+  if(window.PREVIEW_TARGET_USER_ID) return {data:null,error:{message:'Preview mode is read-only'}};
   const cur=lsGet('juke_card_attrs');
   cur[schoolName]=Object.assign(cur[schoolName]||{},attrs);
-  lsSet('juke_card_attrs',cur);
+  if(!sb||!currentUser){lsSet('juke_card_attrs',cur);return {data:null,error:null,local:true};}
   // Persist to Supabase
   const ppId=await _resolvePPId(schoolName);
-  if(!ppId) return;
-  await sb.from('player_programs').update({
+  if(!ppId) return {data:null,error:{message:'Board record not found'}};
+  const {data,error}=await sb.from('player_programs').update({
     is_dream_school: cur[schoolName].is_dream_school||false,
     is_top_choice:   cur[schoolName].is_top_choice||false,
     is_in_state:     cur[schoolName].is_in_state||false,
@@ -114,30 +176,72 @@ async function saveBoardAttrs(schoolName,attrs){
     academic_match:  cur[schoolName].academic_match||false,
     is_christian:    cur[schoolName].is_christian||false,
     updated_at: new Date().toISOString()
-  }).eq('id',ppId);
+  }).eq('id',ppId).select().single();
+  if(error){_boardSaveError('Could not save board attributes',error);return {data:null,error};}
+  lsSet('juke_card_attrs',cur);
+  _boardCache[schoolName]=Object.assign(_boardCache[schoolName]||{},cur[schoolName]);
+  return {data,error:null};
 }
 
 // Update stage in Supabase after a drag-drop move.
 async function saveBoardStage(schoolName,stage){
-  if(window.PREVIEW_TARGET_USER_ID) return;
+  if(window.PREVIEW_TARGET_USER_ID) return {data:null,error:{message:'Preview mode is read-only'}};
+  if(!sb||!currentUser){
+    if(stage==='none') delete statusData[schoolName];
+    else statusData[schoolName]=stage;
+    lsSet('juke_status',statusData);
+    return {data:null,error:null,local:true};
+  }
+  const prevStage=statusData[schoolName];
   statusData[schoolName]=stage;
-  lsSet('juke_status',statusData);
   const ppId=await _resolvePPId(schoolName);
-  if(!ppId) return;
-  await sb.from('player_programs').update({stage,updated_at:new Date().toISOString()}).eq('id',ppId);
+  if(!ppId){
+    if(prevStage) statusData[schoolName]=prevStage;
+    else delete statusData[schoolName];
+    return {data:null,error:{message:'Board record not found'}};
+  }
+  const {data,error}=await sb.from('player_programs').update({stage,updated_at:new Date().toISOString()}).eq('id',ppId).select().single();
+  if(error){
+    if(prevStage) statusData[schoolName]=prevStage;
+    else delete statusData[schoolName];
+    _boardSaveError('Could not save board stage',error);
+    return {data:null,error};
+  }
+  lsSet('juke_status',statusData);
+  _boardCache[schoolName]=Object.assign(_boardCache[schoolName]||{},{stage,ppId});
+  return {data,error:null};
+}
+
+async function removeBoardProgram(schoolName){
+  if(window.PREVIEW_TARGET_USER_ID) return {error:{message:'Preview mode is read-only'}};
+  if(!sb||!currentUser){
+    delete statusData[schoolName];
+    lsSet('juke_status',statusData);
+    return {error:null,local:true};
+  }
+  const ppId=await _resolvePPId(schoolName);
+  if(!ppId) return {error:{message:'Board record not found'}};
+  const {error}=await sb.from('player_programs').delete().eq('id',ppId);
+  if(error){_boardSaveError('Could not remove program from board',error);return {error};}
+  delete statusData[schoolName];
+  delete _boardCache[schoolName];
+  lsSet('juke_status',statusData);
+  return {error:null};
 }
 
 // Update next action / last contact date fields.
 async function saveBoardContact(schoolName,{lastContactDate,nextAction,nextActionDate}){
-  if(window.PREVIEW_TARGET_USER_ID) return;
+  if(window.PREVIEW_TARGET_USER_ID) return {data:null,error:{message:'Preview mode is read-only'}};
   const ppId=await _resolvePPId(schoolName);
-  if(!ppId) return;
+  if(!ppId) return {data:null,error:{message:'Board record not found'}};
   const patch={updated_at:new Date().toISOString()};
   if(lastContactDate!==undefined) patch.last_contact_date=lastContactDate;
   if(nextAction!==undefined)      patch.next_action=nextAction;
   if(nextActionDate!==undefined)  patch.next_action_date=nextActionDate;
-  await sb.from('player_programs').update(patch).eq('id',ppId);
+  const {data,error}=await sb.from('player_programs').update(patch).eq('id',ppId).select().single();
+  if(error){_boardSaveError('Could not save board contact details',error);return {data:null,error};}
   _boardCache[schoolName]=Object.assign(_boardCache[schoolName]||{},patch);
+  return {data,error:null};
 }
 
 // ── Generic section loaders ───────────────────────────────────
@@ -149,7 +253,8 @@ async function loadBoardSection(schoolName, table){
   }
   const ppId=await _resolvePPId(schoolName);
   if(!ppId) return [];
-  const {data}=await sb.from(table).select('*').eq('player_program_id',ppId).order('created_at',{ascending:false});
+  const {data,error}=await sb.from(table).select('*').eq('player_program_id',ppId).order('created_at',{ascending:false});
+  if(error){_boardSaveError('Could not load board details',error);return [];}
   return data||[];
 }
 
@@ -157,19 +262,23 @@ async function addBoardItem(schoolName, table, payload){
   if(window.PREVIEW_TARGET_USER_ID) return null;
   const ppId=await _resolvePPId(schoolName);
   if(!ppId) return null;
-  const {data}=await sb.from(table).insert({player_program_id:ppId,...payload}).select().single();
+  const {data,error}=await sb.from(table).insert({player_program_id:ppId,...payload}).select().single();
+  if(error){_boardSaveError('Could not save board item',error);return null;}
   return data;
 }
 
 async function updateBoardItem(table, id, patch){
   if(window.PREVIEW_TARGET_USER_ID) return null;
-  const {data}=await sb.from(table).update({...patch,updated_at:new Date().toISOString()}).eq('id',id).select().single();
+  const {data,error}=await sb.from(table).update({...patch,updated_at:new Date().toISOString()}).eq('id',id).select().single();
+  if(error){_boardSaveError('Could not update board item',error);return null;}
   return data;
 }
 
 async function deleteBoardItem(table, id){
   if(window.PREVIEW_TARGET_USER_ID) return;
-  await sb.from(table).delete().eq('id',id);
+  const {error}=await sb.from(table).delete().eq('id',id);
+  if(error){_boardSaveError('Could not delete board item',error);return {error};}
+  return {error:null};
 }
 
 // ── Conversation ↔ Program linking ───────────────────────────
@@ -177,7 +286,8 @@ async function deleteBoardItem(table, id){
 async function linkConversationToProgram(convId, ppId){
   if(window.PREVIEW_TARGET_USER_ID) return;
   if(!sb||!convId||!ppId) return;
-  await sb.from('conversations').update({player_program_id:ppId}).eq('id',convId);
+  const {error}=await sb.from('conversations').update({player_program_id:ppId}).eq('id',convId);
+  if(error) _boardSaveError('Could not link conversation to program',error);
 }
 
 // Returns the conversation row for a given player_program_id, or null.
@@ -196,36 +306,20 @@ async function getConversationByProgram(ppId){
 //                       is_dream_school, is_top_choice, is_in_state, scholarship_opp,
 //                       academic_match, is_christian}}
 // ── RECOMMENDATION REQUESTS ──────────────────────────────
-// Writes to `recommendation_requests` table so HS/club coaches can see pending requests.
-// Table schema (run once in Supabase SQL editor):
-//   create table recommendation_requests (
-//     id bigint generated always as identity primary key,
-//     athlete_user_id uuid references auth.users not null,
-//     athlete_name text, coach_name text not null,
-//     coach_school text, coach_title text, note text,
-//     status text default 'pending',
-//     requested_at timestamptz default now()
-//   );
-//   alter table recommendation_requests enable row level security;
-//   create policy "Athletes manage own requests" on recommendation_requests
-//     for all using (auth.uid() = athlete_user_id);
+// Production flow is backend-owned. The RPC validates active users, recipient
+// eligibility, ownership, and RLS rather than trusting localStorage.
 async function saveRecommendationRequest(payload){
-  if(!sb||!currentUser) return null;
-  if(window.PREVIEW_TARGET_USER_ID) return null;
-  const {data,error}=await sb.from('recommendation_requests').insert({
-    athlete_user_id: currentUser.id,
-    athlete_name:    payload.athleteName||null,
-    coach_name:      payload.coachName,
-    coach_school:    payload.coachSchool||null,
-    coach_title:     payload.coachTitle||null,
-    note:            payload.coachNote||null,
-    status:          'pending',
-  }).select('id').single();
-  if(error) console.warn('recommendation_requests write failed — run the SQL migration:',error.message);
-  return data;
+  if(!sb||!currentUser) return {data:null,error:{message:'Sign in required'}};
+  if(window.PREVIEW_TARGET_USER_ID) return {data:null,error:{message:'Preview mode is read-only'}};
+  return sb.rpc('create_recommendation_request', {
+    coach_name: payload.coachName,
+    coach_school: payload.coachSchool||null,
+    coach_title: payload.coachTitle||null,
+    note: payload.coachNote||null
+  });
 }
 
-async function loadAllBoardRecords(){
+async function loadAllBoardRecords(opts){
   if(!sb||!currentUser) return {};
   if(window.PREVIEW_TARGET_USER_ID){
     const rows = window.PREVIEW_BUNDLE?.board_records || window.PREVIEW_BUNDLE?.player_programs || [];
@@ -249,7 +343,8 @@ async function loadAllBoardRecords(){
     .eq('user_id',currentUser.id);
   if(error){
     if(window.PREVIEW_USER_ID) console.warn('JUKE preview board load failed:', error.message);
-    return {};
+    else if(!opts?.silent) _boardSaveError('Could not load your cloud board',error);
+    return null;
   }
   const result={};
   (data||[]).forEach(row=>{

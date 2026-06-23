@@ -155,6 +155,27 @@
     return 'Type to search';
   }
 
+  function _isMissingRpc(error) {
+    var msg = (error && (error.message || error.details || error.hint)) || '';
+    return error && (error.code === 'PGRST202' || /function .*not found|could not find.*function/i.test(msg));
+  }
+
+  function _paintSearchError(target, error) {
+    var msg = _isMissingRpc(error)
+      ? 'Secure recipient search backend is not configured.'
+      : 'Could not search recipients. Try again.';
+    if (target) target.innerHTML = '<div class="msg-new-hint">'+_esc(msg)+'</div>';
+  }
+
+  async function _searchRecipients(query, roles, school) {
+    if (!sb || !currentUser) return {data:[], error:{message:'Sign in required'}};
+    return sb.rpc('search_message_recipients', {
+      search_text: query || '',
+      allowed_roles: roles || [],
+      school_filter: school || null
+    });
+  }
+
   window._msgSetRecipientMode = function(mode) {
     _recipientMode = mode==='athlete' ? 'athlete' : 'college_coach';
     document.getElementById('msg-nm-body').innerHTML = _roleTabsHtml(_recipientMode) + _genericSearchHtml();
@@ -171,12 +192,8 @@
     var body = document.getElementById('msg-nm-body');
     body.innerHTML = '<div class="msg-new-hint">Finding recruiters at '+_esc(school)+'…</div>';
 
-    var r = await sb.from('user_profiles')
-      .select('id,display_name,org')
-      .eq('role','college_coach')
-      .ilike('org','%'+school+'%')
-      .neq('id',currentUser.id)
-      .limit(12);
+    var r = await _searchRecipients('', ['college_coach'], school);
+    if (r.error) { _paintSearchError(body, r.error); return; }
 
     var coaches = r.data||[];
     body.innerHTML =
@@ -207,12 +224,8 @@
     clearTimeout(_searchTimer);
     _searchTimer = setTimeout(async function(){
       res.innerHTML = '<div class="msg-new-hint">Searching…</div>';
-      var r = await sb.from('user_profiles')
-        .select('id,display_name,org')
-        .eq('role','college_coach')
-        .ilike('display_name','%'+q+'%')
-        .neq('id',currentUser.id)
-        .limit(10);
+      var r = await _searchRecipients(q.trim(), ['college_coach'], _pickedSchool || null);
+      if (r.error) { _paintSearchError(res, r.error); return; }
       res.innerHTML = (r.data||[]).length
         ? (r.data||[]).map(function(u){ return _coachRow(u,_pickedSchool||''); }).join('')
         : '<div class="msg-new-hint">No matching recruiters found.</div>';
@@ -223,6 +236,10 @@
 
   // ── Start conversation + link to player_program ───────────
   window._msgStartWithSchool = async function(userId) {
+    if (window.PREVIEW_TARGET_USER_ID) {
+      if (typeof showToast==='function') showToast('Preview mode is read-only.');
+      return;
+    }
     var modal = document.getElementById('msg-new-modal');
     if (modal) window._closeNewMsgModal();
 
@@ -254,12 +271,8 @@
       res.innerHTML = '<div class="msg-new-hint">Searching…</div>';
       var roles = _rolesForSearch();
       var query = q.trim().replace(/[%_,]/g,' ');
-      var r = await sb.from('user_profiles')
-        .select('id,display_name,role,org')
-        .in('role',roles)
-        .or('display_name.ilike.%'+query+'%,org.ilike.%'+query+'%')
-        .neq('id',currentUser.id)
-        .limit(12);
+      var r = await _searchRecipients(query, roles, null);
+      if (r.error) { _paintSearchError(res, r.error); return; }
       if (!r.data||!r.data.length) { res.innerHTML='<div class="msg-new-hint">No matching people found.</div>'; return; }
       res.innerHTML = r.data.map(function(u){
         var color = ROLE_COLORS[u.role]||'#FF0080';
@@ -276,6 +289,10 @@
 
   // ── openNewMsg — replaces messaging.js version ────────────
   window.openNewMsg = function(prefillId) {
+    if (window.PREVIEW_TARGET_USER_ID) {
+      if (typeof showToast==='function') showToast('Preview mode is read-only.');
+      return;
+    }
     if (!sb||!currentUser) {
       if (_openPortalAuth()) return;
       if (typeof showToast==='function') showToast('Sign in to start a conversation');

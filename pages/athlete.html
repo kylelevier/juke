@@ -261,8 +261,8 @@
 
   <!-- ── ATHLETE TRADING CARD ── -->
   <div class="athlete-card">
-    <input type="file" id="banner-file-input" accept="image/*" style="display:none" onchange="handleBannerUpload(this)"/>
-    <input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+    <input type="file" id="banner-file-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleBannerUpload(this)"/>
+    <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleAvatarUpload(this)"/>
     <!-- Cover / Banner photo -->
     <div class="athlete-banner-zone" id="athlete-banner-zone" onclick="document.getElementById('banner-file-input').click()" title="Upload cover photo">
       <div class="athlete-banner-placeholder" id="athlete-banner-placeholder">
@@ -350,8 +350,8 @@
     <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
       <div class="wiz-section-hd"><span class="wiz-section-title">The first thing a coach sees. Make it unmistakably you.</span></div>
       <!-- Photo uploads -->
-      <input type="file" id="wiz-banner-input" accept="image/*" style="display:none" onchange="handleBannerUpload(this)"/>
-      <input type="file" id="wiz-avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+      <input type="file" id="wiz-banner-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleBannerUpload(this)"/>
+      <input type="file" id="wiz-avatar-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleAvatarUpload(this)"/>
       <div class="wiz-photo-section">
         <div class="wiz-photo-banner-zone" id="wiz-photo-banner" onclick="document.getElementById('wiz-banner-input').click()">
           <div class="wiz-photo-banner-ph" id="wiz-photo-banner-ph">+ Add Cover Photo</div>
@@ -664,6 +664,11 @@
         </label>
         <span class="publish-live-pill draft" id="publish-pill">Draft</span>
       </div>
+      <label class="publish-consent-row">
+        <input type="checkbox" id="publish-contact-consent" onchange="handlePublishContactConsent()"/>
+        <span>Include my email, phone, parent contact, and club coach fields in the recruiter-visible profile.</span>
+      </label>
+      <div class="publish-status" id="publish-status" aria-live="polite"></div>
     </div>
     <div class="wiz-nav">
       <button class="btn btn-outline" onclick="goStep(4)">← Back</button>

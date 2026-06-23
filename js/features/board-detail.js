@@ -93,11 +93,12 @@ function _bdSwitchSection(key){
 }
 
 // ── Attribute toggles ────────────────────────────────────
-function _bdToggleAttr(attrKey,btn){
+async function _bdToggleAttr(attrKey,btn){
   const lsAttrs=(lsGet('juke_card_attrs')||{});
   const cur=lsAttrs[_bdSchool]||{};
   cur[attrKey]=!cur[attrKey];
-  saveBoardAttrs(_bdSchool,cur); // data.js
+  const res=await saveBoardAttrs(_bdSchool,cur); // data.js
+  if(res?.error) return;
   btn.classList.toggle('active',!!cur[attrKey]);
   // Refresh card on board if visible
   const card=document.querySelector(`.pipeline-card[data-school="${CSS.escape(_bdSchool)}"]`);
@@ -207,7 +208,8 @@ async function _bdSaveContact(){
   const lcd=document.getElementById('bd-lcd')?.value||null;
   const na=document.getElementById('bd-na')?.value||null;
   const nad=document.getElementById('bd-nad')?.value||null;
-  await saveBoardContact(_bdSchool,{lastContactDate:lcd,nextAction:na,nextActionDate:nad});
+  const res=await saveBoardContact(_bdSchool,{lastContactDate:lcd,nextAction:na,nextActionDate:nad});
+  if(res?.error) return;
   _boardMeta[_bdSchool]=Object.assign(_boardMeta[_bdSchool]||{},{last_contact_date:lcd,next_action:na,next_action_date:nad});
   // Refresh card
   const card=document.querySelector(`.pipeline-card[data-school="${CSS.escape(_bdSchool)}"]`);
@@ -257,12 +259,13 @@ function _bdAddCoach(){
 async function _bdSaveCoach(){
   const name=document.getElementById('bdc-name')?.value.trim();
   if(!name){showToast('Name is required');return;}
-  await addBoardItem(_bdSchool,'program_contacts',{
+  const saved=await addBoardItem(_bdSchool,'program_contacts',{
     name,
     role:document.getElementById('bdc-role')?.value.trim()||null,
     email:document.getElementById('bdc-email')?.value.trim()||null,
     phone:document.getElementById('bdc-phone')?.value.trim()||null,
   });
+  if(!saved) return;
   await _renderBDCoaches(document.getElementById('bd-body'));
 }
 
@@ -321,7 +324,7 @@ function _bdAddComm(){
 
 async function _bdSaveComm(){
   const date=document.getElementById('bdcomm-date')?.value;
-  await addBoardItem(_bdSchool,'program_communications',{
+  const saved=await addBoardItem(_bdSchool,'program_communications',{
     type:document.getElementById('bdcomm-type')?.value,
     direction:document.getElementById('bdcomm-dir')?.value,
     comm_date:date||null,
@@ -329,6 +332,7 @@ async function _bdSaveComm(){
     note:document.getElementById('bdcomm-note')?.value.trim()||null,
     logged_at:new Date().toISOString(),
   });
+  if(!saved) return;
   // Auto-update last contact date if this is newer
   if(date){
     const cur=_boardMeta[_bdSchool]?.last_contact_date;
@@ -354,7 +358,8 @@ async function _renderBDNotes(body){
 async function _bdSaveNote(){
   const content=document.getElementById('bd-notes-text')?.value.trim();
   if(!content) return;
-  await addBoardItem(_bdSchool,'program_notes',{content});
+  const saved=await addBoardItem(_bdSchool,'program_notes',{content});
+  if(!saved) return;
   showToast('Note saved');
 }
 
@@ -400,12 +405,13 @@ function _bdAddVisit(){
 }
 
 async function _bdSaveVisit(){
-  await addBoardItem(_bdSchool,'program_visits',{
+  const saved=await addBoardItem(_bdSchool,'program_visits',{
     visit_type:document.getElementById('bdv-type')?.value,
     visit_date:document.getElementById('bdv-date')?.value||null,
     status:document.getElementById('bdv-status')?.value,
     notes:document.getElementById('bdv-notes')?.value.trim()||null,
   });
+  if(!saved) return;
   await _renderBDVisits(document.getElementById('bd-body'));
 }
 
@@ -444,9 +450,11 @@ async function _bdSaveApplication(){
     notes:document.getElementById('bda-notes')?.value.trim()||null,
   };
   if(id){
-    await updateBoardItem('program_applications',parseInt(id),payload);
+    const saved=await updateBoardItem('program_applications',parseInt(id),payload);
+    if(!saved) return;
   } else {
     const created=await addBoardItem(_bdSchool,'program_applications',payload);
+    if(!created) return;
     if(created)document.getElementById('bda-id').textContent=created.id;
   }
   showToast('Application saved');
@@ -498,9 +506,11 @@ async function _bdSaveOffer(){
     updated_at:new Date().toISOString(),
   };
   if(id){
-    await updateBoardItem('program_offers',parseInt(id),payload);
+    const saved=await updateBoardItem('program_offers',parseInt(id),payload);
+    if(!saved) return;
   } else {
     const created=await addBoardItem(_bdSchool,'program_offers',payload);
+    if(!created) return;
     if(created)document.getElementById('bdo-id').textContent=created.id;
   }
   showToast('Offer saved');
@@ -546,20 +556,23 @@ function _bdAddDeadline(){
 async function _bdSaveDeadline(){
   const text=document.getElementById('bdd-text')?.value.trim();
   if(!text){showToast('Description required');return;}
-  await addBoardItem(_bdSchool,'program_tasks',{
+  const saved=await addBoardItem(_bdSchool,'program_tasks',{
     text,due_date:document.getElementById('bdd-date')?.value||null,completed:false
   });
+  if(!saved) return;
   await _renderBDDeadlines(document.getElementById('bd-body'));
 }
 
 async function _bdToggleDeadline(id,completed){
-  await updateBoardItem('program_tasks',id,{completed,completed_at:completed?new Date().toISOString():null});
+  const saved=await updateBoardItem('program_tasks',id,{completed,completed_at:completed?new Date().toISOString():null});
+  if(!saved) return;
   await _renderBDDeadlines(document.getElementById('bd-body'));
 }
 
 // ── Shared delete helper ──────────────────────────────────
 async function _bdDeleteItem(table,id,listId,rerender){
-  await deleteBoardItem(table,id);
+  const res=await deleteBoardItem(table,id);
+  if(res?.error) return;
   const body=document.getElementById('bd-body');
   if(body)await rerender(body);
 }

@@ -223,6 +223,8 @@ function switchCoachSub(tab){
 async function handlePublishToggle(){
   const toggle = document.getElementById('publish-toggle');
   const pill   = document.getElementById('publish-pill');
+  const status = document.getElementById('publish-status');
+  const consent = document.getElementById('publish-contact-consent');
   if(!currentUser){
     toggle.checked=false;
     alert('Please sign in to publish your profile to coaches.');
@@ -230,28 +232,33 @@ async function handlePublishToggle(){
     return;
   }
   const on = toggle.checked;
+  const prior = lsGet('juke_publish')||{};
+  const shareContact = !!(consent&&consent.checked);
+  if(on){
+    const profile=lsGet('juke_player');
+    const pd=typeof buildPublicAthleteProfile==='function'
+      ? buildPublicAthleteProfile(profile,{shareContact})
+      : {...profile};
+    const visible=[
+      'Name, class year, city, school/team',
+      'Positions, athletic metrics, academics, stats, film links, awards, and story fields',
+      'Board offer schools if tracked'
+    ];
+    visible.push(shareContact?'Contact fields: email, phone, parent, and club coach':'Contact fields: not shared');
+    if(!confirm('Publish this recruiter-visible profile?\n\n'+visible.join('\n')+'\n\nYou can unpublish later.')){
+      toggle.checked=!!prior.on;
+      return;
+    }
+  }else if(!confirm('Unpublish your profile? Recruiters will no longer find it in search.')){
+    toggle.checked=true;
+    return;
+  }
+  if(status){status.textContent='';status.className='publish-status';}
   if(pill){ pill.textContent=on?'Publishing…':'Removing…'; pill.className='publish-live-pill draft'; }
 
-  // Snapshot current profile data
-  const pd = {...lsGet('juke_player'), _offers:Object.keys(lsGet('juke_offers'))};
-  const avatar = lsGet('juke_avatar');
-  const banner = lsGet('juke_banner');
-  const recs = lsGet('juke_endorsements');
-  pd._avatar = typeof avatar==='string'?avatar:'';
-  pd._banner = typeof banner==='string'?banner:'';
-  const athleteName=((pd['p-fname']||pd.fname||'')+' '+(pd['p-lname']||pd.lname||'')).trim().toLowerCase();
-  pd._recommendations = (Array.isArray(recs)?recs:[]).filter(e=>{
-    if(!e||e.status!=='endorsed')return false;
-    const recAthlete=(e.athleteName||'').trim().toLowerCase();
-    return !recAthlete||!athleteName||recAthlete===athleteName;
-  });
-  pd._positions = Array.from(document.querySelectorAll('#pos-grid .pos-chip.selected input')).map(i=>i.value);
-  pd['pf-div']    = document.getElementById('pf-div')?.value||'';
-  pd['pf-region'] = document.getElementById('pf-region')?.value||'';
-  ['p-fname','p-lname','p-email','p-gradyr','p-gpa','p-height','p-forty','p-vertical',
-   'p-city','p-school','p-major','p-highlight','p-gamefilm','p-phone'].forEach(id=>{
-    pd[id] = document.getElementById(id)?.value||'';
-  });
+  const pd = typeof buildPublicAthleteProfile==='function'
+    ? buildPublicAthleteProfile(lsGet('juke_player'),{shareContact})
+    : {...lsGet('juke_player')};
 
   if(sb){
     const {error} = await sb.from('athlete_profiles').upsert({
@@ -261,20 +268,59 @@ async function handlePublishToggle(){
       updated_at:new Date().toISOString()
     },{onConflict:'user_id'});
     if(error){
-      alert('Error publishing. Make sure the athlete_profiles table exists in Supabase (see Coaches Portal tab for SQL).');
-      toggle.checked=!on;
-      if(pill){ pill.textContent='Draft'; pill.className='publish-live-pill draft'; }
+      if(status){status.textContent=(on?'Publish':'Unpublish')+' failed: '+error.message;status.className='publish-status err';}
+      else alert('Error publishing: '+error.message);
+      toggle.checked=!!prior.on;
+      if(consent) consent.checked=!!prior.shareContact;
+      if(pill){ pill.textContent=prior.on?'● Live':'Draft'; pill.className='publish-live-pill '+(prior.on?'live':'draft'); }
       return;
     }
   }
   if(pill){ pill.textContent=on?'● Live':'Draft'; pill.className='publish-live-pill '+(on?'live':'draft'); }
-  lsSet('juke_publish',{on});
+  lsSet('juke_publish',{on,shareContact:on&&shareContact,publishedAt:on?new Date().toISOString():prior.publishedAt||null});
+  if(status){status.textContent=on?'Profile published.':'Profile unpublished.';status.className='publish-status ok';}
+  _showSyncBadge();
+  renderProfileView();
+}
+
+async function handlePublishContactConsent(){
+  const consent=document.getElementById('publish-contact-consent');
+  const status=document.getElementById('publish-status');
+  const publish=lsGet('juke_publish')||{};
+  const shareContact=!!(consent&&consent.checked);
+  if(!publish.on){
+    lsSet('juke_publish',{...publish,shareContact:false});
+    return;
+  }
+  if(!confirm('Update the contact fields shown on your live recruiter-visible profile?')){
+    if(consent) consent.checked=!!publish.shareContact;
+    return;
+  }
+  publish.shareContact=shareContact;
+  lsSet('juke_publish',publish);
+  if(!sb||!currentUser) return;
+  const pd=typeof buildPublicAthleteProfile==='function'
+    ? buildPublicAthleteProfile(lsGet('juke_player'),{shareContact})
+    : {...lsGet('juke_player')};
+  const {error}=await sb.from('athlete_profiles')
+    .update({profile_data:pd,updated_at:new Date().toISOString()})
+    .eq('user_id',currentUser.id);
+  if(error){
+    publish.shareContact=!shareContact;
+    lsSet('juke_publish',publish);
+    if(consent) consent.checked=!!publish.shareContact;
+    if(status){status.textContent='Contact visibility update failed: '+error.message;status.className='publish-status err';}
+    return;
+  }
+  if(status){status.textContent='Contact visibility updated.';status.className='publish-status ok';}
   _showSyncBadge();
 }
 
 // Restore publish state on load
 (function _restorePublish(){
   const p=lsGet('juke_publish');
+  const consent=document.getElementById('publish-contact-consent');
+  if(consent){ consent.checked=!!p?.shareContact; }
   if(p?.on){
     const toggle=document.getElementById('publish-toggle');
     const pill=document.getElementById('publish-pill');

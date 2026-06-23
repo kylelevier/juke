@@ -24,8 +24,14 @@ function getDivisions(){
 }
 
 // ── COACH ENDORSEMENTS ───────────────────────────────────
-function getEndorsements(){try{return JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){return[];}}
-function saveEndorsements(arr){try{localStorage.setItem('juke_endorsements',JSON.stringify(arr));}catch(e){}}
+function getEndorsements(){
+  const p=lsGet('juke_player')||{};
+  return Array.isArray(p._recommendations)?p._recommendations:[];
+}
+function isMissingRecommendationsBackend(error){
+  var msg=(error&&(error.message||error.details||error.hint))||'';
+  return error&&(error.code==='PGRST202'||/function .*not found|could not find.*function/i.test(msg));
+}
 
 function renderEndorsementSection(){
   var el=document.getElementById('end-cards-list');
@@ -67,37 +73,31 @@ function renderEndorsementSection(){
   }).join('');
 }
 
-function submitEndorsementRequest(){
+async function submitEndorsementRequest(){
   if(window.PREVIEW_TARGET_USER_ID){alert('Preview mode is read-only.');return;}
   var name=(document.getElementById('end-req-name')||{}).value||'';
   var school=(document.getElementById('end-req-school')||{}).value||'';
   var title=(document.getElementById('end-req-title')||{}).value||'';
   var note=(document.getElementById('end-req-note')||{}).value||'';
   if(!name.trim()){alert('Please enter your coach\'s name.');return;}
-  var auth=null;try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
-  var apid=(auth&&auth.activeProfileId)||'athlete';
-  var athleteName=window.PREVIEW_TARGET_USER_ID
-    ? ((pv('p-fname')+' '+pv('p-lname')).trim()||'Preview Athlete')
-    : (auth&&auth.name?auth.name:((pv('p-fname')+' '+pv('p-lname')).trim()||'Athlete'));
-  var existing=getEndorsements();
-  if(existing.some(function(e){return e.coachName.toLowerCase()===name.trim().toLowerCase();})){
-    alert('A request for this coach already exists.');return;
-  }
-  existing.push({
-    id:'end_'+Date.now(),
-    athleteProfileId:apid,
-    athleteName:athleteName,
+  var payload={
     coachName:name.trim(),
     coachSchool:school.trim(),
     coachTitle:title.trim(),
-    coachNote:note.trim(),
-    status:'pending',
-    requestedAt:new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'})
-  });
-  var payload=existing[existing.length-1];
-  saveEndorsements(existing);
-  // Cloud write — persists request so HS/club coach portals can surface it
-  if(typeof saveRecommendationRequest==='function') saveRecommendationRequest(payload);
+    coachNote:note.trim()
+  };
+  var btn=document.querySelector('.end-send-btn');
+  if(btn){btn.disabled=true;btn.textContent='Sending...';}
+  var res=typeof saveRecommendationRequest==='function'
+    ? await saveRecommendationRequest(payload)
+    : {error:{message:'Recommendation backend unavailable'}};
+  if(btn){btn.disabled=false;btn.textContent='Send Request';}
+  if(res&&res.error){
+    alert(isMissingRecommendationsBackend(res.error)
+      ? 'Recommendation requests are not configured yet. Ask an admin to deploy create_recommendation_request.'
+      : 'Could not send recommendation request: '+res.error.message);
+    return;
+  }
   ['end-req-name','end-req-school','end-req-title','end-req-note'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ok=document.getElementById('end-req-success');
   if(ok){ok.style.display='block';setTimeout(function(){ok.style.display='none';},3000);}
@@ -312,9 +312,26 @@ function updateVideoPreview(){}  // legacy no-op
 
 // ── Photo uploads (banner + avatar) ──────────────────────────────────────────
 // Moved from pipeline.js — these are profile presentation concerns.
+const PROFILE_IMAGE_TYPES = ['image/png','image/jpeg','image/webp'];
+const PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+
+function validateProfileImage(file){
+  if(!file) return false;
+  if(PROFILE_IMAGE_TYPES.indexOf(file.type)===-1){
+    alert('Please upload a PNG, JPG, or WebP image.');
+    return false;
+  }
+  if(file.size > PROFILE_IMAGE_MAX_BYTES){
+    alert('Image must be 2 MB or smaller.');
+    return false;
+  }
+  return true;
+}
+
 function handleBannerUpload(input){
   const file = input.files[0];
   if(!file) return;
+  if(!validateProfileImage(file)){ input.value=''; return; }
   const reader = new FileReader();
   reader.onload = e => {
     localStorage.setItem('juke_banner', JSON.stringify(e.target.result));
@@ -353,6 +370,7 @@ function renderWizBanner(dataUrl){
 function handleAvatarUpload(input){
   const file = input.files[0];
   if(!file) return;
+  if(!validateProfileImage(file)){ input.value=''; return; }
   const reader = new FileReader();
   reader.onload = e => {
     localStorage.setItem('juke_avatar', JSON.stringify(e.target.result));

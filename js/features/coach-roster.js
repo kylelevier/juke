@@ -436,8 +436,8 @@ function jsArg(value){
   return JSON.stringify(value).replace(/"/g,'&quot;');
 }
 
-// ── COACH ENDORSEMENTS (read from shared localStorage) ────
-function getAllEndorsements(){try{return JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){return[];}}
+// ── COACH RECOMMENDATIONS ────
+function getAllEndorsements(){return [];}
 function getEndorsementForAthlete(name){
   return getAllEndorsements().filter(function(e){
     return e.status==='endorsed' && (e.athleteName||'').toLowerCase()===name.toLowerCase();

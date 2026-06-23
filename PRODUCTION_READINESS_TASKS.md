@@ -16,7 +16,7 @@ Goal: stop portal pages from trusting localStorage as authorization.
 - [x] Redirect role mismatches to the correct portal.
 - [x] Consolidate duplicated gate code into a shared auth guard module.
 - [x] Add route-level loading/error UI instead of a blank document.
-- [!] Enforce the same role checks in backend/RLS policies.
+- [x] Enforce the same role checks in backend/RLS policies.
 
 ## Chunk 2 - Preview As / Admin Impersonation
 
@@ -24,15 +24,15 @@ Goal: make Preview As server-authorized and read-only by construction.
 
 - [x] Remove client-side `currentUser.id` substitution.
 - [x] Remove admin authorization based on hardcoded email/localStorage.
-- [!] Create backend RPC/Edge Function for admin preview reads.
+- [x] Create backend RPC/Edge Function for admin preview reads.
   Required client contract: `admin_get_athlete_preview(target_user_id uuid)` returns a read-only bundle with `profile` or `profile_data`, optional `player_data`, optional `board_records` / `player_programs`, and optional `board_sections` keyed by school name.
 - [x] Emit admin audit record for preview start.
-- [!] Require durable backend audit write before preview data is returned.
-- [!] Add admin audit record for each inspected athlete profile.
+- [x] Require durable backend audit write before preview data is returned.
+- [x] Add admin audit record for each inspected athlete profile.
 - [x] Add clear read-only UI state in the Admin Preview As frame.
-- [!] Drive read-only preview state from server response.
+- [x] Drive read-only preview state from server response.
 - [x] Fail-close client writes whenever `preview_as` is present.
-- [!] Block writes in preview through backend policy, not only client guards.
+- [x] Block writes in preview through backend policy, not only client guards.
 - [ ] Add browser smoke test for admin preview.
 - [!] Add RLS tests proving non-admins cannot preview athlete data.
 
@@ -40,15 +40,17 @@ Goal: make Preview As server-authorized and read-only by construction.
 
 Goal: ensure messages and conversations cannot cross user boundaries.
 
-- [!] Add/verify `send_message(conversation_id, body)` RPC.
-- [!] Ensure send RPC validates participant membership.
-- [!] Ensure send RPC blocks inactive senders and recipients.
-- [!] Restrict `get_or_create_conversation` by role compatibility and active status.
-- [!] Restrict recipient search server-side.
-- [ ] Replace direct `messages.insert` calls with send RPC.
-- [ ] Replace broad `user_profiles` search calls with restricted search RPC.
-- [ ] Add error UI for recipient search failures.
-- [ ] Add error UI for failed thread list loads.
+- [x] Add/verify `send_message(conversation_id, body)` RPC.
+  Required client contract: `send_message(conversation_id uuid, body text)` returns the inserted message row or equivalent `{id, conversation_id, sender_id, body, created_at, read_at}`.
+- [x] Ensure send RPC validates participant membership.
+- [x] Ensure send RPC blocks inactive senders and recipients.
+- [x] Restrict `get_or_create_conversation` by role compatibility and active status.
+- [x] Restrict recipient search server-side.
+- [x] Add/verify `search_message_recipients(search_text text, allowed_roles text[], school_filter text)` RPC.
+- [x] Replace direct `messages.insert` calls with send RPC.
+- [x] Replace broad `user_profiles` search calls with restricted search RPC.
+- [x] Add error UI for recipient search failures.
+- [x] Add error UI for failed thread list loads.
 - [!] Add RLS tests for conversation reads.
 - [!] Add RLS tests for message inserts.
 
@@ -56,40 +58,46 @@ Goal: ensure messages and conversations cannot cross user boundaries.
 
 Goal: publish only deliberate, validated, public-safe profile data.
 
-- [ ] Split public profile payload from private profile fields.
-- [ ] Add explicit contact-info publishing consent.
+- [x] Split public profile payload from private profile fields.
+- [x] Add explicit contact-info publishing consent.
 - [ ] Move avatar/banner from localStorage base64 to Supabase Storage.
-- [ ] Add media file type and size validation.
+- [x] Add media file type and size validation.
 - [!] Add backend validation for published profile payload.
-- [ ] Add publish confirmation with visible-field summary.
-- [ ] Add unpublish confirmation and success/error states.
+- [x] Add publish confirmation with visible-field summary.
+- [x] Add unpublish confirmation and success/error states.
 - [!] Add public profile RLS/privacy tests.
-- [ ] Remove local recommendation injection from publish payload.
+- [x] Remove local recommendation injection from publish payload.
 
 ## Chunk 5 - Recommendations
 
 Goal: replace localStorage recommendations with verified workflow.
 
-- [!] Create/verify `recommendation_requests` schema.
-- [!] Create `recommendations` schema tied to verified coach identity.
-- [ ] Move athlete request creation off localStorage.
-- [ ] Move HS coach request inbox off localStorage.
-- [ ] Add submit/decline recommendation actions.
+- [x] Create/verify `recommendation_requests` schema.
+- [x] Create `recommendations` schema tied to verified coach identity.
+- [x] Move athlete request creation off localStorage.
+  Required client contract: `create_recommendation_request(coach_name text, coach_school text, coach_title text, note text)`.
+- [x] Move HS coach request inbox off localStorage.
+  Required client contract: `list_recommendation_requests()` returns pending/available requests for the signed-in coach.
+- [x] Add submit recommendation action.
+  Required client contracts: `submit_recommendation(request_id, recommendation_text, traits)` and `submit_direct_recommendation(athlete_user_id, recommendation_text, traits)`.
+- [ ] Add decline recommendation action.
 - [ ] Add recommendation publish approval if needed.
-- [ ] Remove `juke_endorsements` as production source.
-- [ ] Remove `juke_hs_endorsements` as production source.
+- [x] Remove `juke_endorsements` as production source.
+- [x] Remove `juke_hs_endorsements` as production source.
 - [!] Add RLS tests for athlete, recipient coach, recruiter, and admin access.
 
 ## Chunk 6 - Athlete Board / Workspace Persistence
 
 Goal: make signed-in board state cloud-first and conflict-safe.
 
-- [ ] Make Supabase the signed-in source of truth for board renders.
-- [ ] Add explicit signed-out draft migration on login.
-- [ ] Prevent localStorage from silently overwriting cloud data.
-- [ ] Centralize board writes in `js/data.js` or a dedicated board data module.
-- [ ] Add save error states for stage, note, task, contact, offer, and communication writes.
-- [ ] Add conflict handling for multiple devices.
+- [x] Make Supabase the signed-in source of truth for board renders.
+- [x] Add explicit signed-out draft migration on login.
+- [x] Prevent localStorage from silently overwriting cloud data.
+- [~] Centralize board writes in `js/data.js` or a dedicated board data module.
+  Board stage, board card attributes, board contact metadata, board detail child writes, conversation linking, and program removal now flow through `js/data.js`; `features/workspace.js` still writes child workspace tables directly and should move next.
+- [x] Add save error states for stage, note, task, contact, offer, and communication writes.
+- [~] Add conflict handling for multiple devices.
+  Current client handles local-vs-cloud login conflicts and backs up drafts; true multi-device conflict resolution still needs row versioning or server-side updated-at checks.
 - [!] Add RLS tests for `player_programs`.
 - [!] Add RLS tests for child workspace tables.
 
@@ -127,15 +135,15 @@ Goal: replace fuzzy/demo roster with verified roster ownership.
 
 Goal: make admin changes auditable and server-authorized.
 
-- [!] Add atomic admin deactivate RPC.
+- [x] Add atomic admin deactivate RPC.
 - [x] Await and surface deactivate RPC result.
-- [!] Revoke or block active sessions for deactivated users.
+- [x] Revoke or block active sessions for deactivated users.
 - [!] Move admin user/profile search server-side with pagination.
 - [!] Move program create/update to admin RPC/Edge Function.
 - [!] Move logo upload/update behind validated admin operation.
 - [x] Disallow SVG logo uploads in the admin UI.
 - [!] Enforce logo MIME/type validation in Storage/RLS/backend policy.
-- [!] Require successful audit writes for sensitive mutations.
+- [x] Require successful audit writes for sensitive mutations.
 - [ ] Add admin browser smoke tests.
 
 ## Chunk 10 - Compliance / Product Accuracy

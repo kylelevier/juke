@@ -70,7 +70,7 @@ function switchProfile(profileId){
 }
 
 // ── SHARED HELPERS ────────────────────────────────────────────────────────────
-function getAllEndorsements(){try{return JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){return[];}}
+function getAllEndorsements(){return [];}
 
 // ── TODAY DASHBOARD ───────────────────────────────────────────────────────────
 function renderCoachFeed(){

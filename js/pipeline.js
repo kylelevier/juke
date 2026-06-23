@@ -255,7 +255,7 @@ function _pdMove(e){
   const col=hit&&hit.closest('.pipeline-col-body');
   if(col&&col!==_pd.card.parentElement){col.classList.add('juke-drag-over');_pd.over=col;}
 }
-function _pdUp(e){
+async function _pdUp(e){
   document.removeEventListener('mousemove',_pdMove);
   document.removeEventListener('mouseup',_pdUp);
   if(_pd.over)_pd.over.classList.remove('juke-drag-over');
@@ -268,6 +268,7 @@ function _pdUp(e){
   _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
   if(!targetBody||!school) return;
   const targetStage=targetBody.dataset.stage;
+  const prevStage=statusData[school];
   // Move card in DOM
   targetBody.querySelector('.pipeline-empty-col')?.remove();
   targetBody.appendChild(document.querySelector(`.pipeline-card[data-school="${CSS.escape(school)}"]`));
@@ -287,8 +288,14 @@ function _pdUp(e){
     if(b&&cnt)cnt.textContent=b.querySelectorAll('.pipeline-card').length;
   });
   // Persist
+  const res=await saveBoardStage(school,targetStage); // data.js — updates localStorage + Supabase
+  if(res?.error){
+    if(prevStage) statusData[school]=prevStage;
+    else delete statusData[school];
+    await renderPipeline();
+    return;
+  }
   recordMilestone(school,targetStage);
-  saveBoardStage(school,targetStage); // data.js — updates localStorage + Supabase
   cloudSave();
 }
 
@@ -299,18 +306,24 @@ let _boardMeta={};
 async function renderPipeline(){
   _migrateStages();
   renderMilestoneRail();
-  // Load Supabase records in background; board renders immediately from localStorage
   if(sb&&currentUser){
-    loadAllBoardRecords().then(meta=>{
-      _boardMeta=meta;
-      // Sync stages from Supabase back to statusData (source of truth)
-      let changed=false;
-      Object.entries(meta).forEach(([name,row])=>{
-        if(row.stage&&row.stage!==statusData[name]){statusData[name]=row.stage;changed=true;}
-      });
-      if(changed)lsSet('juke_status',statusData);
-      _renderBoardCols();
-    });
+    const colsEl=document.getElementById('pipeline-cols');
+    if(colsEl) colsEl.innerHTML='<div class="board-empty-state"><div class="board-empty-kicker">Loading</div><div class="board-empty-title">Loading your cloud board...</div></div>';
+    try{
+      const meta=await loadAllBoardRecords();
+      if(meta){
+        _boardMeta=meta;
+        const cloudStatus={};
+        Object.entries(meta).forEach(([name,row])=>{
+          if(row.stage) cloudStatus[name]=row.stage;
+        });
+        statusData=cloudStatus;
+        lsSet('juke_status',statusData);
+      }
+    }catch(err){
+      console.error('JUKE board render failed:', err);
+      showToast?.('Could not load your cloud board. Showing this device draft.');
+    }
   }
   _renderBoardCols();
 }
@@ -459,8 +472,9 @@ function _renderAttentionStrip(needsList){
 async function _markContactedToday(schoolName,btn){
   btn.disabled=true;
   const today=new Date().toISOString().split('T')[0];
+  const res=await saveBoardContact(schoolName,{lastContactDate:today});
+  if(res?.error){btn.disabled=false;return;}
   _boardMeta[schoolName]=Object.assign(_boardMeta[schoolName]||{},{last_contact_date:today});
-  await saveBoardContact(schoolName,{lastContactDate:today});
   // Re-render this card in place
   const card=document.querySelector(`.pipeline-card[data-school="${CSS.escape(schoolName)}"]`);
   const r=RAW.find(x=>x.School===schoolName);

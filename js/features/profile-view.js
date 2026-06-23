@@ -143,10 +143,8 @@ function renderProfileView(){
 
   // ── COACH ENDORSEMENTS ──
   var allEnds=[];
-  if(window.PREVIEW_USER_ID&&Array.isArray(p._recommendations)){
+  if(Array.isArray(p._recommendations)){
     allEnds=p._recommendations;
-  }else{
-    try{allEnds=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
   }
   var fullNameKey=fullName.toLowerCase();
   var seenEnds={};

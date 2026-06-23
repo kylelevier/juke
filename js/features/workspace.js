@@ -15,6 +15,20 @@ const WS_LOG_LABELS={mail:'Mail',email:'Email',message:'Message',phone_call:'Pho
 const WS_OFFER_STATUSES=['none','verbal_interest','partial_offer','full_offer','preferred_walk_on'];
 const WS_OFFER_LABELS={none:'None',verbal_interest:'Verbal Interest',partial_offer:'Partial Offer',full_offer:'Full Offer',preferred_walk_on:'Preferred Walk-On'};
 
+function _wsSaveError(message,error){
+  const detail=error?.message?`: ${error.message}`:'';
+  console.error(`JUKE workspace save failed: ${message}`, error||'');
+  showToast?.(`${message}${detail}`);
+}
+
+function _wsApplyStageVisual(stage){
+  const sc=WS_STAGE_COLORS[stage]||WS_STAGE_COLORS.saved;
+  const av=document.getElementById('ws-av');
+  if(av){av.style.background=sc.bg;av.style.color=sc.text;}
+  const sel=document.getElementById('ws-stage-select');
+  if(sel) sel.value=stage;
+}
+
 async function openSchoolWorkspace(schoolName){
   const r=RAW.find(x=>x.School===schoolName);
   if(!r)return;
@@ -60,24 +74,14 @@ async function openSchoolWorkspace(schoolName){
       return;
     }
 
-    const {data:prog}=await sb.from('programs').select('id').eq('school',schoolName).single();
-    if(!prog){_renderWsOffline('School not found in database.');return;}
-
-    let ppRow;
-    const {data:existing}=await sb.from('player_programs')
-      .select('id,stage,created_at').eq('user_id',currentUser.id).eq('program_id',prog.id).single();
-    if(existing){
-      ppRow=existing;
-      if(existing.stage!==curStage && !window.PREVIEW_TARGET_USER_ID)
-        await sb.from('player_programs').update({stage:curStage,updated_at:new Date().toISOString()}).eq('id',existing.id);
-    }else{
-      if(window.PREVIEW_TARGET_USER_ID){_renderWsOffline('No workspace data for this program.');return;}
-      const {data:created}=await sb.from('player_programs')
-        .insert({user_id:currentUser.id,program_id:prog.id,stage:curStage})
-        .select('id,stage,created_at').single();
-      ppRow=created;
-    }
+    const ppRow=typeof loadBoardRecord==='function' ? await loadBoardRecord(schoolName) : null;
+    if(!ppRow){_renderWsOffline('Could not load workspace record.');return;}
     _wsPPId=ppRow?.id;_wsData.ppId=_wsPPId;_wsData.ppCreatedAt=ppRow?.created_at;
+    if(ppRow.stage){
+      statusData[schoolName]=ppRow.stage;
+      lsSet('juke_status',statusData);
+      _wsApplyStageVisual(ppRow.stage);
+    }
 
     const [logRes,conRes,taskRes,offRes,noteRes,jukeRes]=await Promise.all([
       sb.from('program_communications').select('*').eq('player_program_id',_wsPPId).order('logged_at',{ascending:false}),
@@ -87,6 +91,8 @@ async function openSchoolWorkspace(schoolName){
       sb.from('program_notes').select('*').eq('player_program_id',_wsPPId).order('created_at',{ascending:false}),
       window.PREVIEW_TARGET_USER_ID ? Promise.resolve({data:[]}) : sb.rpc('get_stale_programs',{stale_days:14}),
     ]);
+    const loadError=[logRes,conRes,taskRes,offRes,noteRes,jukeRes].find(r=>r?.error)?.error;
+    if(loadError) _wsSaveError('Some workspace data could not load',loadError);
     _wsData.log=logRes.data||[];
     _wsData.contacts=conRes.data||[];
     _wsData.tasks=taskRes.data||[];
@@ -272,6 +278,10 @@ async function wsAddLog(){
     .insert({player_program_id:_wsPPId,type,note:note||null,logged_at:new Date().toISOString()})
     .select().single();
   if(!error&&data){_wsData.log.unshift(data);_wsData.jukeAlert=null;_renderWorkspace();}
+  else{
+    _wsSaveError('Could not log interaction',error);
+    if(btn){btn.disabled=false;btn.textContent='Log it';}
+  }
 }
 
 async function wsAddNote(){
@@ -284,6 +294,10 @@ async function wsAddNote(){
   const {data,error}=await sb.from('program_notes')
     .insert({player_program_id:_wsPPId,content}).select().single();
   if(!error&&data){_wsData.notes.unshift(data);_renderWorkspace();}
+  else{
+    _wsSaveError('Could not save reflection',error);
+    if(btn){btn.disabled=false;btn.textContent='Save';}
+  }
 }
 
 function _renderBottomBar(){
@@ -383,6 +397,10 @@ async function wsAddContact(){
     .insert({player_program_id:_wsPPId,name,role:role||null,email:email||null,phone:phone||null})
     .select().single();
   if(!error&&data){_wsData.contacts.push(data);_renderBottomBar();}
+  else{
+    _wsSaveError('Could not save coach contact',error);
+    if(btn){btn.disabled=false;btn.textContent='Save';}
+  }
 }
 
 async function wsToggleTask(id,done){
@@ -392,6 +410,9 @@ async function wsToggleTask(id,done){
   if(!error){
     const t=_wsData.tasks.find(x=>x.id===id);
     if(t){t.completed=done;t.completed_at=done?new Date().toISOString():null;}
+    _renderWorkspace();
+  }else{
+    _wsSaveError('Could not update task',error);
     _renderWorkspace();
   }
 }
@@ -408,6 +429,10 @@ async function wsAddTask(){
     .insert({player_program_id:_wsPPId,text,due_date:due||null})
     .select().single();
   if(!error&&data){_wsData.tasks.push(data);_renderWorkspace();}
+  else{
+    _wsSaveError('Could not add task',error);
+    if(btn){btn.disabled=false;btn.textContent='Add task';}
+  }
 }
 
 async function wsSetOfferStatus(status){
@@ -421,6 +446,7 @@ async function wsSetOfferStatus(status){
     error=res.error;if(!error)_wsData.offer=res.data;
   }
   if(!error){_wsData.offer={..._wsData.offer,...update};_renderBottomBar();}
+  else _wsSaveError('Could not save offer status',error);
 }
 
 async function wsUpdateOfferField(key,rawVal){
@@ -436,6 +462,7 @@ async function wsUpdateOfferField(key,rawVal){
     error=res.error;if(!error)_wsData.offer=res.data;
   }
   if(!error)_wsData.offer={..._wsData.offer,...update};
+  else _wsSaveError('Could not save offer field',error);
 }
 
 async function wsUpdateOfferNote(val){
@@ -450,20 +477,20 @@ async function wsUpdateOfferNote(val){
     error=res.error;if(!error)_wsData.offer=res.data;
   }
   if(!error)_wsData.offer={..._wsData.offer,...update};
+  else _wsSaveError('Could not save offer note',error);
 }
 
 async function wsChangeStage(newStage){
   if(window.PREVIEW_TARGET_USER_ID)return;
   if(!_wsSchool)return;
-  statusData[_wsSchool]=newStage;
-  lsSet('juke_status',statusData);
-  cloudSave();
-  const sc=WS_STAGE_COLORS[newStage]||WS_STAGE_COLORS.saved;
-  const av=document.getElementById('ws-av');
-  if(av){av.style.background=sc.bg;av.style.color=sc.text;}
-  if(sb&&currentUser&&_wsPPId){
-    await sb.from('player_programs').update({stage:newStage,updated_at:new Date().toISOString()}).eq('id',_wsPPId);
+  const prev=statusData[_wsSchool]||'saved';
+  const res=await saveBoardStage(_wsSchool,newStage);
+  if(res?.error){
+    _wsApplyStageVisual(prev);
+    return;
   }
+  _wsApplyStageVisual(newStage);
+  cloudSave();
   if(document.getElementById('tab-pipeline')?.classList.contains('active'))renderPipeline();
 }
 

@@ -300,12 +300,30 @@ function closeEndorseModal(e){
 
 function toggleTrait(el){ el.classList.toggle('selected'); }
 
-function submitEndorse(){
+async function submitEndorse(){
   if(!endorseTarget) return;
   const refreshedId = endorseTarget;
   const traits = [...document.querySelectorAll('.endorse-trait.selected')].map(t=>t.textContent);
   const text   = el('endorse-text').value.trim();
-  endorsements[endorseTarget] = {traits, text, date: new Date().toLocaleDateString()};
+  if(!text){alert('Please write a recommendation before submitting.');return;}
+  const athlete=hsFindAthlete(endorseTarget);
+  const client=window.sb||window._hsSb||null;
+  if(!client||!athlete||!athlete._userId){
+    alert('Verified recommendations require a live athlete profile and backend recommendations workflow.');
+    return;
+  }
+  const {data,error}=await client.rpc('submit_direct_recommendation', {
+    athlete_user_id:athlete._userId,
+    recommendation_text:text,
+    traits:traits
+  });
+  if(error){
+    alert(typeof hsMissingRecommendationsBackend==='function'&&hsMissingRecommendationsBackend(error)
+      ? 'Direct recommendation backend is not configured yet.'
+      : 'Could not submit recommendation: '+error.message);
+    return;
+  }
+  endorsements[endorseTarget] = {traits, text, date: new Date().toLocaleDateString(), id:data&&data.id};
   lss('endorsements', endorsements);
   if(window.JukeOnboarding){
     JukeOnboarding.mark('hs_coach','firstRecommendation',{athleteId:endorseTarget,traits:traits.length});
