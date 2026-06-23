@@ -193,10 +193,20 @@ function _applyFitPrefs(prefs){
 }
 async function _syncFromCloud(){
   if(!sb||!currentUser)return;
-  const {data,error}=await sb.from('player_data').select('*').eq('user_id',currentUser.id).single();
-  if(error){
-    if(error.code !== 'PGRST116') console.error('JUKE cloud load failed:', error);
-    return;
+  let data=null;
+  const cloudRes=await sb.from('player_data').select('*').eq('user_id',currentUser.id).maybeSingle();
+  if(cloudRes.error){
+    if(cloudRes.error.code !== 'PGRST116') console.error('JUKE cloud load failed:', cloudRes.error);
+  }else{
+    data=cloudRes.data;
+  }
+  if(window.PREVIEW_USER_ID && (!data || !data.profile || !Object.keys(data.profile).length)){
+    const pubRes=await sb.from('athlete_profiles').select('profile_data').eq('user_id',currentUser.id).maybeSingle();
+    if(pubRes.error){
+      console.error('JUKE preview profile load failed:', pubRes.error);
+    }else if(pubRes.data&&pubRes.data.profile_data){
+      data=Object.assign({profile:pubRes.data.profile_data}, data||{});
+    }
   }
   if(!data)return;
   if(data.profile&&Object.keys(data.profile).length){

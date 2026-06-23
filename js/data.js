@@ -222,9 +222,13 @@ async function saveRecommendationRequest(payload){
 
 async function loadAllBoardRecords(){
   if(!sb||!currentUser) return {};
-  const {data}=await sb.from('player_programs')
+  const {data,error}=await sb.from('player_programs')
     .select('id,stage,last_contact_date,next_action,next_action_date,is_dream_school,is_top_choice,is_in_state,scholarship_opp,academic_match,is_christian,programs(school,state)')
     .eq('user_id',currentUser.id);
+  if(error){
+    if(window.PREVIEW_USER_ID) console.warn('JUKE preview board load failed:', error.message);
+    return {};
+  }
   const result={};
   (data||[]).forEach(row=>{
     const name=row.programs?.school;
