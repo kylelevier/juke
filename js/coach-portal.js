@@ -261,15 +261,12 @@ async function handlePublishToggle(){
     : {...lsGet('juke_player')};
 
   if(sb){
-    const {error} = await sb.from('athlete_profiles').upsert({
-      user_id:currentUser.id,
-      profile_data:pd,
-      is_discoverable:on,
-      updated_at:new Date().toISOString()
-    },{onConflict:'user_id'});
-    if(error){
-      if(status){status.textContent=(on?'Publish':'Unpublish')+' failed: '+error.message;status.className='publish-status err';}
-      else alert('Error publishing: '+error.message);
+    const r = on
+      ? await sb.rpc('publish_athlete_profile', {p_profile_data: pd})
+      : await sb.rpc('unpublish_athlete_profile');
+    if(r.error){
+      if(status){status.textContent=(on?'Publish':'Unpublish')+' failed: '+r.error.message;status.className='publish-status err';}
+      else alert('Error publishing: '+r.error.message);
       toggle.checked=!!prior.on;
       if(consent) consent.checked=!!prior.shareContact;
       if(pill){ pill.textContent=prior.on?'● Live':'Draft'; pill.className='publish-live-pill '+(prior.on?'live':'draft'); }

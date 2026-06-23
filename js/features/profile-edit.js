@@ -328,10 +328,32 @@ function validateProfileImage(file){
   return true;
 }
 
-function handleBannerUpload(input){
+async function _athleteUploadMedia(file, slot){
+  const client = window.sb || null;
+  const cu = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null;
+  if(!client || !cu) return null;
+  const ext = file.type==='image/webp'?'webp':file.type==='image/jpeg'?'jpg':'png';
+  const path = `${cu.id}/${slot}.${ext}`;
+  const {error} = await client.storage.from('athlete-media').upload(path, file, {upsert:true, contentType:file.type});
+  if(error){ console.warn('JUKE athlete media upload failed:', error); return null; }
+  const {data:{publicUrl}} = client.storage.from('athlete-media').getPublicUrl(path);
+  return publicUrl;
+}
+
+async function handleBannerUpload(input){
   const file = input.files[0];
   if(!file) return;
   if(!validateProfileImage(file)){ input.value=''; return; }
+  const url = await _athleteUploadMedia(file, 'banner');
+  if(url){
+    localStorage.setItem('juke_banner', JSON.stringify(url));
+    renderBannerPhoto(url);
+    renderWizBanner(url);
+    renderProfileView();
+    if(typeof cloudSave==='function') cloudSave();
+    return;
+  }
+  // Fallback: base64 (user not yet signed in, or upload failed)
   const reader = new FileReader();
   reader.onload = e => {
     localStorage.setItem('juke_banner', JSON.stringify(e.target.result));
@@ -367,10 +389,19 @@ function renderWizBanner(dataUrl){
   if(ph) ph.style.display = 'none';
 }
 
-function handleAvatarUpload(input){
+async function handleAvatarUpload(input){
   const file = input.files[0];
   if(!file) return;
   if(!validateProfileImage(file)){ input.value=''; return; }
+  const url = await _athleteUploadMedia(file, 'avatar');
+  if(url){
+    localStorage.setItem('juke_avatar', JSON.stringify(url));
+    renderAvatarPhoto(url);
+    renderWizAvatar(url);
+    renderProfileView();
+    if(typeof cloudSave==='function') cloudSave();
+    return;
+  }
   const reader = new FileReader();
   reader.onload = e => {
     localStorage.setItem('juke_avatar', JSON.stringify(e.target.result));

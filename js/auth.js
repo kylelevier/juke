@@ -159,12 +159,7 @@ async function _syncPublishedAthleteProfile(profile){
       if(!pd._banner) pd._banner=existing.profile_data._banner||'';
     }
   }
-  const {error}=await sb.from('athlete_profiles').upsert({
-    user_id:currentUser.id,
-    profile_data:pd,
-    is_discoverable:true,
-    updated_at:new Date().toISOString()
-  },{onConflict:'user_id'});
+  const {error}=await sb.rpc('publish_athlete_profile',{p_profile_data:pd});
   if(error) console.error('JUKE publish sync failed:', error);
 }
 

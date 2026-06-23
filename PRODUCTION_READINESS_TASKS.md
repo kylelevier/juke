@@ -60,9 +60,9 @@ Goal: publish only deliberate, validated, public-safe profile data.
 
 - [x] Split public profile payload from private profile fields.
 - [x] Add explicit contact-info publishing consent.
-- [ ] Move avatar/banner from localStorage base64 to Supabase Storage.
+- [x] Move avatar/banner from localStorage base64 to Supabase Storage.
 - [x] Add media file type and size validation.
-- [!] Add backend validation for published profile payload.
+- [x] Add backend validation for published profile payload.
 - [x] Add publish confirmation with visible-field summary.
 - [x] Add unpublish confirmation and success/error states.
 - [!] Add public profile RLS/privacy tests.
