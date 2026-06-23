@@ -37,6 +37,8 @@
   <button class="tab-btn"        id="tab-impersonate" onclick="adminSwitchTab('impersonate')">Preview As</button>
   <button class="tab-btn"        id="tab-programs"    onclick="adminSwitchTab('programs')">Programs</button>
   <button class="tab-btn"        id="tab-logos"       onclick="adminSwitchTab('logos')">Logos</button>
+  <button class="tab-btn"        id="tab-calendar"    onclick="adminSwitchTab('calendar')">Calendar</button>
+  <button class="tab-btn"        id="tab-requests"    onclick="adminSwitchTab('requests')">Requests</button>
 </nav>
 
 <!-- ── PAGE WRAP ── -->
@@ -146,6 +148,33 @@
   <div id="admin-school-list"><div class="admin-loading">Loading…</div></div>
 </div>
 
+<!-- ════════════════════════════════════════════════════ -->
+<!-- TAB: CALENDAR                                        -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="tab-content" id="content-calendar">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">Recruiting Calendar</div>
+    <div style="display:flex;gap:8px;">
+      <button class="admin-ghost-btn" onclick="adminRefreshCalendar()">Refresh</button>
+      <button class="admin-primary-btn" onclick="adminOpenAddCalEntry()">+ Add Entry</button>
+    </div>
+  </div>
+  <div id="admin-cal-add-wrap"></div>
+  <div class="admin-table-wrap">
+    <div id="admin-calendar-wrap"><div class="admin-loading">Loading…</div></div>
+  </div>
+</div>
+
+<div class="tab-content" id="content-requests">
+  <div class="admin-section-bar">
+    <div class="admin-section-title">Coach Access Requests</div>
+    <button class="admin-ghost-btn" onclick="initAdminRequests()">Refresh</button>
+  </div>
+  <div class="admin-table-wrap">
+    <div id="admin-requests-wrap"><div class="admin-loading">Loading…</div></div>
+  </div>
+</div>
+
 </div><!-- /page-wrap -->
 
 <!-- ── ADD PROGRAM MODAL ── -->
@@ -184,13 +213,8 @@
 <script src="../js/features/admin-programs.js"></script>
 <script src="../js/features/admin-impersonate.js"></script>
 <script src="../js/features/admin-logo.js"></script>
+<script src="../js/features/admin-calendar.js"></script>
+<script src="../js/features/admin-requests.js"></script>
 <script>window.JUKE_PORTAL_TYPE = 'admin';</script>
-<script>
-  // Boot: init the active tab on load
-  (function(){
-    if (typeof initAdminUsers === 'function') initAdminUsers();
-    if (typeof _updateAdminChip === 'function') _updateAdminChip();
-  })();
-</script>
 </body>
 </html>

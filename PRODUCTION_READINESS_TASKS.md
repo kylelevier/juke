@@ -150,34 +150,36 @@ Goal: make admin changes auditable and server-authorized.
 
 Goal: remove known inaccurate or advisory-only product signals from production.
 
-- [ ] Remove placeholder women's lacrosse recruiting calendar from production.
-- [!] Add sourced football recruiting calendar data model.
-- [ ] Add admin-managed calendar seed/editor.
-- [ ] Review NCAA readiness requirements against current source.
-- [ ] Label readiness as self-assessment unless verification exists.
-- [!] Add verified document/transcript workflow if readiness is marketed as official.
+- [x] Remove placeholder women's lacrosse recruiting calendar from production.
+- [x] Add sourced football recruiting calendar data model.
+- [x] Add admin-managed calendar seed/editor.
+- [x] Review NCAA readiness requirements against current source.
+- [x] Label readiness as self-assessment unless verification exists.
+- [x] Add verified document/transcript workflow if readiness is marketed as official. (N/A — labelled as self-assessment; no official marketing; register link points to eligibilitycenter.org)
 
 ## Chunk 11 - Architecture Cleanup
 
 Goal: align with `AGENTS.md` ownership and reduce future risk.
 
-- [ ] Move inline scripts out of `pages/*.html`.
-- [ ] Replace high-risk inline event handlers with module event binding.
-- [ ] Consolidate Supabase client initialization.
-- [ ] Move scattered `sb.from(...)` calls into data-layer modules.
-- [ ] Remove athlete-side staff-password admin modal from production.
-- [ ] Add shared Supabase error/toast helper.
-- [ ] Add environment flag for production vs demo.
+- [x] Move inline scripts out of `pages/*.html`. (athlete.html preview-banner script removed — config.js already handles it; admin.html boot IIFE moved to admin-calendar.js)
+- [~] Replace high-risk inline event handlers with module event binding. (Hardcoded password handlers removed; 187 remaining tab/filter handlers are low-risk cosmetic bindings — ongoing)
+- [!] Consolidate Supabase client initialization. (Blocked by const sb / var sb collision between config.js and coach-nav.js/hscoach-nav.js — see Technical Debt #4)
+- [~] Move scattered `sb.from(...)` calls into data-layer modules. (Board, stage, note, contact, offer writes centralized in data.js; workspace.js child tables and auth.js cloudSave still write directly — ongoing)
+- [x] Remove athlete-side staff-password admin modal from production. (admin-modal HTML removed from athlete.html; openAdmin/checkAdminPw/ADMIN_PW/adminUnlocked dead code removed from finder.js and data.js)
+- [x] Add shared Supabase error/toast helper. (_sbErr(error, context) added to ui.js)
+- [x] Add environment flag for production vs demo. (window.JUKE_ENV.dev in config.js)
 
 ## Chunk 12 - Test Coverage
 
 Goal: prove the security and product contracts.
 
-- [ ] Add auth gate smoke tests for Athlete, Recruiter, HS Coach, and Admin.
-- [ ] Add disabled-account smoke tests.
-- [ ] Add profile publish/unpublish smoke tests.
-- [ ] Add messaging send/search smoke tests.
-- [ ] Add recruiter board persistence smoke tests.
-- [ ] Add HS recommendation workflow smoke tests.
-- [ ] Add admin deactivate/preview smoke tests.
-- [!] Add RLS tests for every table touched by production portals.
+Infrastructure: Playwright (`package.json`, `playwright.config.js`). Auth-gate tests run with no credentials; all other tests skip gracefully when env vars are absent. See `tests/.env.example`.
+
+- [x] Add auth gate smoke tests for Athlete, Recruiter, HS Coach, and Admin. (tests/smoke/auth-gate.spec.js — no credentials required)
+- [x] Add disabled-account smoke tests. (tests/smoke/disabled-account.spec.js — skips without TEST_DISABLED_* vars)
+- [x] Add profile publish/unpublish smoke tests. (tests/smoke/profile-publish.spec.js)
+- [x] Add messaging send/search smoke tests. (tests/smoke/messaging.spec.js)
+- [x] Add recruiter board persistence smoke tests. (tests/smoke/recruiter-board.spec.js)
+- [x] Add HS recommendation workflow smoke tests. (tests/smoke/hs-recommendation.spec.js)
+- [x] Add admin deactivate/preview smoke tests. (tests/smoke/admin.spec.js)
+- [x] Add RLS tests for every table touched by production portals. (tests/rls/rls_policies.sql — pgTAP; run via psql or supabase test db; covers player_data, athlete_profiles, player_programs, recruiter_pipeline, recruiter_evaluations, hs_coach_profiles, hs_coach_notes, recommendation_requests, recommendations, conversations/messages, recruiting_calendar)

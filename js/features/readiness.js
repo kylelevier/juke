@@ -69,8 +69,8 @@ function renderReadiness(){
     <div class="readiness-wrap">
       <div class="readiness-head">
         <div>
-          <h2 class="readiness-title">NCAA Eligibility</h2>
-          <p class="readiness-sub">Track core courses, GPA and certification against your division's standard — from freshman year forward.</p>
+          <h2 class="readiness-title">NCAA Eligibility Tracker <span class="readiness-self-badge">Self-Assessment</span></h2>
+          <p class="readiness-sub">Track your core courses, GPA and certification steps against your target division's standard. This is a self-reported checklist — official eligibility is determined by the NCAA Eligibility Center.</p>
         </div>
         <div class="readiness-score readiness-${ring}">
           <div class="readiness-score-num">${pct}<span>%</span></div>
@@ -117,7 +117,7 @@ function renderReadiness(){
         <label class="readiness-toggle"><input type="checkbox" ${d.transcriptSent?'checked':''} onchange="_readUpdate('transcriptSent',this.checked)"> Official transcript sent</label>
       </div>` : ''}
 
-      <p class="readiness-foot">Guidance reflects standard NCAA Division ${d.division.slice(1)} rules. Confirm current requirements at <span class="readiness-link">ncaa.org/student-athletes</span>.</p>
+      <p class="readiness-foot">Self-assessment only — JUKE does not verify eligibility. Requirements shown reflect standard NCAA Division ${d.division.slice(1)} rules for football; confirm current rules and register at <span class="readiness-link">eligibilitycenter.org</span>.</p>
     </div>`;
 }
 

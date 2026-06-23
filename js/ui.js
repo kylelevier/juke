@@ -1,5 +1,15 @@
 // ── UI PRIMITIVES — shared across all portals ──────────────────
 
+// Shared Supabase error helper. Logs + surfaces a toast when sb returns error.
+// Usage: if(_sbErr(error, 'saving note')) return;
+function _sbErr(error, context){
+  if(!error) return false;
+  const msg = error.message || String(error);
+  console.warn('JUKE db error' + (context ? ' ['+context+']' : '') + ':', msg);
+  if(typeof showToast === 'function') showToast('Save failed — ' + (context||'') + '. Try again.');
+  return true;
+}
+
 // ── PIPELINE STAGES ─────────────────────────────────────────────
 const PIPELINE_STAGES=[
   {key:'saved',      label:'Saved',      color:'#0057FF'},

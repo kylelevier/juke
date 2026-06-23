@@ -203,3 +203,25 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .admin-toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
 .admin-toast.ok{background:#1a5c2a;}
 .admin-toast.err{background:#8b1a1a;}
+
+/* ── COACH ACCESS REQUESTS ── */
+.req-section-title{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:0 24px 10px;}
+.req-row{padding:16px 24px;border-bottom:1px solid var(--border);transition:background .12s;}
+.req-row:hover{background:rgba(255,255,255,.02);}
+.req-row-top{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.req-name{font-size:14px;font-weight:500;color:var(--text);}
+.req-meta{font-size:12px;color:var(--text-muted);margin-bottom:2px;}
+.req-email{font-size:12px;color:var(--text-dim);}
+.req-msg{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.03);border-radius:6px;border-left:2px solid rgba(255,255,255,.1);}
+.req-date{font-size:11px;color:var(--text-dim);margin-top:6px;}
+.req-actions{display:flex;gap:8px;margin-top:10px;}
+.req-btn{font-size:12px;font-weight:500;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;transition:background .15s;}
+.req-btn--approve{background:#1a5c2a;color:#4ade80;}
+.req-btn--approve:hover{background:#1e6e33;}
+.req-btn--deny{background:rgba(255,255,255,.06);color:var(--text-muted);}
+.req-btn--deny:hover{background:rgba(255,255,255,.1);}
+.req-badge{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;}
+.req-badge--pending{background:rgba(251,191,36,.15);color:#fbbf24;}
+.req-badge--approved{background:rgba(74,222,128,.12);color:#4ade80;}
+.req-badge--denied{background:rgba(255,255,255,.06);color:var(--text-muted);}
+.req-badge--applied{background:rgba(123,47,255,.15);color:#a78bfa;}

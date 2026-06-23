@@ -83,6 +83,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
     <div class="terms">By signing in you agree to JUKE's terms of service and privacy policy.</div>
   </div>
 
+  <div style="margin-top:20px;font-size:13px;color:rgba(255,255,255,.35);text-align:center">
+    Coach or recruiter? <a href="/coach-access.html" style="color:rgba(255,255,255,.55);text-decoration:none;font-weight:500">Request access →</a>
+  </div>
+
 </div>
 
 <div class="footer">&copy; 2026 JUKE &middot; shejukes.com</div>
@@ -131,9 +135,34 @@ async function signInWithGoogle() {
   }
 }
 
-// Handle OAuth callback — Supabase sets the session automatically on return
+// On page load: if a session already exists, redirect without requiring a click
+sb.auth.getSession().then(async ({ data }) => {
+  if (!data.session) return;
+  const stored = localStorage.getItem('juke_auth');
+  if (stored) {
+    try {
+      const auth = JSON.parse(stored);
+      const role = auth.type || 'athlete';
+      const next = safeNextUrl(NEXT_URL);
+      window.location.replace(next || PORTAL[role] || PORTAL.athlete);
+      return;
+    } catch(e) {}
+  }
+  // No juke_auth cached — fetch profile to determine role then redirect
+  const user = data.session.user;
+  const profileRes = await sb.from('user_profiles').select('role').eq('id', user.id).maybeSingle();
+  let role = profileRes.data?.role || user.user_metadata?.juke_role || 'athlete';
+  if (role === 'athlete') {
+    const upgradeRes = await sb.rpc('apply_approved_coach_request');
+    if (upgradeRes.data) role = upgradeRes.data;
+  }
+  const next = safeNextUrl(NEXT_URL);
+  window.location.replace(next || PORTAL[role] || PORTAL.athlete);
+});
+
+// Handle OAuth callback — only act on a fresh sign-in, not session restore on page load
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (!session) return;
+  if (event !== 'SIGNED_IN' || !session) return;
 
   setStatus('Signing you in…');
   document.getElementById('google-btn').disabled = true;
@@ -151,6 +180,12 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
   // Role: prefer stored profile value, then metadata, default to athlete for alpha
   let role = profileRes.data?.role || user.user_metadata?.juke_role || 'athlete';
+
+  // If still athlete, check for an approved coach access request and auto-upgrade
+  if (role === 'athlete') {
+    const upgradeRes = await sb.rpc('apply_approved_coach_request');
+    if (upgradeRes.data) role = upgradeRes.data;
+  }
 
   // Persist juke_auth for portal gating (coaches need this)
   const name = profileRes.data?.display_name || user.user_metadata?.full_name || user.email || 'User';

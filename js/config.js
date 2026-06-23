@@ -11,6 +11,11 @@ const sb = (typeof supabase !== 'undefined')
 
 let currentUser = null;
 
+// Environment flag — true when running locally (dev/staging).
+window.JUKE_ENV = {
+  dev: location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.endsWith('.local')
+};
+
 // Preview-As mode: admin views a server-provided read-only athlete bundle.
 // The target id comes from the URL, but access must be granted by the backend RPC.
 window.PREVIEW_TARGET_USER_ID = new URLSearchParams(location.search).get('preview_as') || null;

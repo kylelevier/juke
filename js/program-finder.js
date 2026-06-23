@@ -329,7 +329,7 @@ function _ppRenderStatusRow(schoolName){
   const el = document.getElementById('pp-status-row');
   if(!el) return;
   const cur = statusData[schoolName] || 'none';
-  const stages = [{key:'saved',label:'Saved'},{key:'contacting',label:'Contacting'},{key:'applied',label:'Applied'},{key:'committed',label:'Committed'}];
+  const stages = (window.PIPELINE_STAGES||[{key:'saved',label:'Saved'},{key:'contacting',label:'Contacting'},{key:'applied',label:'Applied'},{key:'offered',label:'Offered'},{key:'committed',label:'Committed'}]);
   el.innerHTML = stages.map(function(s){
     var active = cur===s.key ? ' active' : '';
     return '<button class="pp-status-pill s-'+s.key+active+'" data-key="'+s.key+'" onclick="ppSetStatus(this.dataset.key)">'+s.label+'</button>';

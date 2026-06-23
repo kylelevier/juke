@@ -56,9 +56,6 @@ let sortCol      = '_fit';
 let sortAsc      = false;
 let view         = 'table';
 let compareSet   = new Set();
-let adminUnlocked= false;
-const ADMIN_PW   = 'juke2027';
-
 // ── PIPELINE DRAG STATE ──────────────────────────────────────
 let _pd={card:null,clone:null,ox:0,oy:0,over:null,moved:false};
 let playerData=lsGet('juke_player');
@@ -100,20 +97,20 @@ async function migrateLocalBoardDraftIfNeeded(playerDataPipeline){
     for(const [school,stage] of Object.entries(local)){
       if(stage&&stage!=='none') await saveBoardStage(school,stage);
     }
-    showToast?.('Local board draft moved to your cloud account.');
+    showToast?.('Local draft saved to your account.');
     return _pipelineFromBoardMeta(await loadAllBoardRecords({silent:true})||{});
   }
   if(!_samePipeline(local,cloud)){
     lsSet('juke_status_draft_backup',{saved_at:new Date().toISOString(),pipeline:local});
-    const useLocal=typeof confirm==='function' && confirm('This device has a local board draft, but your cloud board already has saved programs. Use this device draft to update your cloud board? Cancel keeps the cloud board and saves this draft as a backup.');
+    const useLocal=typeof confirm==='function' && confirm('This device has a local board draft, but your saved board already has programs. Use this device draft to update your board? Cancel keeps the saved board and backs up this draft.');
     if(useLocal){
       for(const [school,stage] of Object.entries(local)){
         if(stage&&stage!=='none') await saveBoardStage(school,stage);
       }
-      showToast?.('Local board draft merged into your cloud board.');
+      showToast?.('Local draft merged into your saved board.');
       return _pipelineFromBoardMeta(await loadAllBoardRecords({silent:true})||{});
     }
-    showToast?.('Cloud board loaded. Local board draft saved as backup.');
+    showToast?.('Saved board loaded. Local draft backed up.');
   }
   return cloud;
 }
@@ -343,7 +340,7 @@ async function loadAllBoardRecords(opts){
     .eq('user_id',currentUser.id);
   if(error){
     if(window.PREVIEW_USER_ID) console.warn('JUKE preview board load failed:', error.message);
-    else if(!opts?.silent) _boardSaveError('Could not load your cloud board',error);
+    else if(!opts?.silent) _boardSaveError('Could not load your board',error);
     return null;
   }
   const result={};

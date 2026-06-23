@@ -108,6 +108,8 @@ function adminSwitchTab(id) {
   if (id === 'impersonate') { if (typeof initAdminImpersonate === 'function') initAdminImpersonate(); }
   if (id === 'programs')    { if (typeof initAdminPrograms === 'function') initAdminPrograms(); }
   if (id === 'logos')       { if (typeof initAdminLogos === 'function') initAdminLogos(); }
+  if (id === 'calendar')    { if (typeof initAdminCalendar  === 'function') initAdminCalendar(); }
+  if (id === 'requests')    { if (typeof initAdminRequests  === 'function') initAdminRequests(); }
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────

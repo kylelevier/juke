@@ -56,6 +56,11 @@
   var _pollTimer     = null;
   var _searchTimer   = null;
   var _lastThreadLoadError = null;
+  var _pendingAttachment = null;  // {file, name, type, previewUrl}
+
+  var ATTACH_MAX_BYTES = 10 * 1024 * 1024;
+  var ATTACH_ACCEPT    = ['image/jpeg','image/png','image/gif','image/webp','image/heic','image/heif',
+                          'video/mp4','video/quicktime','video/webm','video/x-msvideo','application/pdf'];
 
   // ── PORTAL DETECTION ─────────────────────────────────────────
   function _portalType() {
@@ -474,7 +479,10 @@
       if (m._failed)  cls += ' failed';
 
       html += '<div class="' + cls + '" data-id="' + m.id + '">'
-        + '<div class="msg-bubble">' + _escNl(m.body) + '</div>'
+        + '<div class="msg-bubble">'
+        + _renderAttachment(m)
+        + (m.body ? _escNl(m.body) : '')
+        + '</div>'
         + '<div class="msg-bubble-meta">'
           + '<span class="msg-bubble-time">' + time + '</span>';
 
@@ -505,7 +513,7 @@
     var ta = document.getElementById('msg-compose-area');
     if (!ta) return;
     var body = ta.value.trim();
-    if (!body)           return;
+    if (!body && !_pendingAttachment) return;
     if (!_activeConvId)  return;
     if (!currentUser)    return;
     if (window.PREVIEW_TARGET_USER_ID) {
@@ -520,12 +528,16 @@
     ta.value = '';
     msgComposeResize(ta);
 
+    var attachment = _pendingAttachment;
+    _clearAttachment();
+
     // Optimistic message
     var tempId = 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     var opt = {
       id:              tempId,
       sender_id:       currentUser.id,
       body:            body,
+      payload:         attachment ? { attachment_type: attachment.type, attachment_name: attachment.name, _uploading: true, _previewUrl: attachment.previewUrl } : null,
       created_at:      new Date().toISOString(),
       read_at:         null,
       _pending:        true,
@@ -536,15 +548,46 @@
     _paintBubbles();
     _scrollBottom();
 
-    _pending[tempId] = { body: body, convId: _activeConvId, retries: 0 };
-    await _trySend(tempId, body, _activeConvId, 0);
+    _pending[tempId] = { body: body, convId: _activeConvId, attachment: attachment, retries: 0 };
+    await _trySend(tempId, body, _activeConvId, attachment, 0);
   }
 
-  async function _trySend(tempId, body, convId, attempt) {
+  async function _trySend(tempId, body, convId, attachment, attempt) {
     if (!sb || !currentUser) return;
     if (window.PREVIEW_TARGET_USER_ID) return;
 
-    var r = await sb.rpc('send_message', { conversation_id: convId, body: body });
+    // Upload attachment first if present
+    var attachmentUrl = null, attachmentType = null, attachmentName = null;
+    if (attachment && attachment.file) {
+      var ext  = attachment.name.split('.').pop().toLowerCase();
+      var path = convId + '/' + currentUser.id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,5) + '.' + ext;
+      var up   = await sb.storage.from('message-attachments').upload(path, attachment.file, { contentType: attachment.type });
+      if (up.error) {
+        if (attempt < MAX_RETRIES) {
+          setTimeout(function(){ _trySend(tempId, body, convId, attachment, attempt + 1); }, RETRY_BASE_MS * Math.pow(2, attempt));
+        } else {
+          _markSendFailed(tempId);
+          delete _pending[tempId];
+          _toast('Could not upload attachment. Try again.');
+        }
+        return;
+      }
+      var signed = await sb.storage.from('message-attachments').createSignedUrl(path, 31536000);
+      if (signed.data) {
+        attachmentUrl  = signed.data.signedUrl;
+        attachmentType = attachment.type;
+        attachmentName = attachment.name;
+      }
+    }
+
+    var rpcParams = { conversation_id: convId, body: body };
+    if (attachmentUrl) {
+      rpcParams.attachment_url  = attachmentUrl;
+      rpcParams.attachment_type = attachmentType;
+      rpcParams.attachment_name = attachmentName;
+    }
+
+    var r = await sb.rpc('send_message', rpcParams);
 
     if (r.error) {
       if (_isMissingRpc(r.error)) {
@@ -555,7 +598,7 @@
       }
       if (attempt < MAX_RETRIES) {
         var delay = RETRY_BASE_MS * Math.pow(2, attempt);
-        setTimeout(function(){ _trySend(tempId, body, convId, attempt + 1); }, delay);
+        setTimeout(function(){ _trySend(tempId, body, convId, attachment, attempt + 1); }, delay);
       } else {
         // Mark as failed in UI
         _markSendFailed(tempId);
@@ -586,7 +629,7 @@
     if (m) { m._pending = true; m._failed = false; }
     p.retries = 0;
     _paintBubbles();
-    _trySend(tempId, p.body, p.convId, 0);
+    _trySend(tempId, p.body, p.convId, p.attachment || null, 0);
   }
 
   function _markSendFailed(tempId) {
@@ -599,18 +642,88 @@
     var row = Array.isArray(data) ? data[0] : data;
     row = row || {};
     return {
-      id: row.id || tempId,
+      id:              row.id || tempId,
       conversation_id: row.conversation_id || _activeConvId,
-      sender_id: row.sender_id || currentUser.id,
-      body: row.body || body,
-      created_at: row.created_at || new Date().toISOString(),
-      read_at: row.read_at || null
+      sender_id:       row.sender_id || currentUser.id,
+      body:            row.body || body,
+      payload:         row.payload || null,
+      created_at:      row.created_at || new Date().toISOString(),
+      read_at:         row.read_at || null
     };
   }
 
   function _isMissingRpc(error) {
     var msg = (error && (error.message || error.details || error.hint)) || '';
     return error && (error.code === 'PGRST202' || /function .*not found|could not find.*function/i.test(msg));
+  }
+
+  // ── ATTACHMENT HELPERS ────────────────────────────────────────
+  function _renderAttachment(m) {
+    var p = m.payload;
+    if (!p || !p.attachment_type) return '';
+    var url  = p.attachment_url || p._previewUrl || '';
+    var name = _esc(p.attachment_name || 'attachment');
+    var type = p.attachment_type || '';
+    var uploading = p._uploading;
+
+    if (uploading) {
+      return '<div class="msg-attach-uploading">Uploading…</div>';
+    }
+    if (!url) return '';
+
+    if (type.startsWith('image/')) {
+      return '<a href="' + _esc(url) + '" target="_blank" rel="noopener" class="msg-attach-img-wrap">'
+        + '<img src="' + _esc(url) + '" class="msg-attach-img" alt="' + name + '" loading="lazy">'
+        + '</a>';
+    }
+    if (type.startsWith('video/')) {
+      return '<video src="' + _esc(url) + '" class="msg-attach-video" controls preload="metadata"></video>';
+    }
+    // PDF / other
+    return '<a href="' + _esc(url) + '" target="_blank" rel="noopener" class="msg-attach-doc">'
+      + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+      + name + '</a>';
+  }
+
+  function attachFile(input) {
+    var file = input && input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (ATTACH_ACCEPT.indexOf(file.type) === -1) {
+      _toast('File type not supported. Use images, video, or PDF.');
+      return;
+    }
+    if (file.size > ATTACH_MAX_BYTES) {
+      _toast('File too large — max 10 MB.');
+      return;
+    }
+    var previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+    _pendingAttachment = { file: file, name: file.name, type: file.type, previewUrl: previewUrl };
+    _paintAttachPreview();
+  }
+
+  function _clearAttachment() {
+    if (_pendingAttachment && _pendingAttachment.previewUrl) {
+      URL.revokeObjectURL(_pendingAttachment.previewUrl);
+    }
+    _pendingAttachment = null;
+    _paintAttachPreview();
+  }
+
+  function _paintAttachPreview() {
+    var bar = document.getElementById('msg-attach-preview');
+    if (!bar) return;
+    if (!_pendingAttachment) { bar.innerHTML = ''; bar.hidden = true; return; }
+    var p = _pendingAttachment;
+    var thumb = p.previewUrl
+      ? '<img src="' + _esc(p.previewUrl) + '" class="msg-attach-thumb" alt="">'
+      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    bar.innerHTML = '<div class="msg-attach-preview-inner">'
+      + thumb
+      + '<span class="msg-attach-preview-name">' + _esc(p.name) + '</span>'
+      + '<button class="msg-attach-clear" onclick="msgClearAttachment()" aria-label="Remove attachment">✕</button>'
+      + '</div>';
+    bar.hidden = false;
   }
 
   function _bumpThreadPreview(convId, body) {
@@ -924,5 +1037,7 @@
   window.msgComposeKeydown    = msgComposeKeydown;
   window.msgComposeResize     = msgComposeResize;
   window.startConvWith        = startConvWith;
+  window.attachFile           = attachFile;
+  window.msgClearAttachment   = _clearAttachment;
 
 }());

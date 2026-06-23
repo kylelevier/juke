@@ -308,9 +308,10 @@ async function renderPipeline(){
   renderMilestoneRail();
   if(sb&&currentUser){
     const colsEl=document.getElementById('pipeline-cols');
-    if(colsEl) colsEl.innerHTML='<div class="board-empty-state"><div class="board-empty-kicker">Loading</div><div class="board-empty-title">Loading your cloud board...</div></div>';
+    if(colsEl) colsEl.innerHTML='<div class="board-empty-state"><div class="board-empty-kicker">Loading</div><div class="board-empty-title">Loading your board…</div></div>';
     try{
-      const meta=await loadAllBoardRecords();
+      const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),10000));
+      const meta=await Promise.race([loadAllBoardRecords(),timeout]);
       if(meta){
         _boardMeta=meta;
         const cloudStatus={};
@@ -322,10 +323,14 @@ async function renderPipeline(){
       }
     }catch(err){
       console.error('JUKE board render failed:', err);
-      showToast?.('Could not load your cloud board. Showing this device draft.');
+      showToast?.('Could not load your board. Showing this device draft.');
     }
   }
-  _renderBoardCols();
+  try{_renderBoardCols();}catch(err){
+    console.error('JUKE board columns render failed:',err);
+    const colsEl=document.getElementById('pipeline-cols');
+    if(colsEl) colsEl.innerHTML='<div class="board-empty-state"><div class="board-empty-title">Board unavailable. Try refreshing.</div></div>';
+  }
 }
 
 function _renderBoardCols(){
