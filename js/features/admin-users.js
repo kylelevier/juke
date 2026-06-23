@@ -14,17 +14,27 @@
     _loadUsers();
   };
 
+  var _userPage     = 1;
+  var _userPageSize = 50;
+  var _userTotal    = 0;
+  var _userSearchTimer = null;
+
   async function _loadUsers() {
     var wrap = document.getElementById('admin-users-wrap');
     if (wrap) wrap.innerHTML = '<div class="admin-loading">Loading users…</div>';
     if (!sb) { if (wrap) wrap.innerHTML = '<div class="admin-empty">Supabase not available.</div>'; return; }
 
-    var r = await sb.from('user_profiles').select('*').order('created_at', { ascending: false }).limit(200);
+    var r = await sb.rpc('admin_search_users', {
+      p_query: _userFilter, p_role: _roleFilter,
+      p_page: _userPage, p_page_size: _userPageSize
+    });
     if (r.error) {
       if (wrap) wrap.innerHTML = '<div class="admin-empty">Error: ' + _esc(r.error.message) + '</div>';
       return;
     }
-    _allUsers = r.data || [];
+    var result = r.data || {};
+    _allUsers  = result.data || [];
+    _userTotal = result.total || 0;
     _usersLoaded = true;
     _renderUsers();
   }
@@ -32,16 +42,7 @@
   function _renderUsers() {
     var wrap = document.getElementById('admin-users-wrap');
     if (!wrap) return;
-
-    var q = _userFilter.toLowerCase();
-    var rows = _allUsers.filter(function(u){
-      var matchQ = !q
-        || (u.display_name || '').toLowerCase().includes(q)
-        || (u.org || '').toLowerCase().includes(q)
-        || (u.email || '').toLowerCase().includes(q);
-      var matchRole = !_roleFilter || u.role === _roleFilter;
-      return matchQ && matchRole;
-    });
+    var rows = _allUsers;
 
     if (!rows.length) {
       wrap.innerHTML = '<div class="admin-empty">No users found.</div>';
@@ -71,21 +72,43 @@
     });
 
     html += '</tbody></table>';
+
+    // Pagination
+    var totalPages = Math.ceil(_userTotal / _userPageSize) || 1;
+    if (totalPages > 1) {
+      html += '<div class="admin-pagination">'
+        + '<span class="admin-dim">Page ' + _userPage + ' of ' + totalPages + ' (' + _userTotal + ' users)</span>'
+        + (_userPage > 1 ? '<button class="admin-action-btn" onclick="adminUserPage(' + (_userPage-1) + ')">← Prev</button>' : '')
+        + (_userPage < totalPages ? '<button class="admin-action-btn" onclick="adminUserPage(' + (_userPage+1) + ')">Next →</button>' : '')
+        + '</div>';
+    }
+
     wrap.innerHTML = html;
   }
 
+  window.adminUserPage = function(page) {
+    _userPage = page;
+    _usersLoaded = false;
+    _loadUsers();
+  };
+
   window.adminFilterUsers = function(q) {
     _userFilter = q;
-    _renderUsers();
+    _userPage = 1;
+    clearTimeout(_userSearchTimer);
+    _userSearchTimer = setTimeout(function(){ _usersLoaded = false; _loadUsers(); }, 350);
   };
 
   window.adminFilterUserRole = function(role) {
     _roleFilter = role;
-    _renderUsers();
+    _userPage = 1;
+    _usersLoaded = false;
+    _loadUsers();
   };
 
   window.adminRefreshUsers = function() {
     _usersLoaded = false;
+    _userPage = 1;
     _loadUsers();
   };
 
@@ -152,24 +175,22 @@
     if (!sb) { if (wrap) wrap.innerHTML = '<div class="admin-empty">Supabase not available.</div>'; return; }
     if (wrap) wrap.innerHTML = '<div class="admin-loading">Searching…</div>';
 
-    var r = await sb.from('athlete_profiles').select('user_id, profile_data, is_discoverable, published_at, updated_at').limit(200);
+    var r = await sb.rpc('admin_search_profiles', { p_query: q, p_page: 1, p_page_size: 50 });
     if (r.error) { if (wrap) wrap.innerHTML = '<div class="admin-empty">Error: ' + _esc(r.error.message) + '</div>'; return; }
 
-    var lq = q.toLowerCase();
-    var matches = (r.data || []).filter(function(row){
-      var pd = row.profile_data || {};
-      var full = ((pd['p-fname'] || '') + ' ' + (pd['p-lname'] || '')).toLowerCase();
-      return full.includes(lq);
-    });
+    var result  = r.data || {};
+    var matches = result.data || [];
 
     if (!matches.length) { if (wrap) wrap.innerHTML = '<div class="admin-empty">No athlete profiles matched "' + _esc(q) + '".</div>'; return; }
 
-    var html = '<div class="admin-profile-list">';
+    var total = result.total || matches.length;
+    var html = (total > matches.length ? '<div class="admin-notice">Showing first ' + matches.length + ' of ' + total + ' matches. Refine your search to narrow results.</div>' : '')
+      + '<div class="admin-profile-list">';
     matches.forEach(function(row){
       var pd = row.profile_data || {};
-      var name = ((pd['p-fname'] || '') + ' ' + (pd['p-lname'] || '')).trim() || row.user_id;
-      var school = pd['p-school'] || '—';
-      var pos = (pd.positions || []).join(', ') || '—';
+      var name = ((pd['p-fname'] || pd.fname || '') + ' ' + (pd['p-lname'] || pd.lname || '')).trim() || row.user_id;
+      var school = pd['p-school'] || pd.school || '—';
+      var pos = (pd.positions || pd._positions || []).join(', ') || '—';
       html += '<div class="admin-profile-pick" onclick="adminLoadProfile(\'' + row.user_id + '\')">'
         + '<div class="admin-profile-pick-name">' + _esc(name) + '</div>'
         + '<div class="admin-profile-pick-meta">' + _esc(school) + ' · ' + _esc(pos) + '</div>'

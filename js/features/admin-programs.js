@@ -12,30 +12,30 @@
     state: 'State',
     governing_body: 'Governing Body',
     division: 'Division',
-    flag_football_conference: 'Flag Football Conference',
+    conference: 'Conference',
     varsity_or_club: 'Varsity or Club',
     school_type: 'School Type',
     region: 'Region',
-    scholarship_available: 'Scholarship Available',
-    school_size_enrollment: 'School Size',
+    scholarship: 'Scholarship Available',
+    enrollment: 'Enrollment',
     hbcu: 'HBCU',
     notes: 'Notes',
     religious_affiliation: 'Religious Affiliation',
-    estimated_cost_of_attendance: 'Est. Cost of Attendance',
-    avg_financial_aid_award: 'Avg Financial Aid Award',
-    athlete_interest_recruiting_form: 'Athlete Interest / Recruiting Form',
+    cost_of_attendance: 'Est. Cost of Attendance',
+    avg_financial_aid: 'Avg Financial Aid Award',
+    recruiting_form_url: 'Athlete Interest / Recruiting Form',
+    website_url: 'Website URL',
     logo_url: 'Logo URL'
   };
   var PROGRAM_EDIT_EXCLUDE = {
     id: true,
-    created_at: true,
-    updated_at: true
+    created_at: true
   };
   var PROGRAM_CANONICAL_FIELDS = [
-    'school','state','governing_body','division','flag_football_conference','varsity_or_club',
-    'school_type','region','scholarship_available','school_size_enrollment','hbcu','notes',
-    'religious_affiliation','estimated_cost_of_attendance','avg_financial_aid_award',
-    'athlete_interest_recruiting_form','logo_url'
+    'school','state','governing_body','division','conference','varsity_or_club',
+    'school_type','region','scholarship','enrollment','hbcu','notes',
+    'religious_affiliation','cost_of_attendance','avg_financial_aid',
+    'recruiting_form_url','website_url','logo_url'
   ];
 
   // ── 4. PROGRAMS TAB ──────────────────────────────────────────────────────
@@ -163,22 +163,21 @@
 
   window.adminSaveProgram = async function(id) {
     var row = document.querySelector('.admin-editing-row');
-    var patch = {};
+    var fields = {};
     row && row.querySelectorAll('[data-program-field]').forEach(function(el){
-      patch[el.getAttribute('data-program-field')] = el.value.trim();
+      fields[el.getAttribute('data-program-field')] = el.value.trim();
     });
-    var school = patch.school || '';
-    if (!school.trim()) { adminToast('School name required', 'err'); return; }
+    if (!fields.school || !fields.school.trim()) { adminToast('School name required', 'err'); return; }
     if (!sb) return;
 
-    var r = await sb.from('programs').update(patch).eq('id', id).select().single();
+    var r = await sb.rpc('admin_update_program', { p_program_id: id, p_fields: fields });
     if (r.error) { adminToast('Save failed: ' + r.error.message, 'err'); return; }
 
+    var updated = r.data || {};
     var prog = _programs.find(function(p){ return p.id === id; });
-    if (prog) Object.assign(prog, r.data || patch);
+    if (prog) Object.assign(prog, updated);
     _editingId = null;
     adminToast('Program saved.', 'ok');
-    if (typeof adminAudit === 'function') adminAudit('program.update', 'program', id, { school: school.trim(), fields: Object.keys(patch) });
     _renderPrograms();
   };
 
@@ -212,14 +211,15 @@
     if (!school.trim()) { if (msg) { msg.textContent = 'School name required.'; msg.className = 'admin-form-msg err'; } return; }
     if (!sb) return;
 
-    var r = await sb.from('programs').insert({ school: school.trim(), state: state.trim() || null, division: division || null }).select().single();
+    var r = await sb.rpc('admin_create_program', {
+      p_fields: { school: school.trim(), state: state.trim(), division: division.trim() }
+    });
     if (r.error) {
       if (msg) { msg.textContent = r.error.message; msg.className = 'admin-form-msg err'; }
       return;
     }
-    _programs.unshift(r.data);
+    _programs.unshift(r.data || {});
     adminToast('Program added.', 'ok');
-    if (typeof adminAudit === 'function') adminAudit('program.create', 'program', r.data && r.data.id, { school: school.trim() });
     adminCloseAddProgram();
     _renderPrograms();
   };

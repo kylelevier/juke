@@ -138,11 +138,11 @@ Goal: make admin changes auditable and server-authorized.
 - [x] Add atomic admin deactivate RPC.
 - [x] Await and surface deactivate RPC result.
 - [x] Revoke or block active sessions for deactivated users.
-- [!] Move admin user/profile search server-side with pagination.
-- [!] Move program create/update to admin RPC/Edge Function.
-- [!] Move logo upload/update behind validated admin operation.
+- [x] Move admin user/profile search server-side with pagination.
+- [x] Move program create/update to admin RPC/Edge Function.
+- [x] Move logo upload/update behind validated admin operation.
 - [x] Disallow SVG logo uploads in the admin UI.
-- [!] Enforce logo MIME/type validation in Storage/RLS/backend policy.
+- [x] Enforce logo MIME/type validation in Storage/RLS/backend policy.
 - [x] Require successful audit writes for sensitive mutations.
 - [ ] Add admin browser smoke tests.
 
