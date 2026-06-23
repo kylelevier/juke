@@ -7,11 +7,10 @@
 (function(){
   var BUCKET    = 'school-logos';
   var MAX_BYTES = 1024 * 1024;                 // 1 MB
-  var OK_TYPES  = ['image/png','image/jpeg','image/webp','image/svg+xml'];
+  var OK_TYPES  = ['image/png','image/jpeg','image/webp'];
 
   function _slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
   function _ext(file){
-    if(file.type==='image/svg+xml') return 'svg';
     if(file.type==='image/webp') return 'webp';
     if(file.type==='image/jpeg') return 'jpg';
     return 'png';
@@ -76,7 +75,7 @@
     var school = cell.getAttribute('data-logo-school');
     var client = _client();
     if(!client){ _msg(cell,'Not signed in',  'err'); return; }
-    if(OK_TYPES.indexOf(file.type)===-1){ _msg(cell,'PNG, JPG, WebP or SVG only','err'); return; }
+    if(OK_TYPES.indexOf(file.type)===-1){ _msg(cell,'PNG, JPG or WebP only','err'); return; }
     if(file.size > MAX_BYTES){ _msg(cell,'Max 1 MB','err'); return; }
 
     _msg(cell,'Uploading…');

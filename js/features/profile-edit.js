@@ -30,7 +30,21 @@ function saveEndorsements(arr){try{localStorage.setItem('juke_endorsements',JSON
 function renderEndorsementSection(){
   var el=document.getElementById('end-cards-list');
   if(!el)return;
-  var all=getEndorsements();
+  var all=window.PREVIEW_USER_ID&&window.PREVIEW_PROFILE&&Array.isArray(window.PREVIEW_PROFILE._recommendations)
+    ? window.PREVIEW_PROFILE._recommendations
+    : getEndorsements();
+  var player=lsGet('juke_player')||{};
+  var fullName=((player['p-fname']||player.fname||'')+' '+(player['p-lname']||player.lname||'')).trim().toLowerCase();
+  var seen={};
+  all=all.filter(function(e){
+    if(!e)return false;
+    var athlete=(e.athleteName||'').toLowerCase();
+    if(fullName&&athlete&&athlete!==fullName)return false;
+    var key=[e.coachName,e.coachSchool,e.endorsementText,e.status].join('|').toLowerCase();
+    if(seen[key])return false;
+    seen[key]=true;
+    return true;
+  });
   if(!all.length){el.innerHTML='';return;}
   el.innerHTML=all.map(function(e){
     var inits=(e.coachName||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
@@ -54,7 +68,7 @@ function renderEndorsementSection(){
 }
 
 function submitEndorsementRequest(){
-  if(window.PREVIEW_USER_ID){alert('Preview mode is read-only.');return;}
+  if(window.PREVIEW_TARGET_USER_ID){alert('Preview mode is read-only.');return;}
   var name=(document.getElementById('end-req-name')||{}).value||'';
   var school=(document.getElementById('end-req-school')||{}).value||'';
   var title=(document.getElementById('end-req-title')||{}).value||'';
@@ -62,7 +76,7 @@ function submitEndorsementRequest(){
   if(!name.trim()){alert('Please enter your coach\'s name.');return;}
   var auth=null;try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
   var apid=(auth&&auth.activeProfileId)||'athlete';
-  var athleteName=window.PREVIEW_USER_ID
+  var athleteName=window.PREVIEW_TARGET_USER_ID
     ? ((pv('p-fname')+' '+pv('p-lname')).trim()||'Preview Athlete')
     : (auth&&auth.name?auth.name:((pv('p-fname')+' '+pv('p-lname')).trim()||'Athlete'));
   var existing=getEndorsements();

@@ -71,6 +71,7 @@ function renderProfileView(){
   }
 
   var html='';
+  var fullName=(first+' '+last).trim()||'Your Name';
 
   // ── PUBLISH BANNER — visible whenever profile is not yet live ──
   var isPublished=!!(lsGet('juke_publish')||{}).on;
@@ -83,7 +84,6 @@ function renderProfileView(){
   }
 
   // ── HERO CARD ──
-  var fullName=(first+' '+last).trim()||'Your Name';
   var initials=((first[0]||'')+(last[0]||'')).toUpperCase()||'?';
   var avatarRaw=localStorage.getItem('juke_avatar');
   var avatarSrc=avatarRaw?JSON.parse(avatarRaw):null;
@@ -142,8 +142,23 @@ function renderProfileView(){
   }
 
   // ── COACH ENDORSEMENTS ──
-  var allEnds=[];try{allEnds=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
-  var receivedEnds=allEnds.filter(function(e){return e.status==='endorsed';});
+  var allEnds=[];
+  if(window.PREVIEW_USER_ID&&Array.isArray(p._recommendations)){
+    allEnds=p._recommendations;
+  }else{
+    try{allEnds=JSON.parse(localStorage.getItem('juke_endorsements'))||[];}catch(e){}
+  }
+  var fullNameKey=fullName.toLowerCase();
+  var seenEnds={};
+  var receivedEnds=allEnds.filter(function(e){
+    if(!e||e.status!=='endorsed')return false;
+    var athlete=(e.athleteName||'').toLowerCase();
+    if(athlete&&athlete!==fullNameKey)return false;
+    var key=[e.coachName,e.coachSchool,e.endorsementText].join('|').toLowerCase();
+    if(seenEnds[key])return false;
+    seenEnds[key]=true;
+    return true;
+  });
   if(receivedEnds.length){
     receivedEnds.forEach(function(e){
       html+='<div class="dpc-end-block">'

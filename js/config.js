@@ -11,25 +11,54 @@ const sb = (typeof supabase !== 'undefined')
 
 let currentUser = null;
 
-// Preview-As mode: admin views the portal as a specific athlete (read-only).
-// Set by ?preview_as=<userId> in the URL. Guard mirrors admin-portal-init.js:
-// accepts juke_auth.type==='admin' OR a Supabase session belonging to an admin email.
-window.PREVIEW_USER_ID = (function(){
-  var uid = new URLSearchParams(location.search).get('preview_as');
-  if (!uid) return null;
-  var ADMIN_EMAILS = ['kylelevier@gmail.com'];
-  try { if (JSON.parse(localStorage.getItem('juke_auth') || '{}').type === 'admin') return uid; } catch(e) {}
-  try {
-    var raw = localStorage.getItem('sb-gvxdabtmksxhujeytofv-auth-token');
-    if (raw && ADMIN_EMAILS.indexOf(JSON.parse(raw).user.email) !== -1) return uid;
-  } catch(e) {}
-  return null;
-})();
+// Preview-As mode: admin views a server-provided read-only athlete bundle.
+// The target id comes from the URL, but access must be granted by the backend RPC.
+window.PREVIEW_TARGET_USER_ID = new URLSearchParams(location.search).get('preview_as') || null;
+window.PREVIEW_USER_ID = null;
+window.PREVIEW_BUNDLE = null;
+window.PREVIEW_PROFILE = null;
+window.PREVIEW_ERROR = null;
+
+function _renderPreviewGateError(message){
+  window.PREVIEW_ERROR = message || 'Preview could not be loaded.';
+  var banner = document.getElementById('preview-mode-banner');
+  if (banner) {
+    banner.style.display = 'flex';
+    banner.style.background = '#7f1d1d';
+    var label = document.getElementById('preview-mode-label');
+    var notice = document.getElementById('preview-mode-notice');
+    if (label) label.textContent = 'Preview unavailable';
+    if (notice) notice.textContent = window.PREVIEW_ERROR;
+  }
+}
+
+async function loadAdminPreviewBundle(){
+  if(!window.PREVIEW_TARGET_USER_ID) return null;
+  if(window.PREVIEW_BUNDLE) return window.PREVIEW_BUNDLE;
+  if(!sb){
+    _renderPreviewGateError('Supabase is unavailable.');
+    return null;
+  }
+  try{
+    const {data,error}=await sb.rpc('admin_get_athlete_preview', {target_user_id: window.PREVIEW_TARGET_USER_ID});
+    if(error){
+      _renderPreviewGateError(error.message || 'Preview RPC failed.');
+      return null;
+    }
+    window.PREVIEW_BUNDLE = data || {};
+    window.PREVIEW_USER_ID = window.PREVIEW_TARGET_USER_ID;
+    window.PREVIEW_PROFILE = window.PREVIEW_BUNDLE.profile || window.PREVIEW_BUNDLE.profile_data || window.PREVIEW_BUNDLE.player_data?.profile || null;
+    return window.PREVIEW_BUNDLE;
+  }catch(e){
+    _renderPreviewGateError(e && e.message ? e.message : 'Preview RPC failed.');
+    return null;
+  }
+}
 
 // In preview mode, block any signout so the Supabase session (and thus data access)
 // stays intact. signOut would wipe the session from shared localStorage, leaving
 // _syncFromCloud unauthenticated and RLS-blocked for the rest of the preview.
-if(window.PREVIEW_USER_ID && sb){
+if(window.PREVIEW_TARGET_USER_ID && sb){
   sb.auth.signOut = function(){ return Promise.resolve({error:null}); };
 }
 
@@ -41,19 +70,24 @@ if(sb && window.loadSchoolLogoOverrides) loadSchoolLogoOverrides(sb);
 if(sb){
   sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user ?? null;
-    // Preview mode: sign-out inside the iframe must not collapse the view —
-    // restore the stub user immediately and re-sync so Ella's data stays visible.
-    if(window.PREVIEW_USER_ID && event === 'SIGNED_OUT'){
-      currentUser = { id: window.PREVIEW_USER_ID, email: '' };
+    // Preview mode: never authorize from URL/localStorage. The backend RPC must
+    // return a read-only bundle before any athlete data is rendered.
+    if(window.PREVIEW_TARGET_USER_ID){
+      if(!currentUser){
+        _renderPreviewGateError('Admin sign-in required.');
+        if(typeof _updateAuthUI === 'function') _updateAuthUI();
+        return;
+      }
+      const previewBundle = await loadAdminPreviewBundle();
+      if(!previewBundle){
+        if(typeof _updateAuthUI === 'function') _updateAuthUI();
+        return;
+      }
       if(typeof _updateAuthUI === 'function') _updateAuthUI();
       if(typeof _syncFromCloud === 'function') await _syncFromCloud();
       return;
     }
-    // Preview mode: substitute preview athlete's ID so all data reads target their account
-    if(window.PREVIEW_USER_ID && currentUser){
-      currentUser = Object.assign({}, currentUser, { id: window.PREVIEW_USER_ID });
-    }
-    if(currentUser && !window.PREVIEW_USER_ID){
+    if(currentUser){
       try{
         const {data:profile}=await sb.from('user_profiles').select('is_active').eq('id',currentUser.id).maybeSingle();
         if(profile && profile.is_active===false){
@@ -80,13 +114,9 @@ if(sb){
   });
   // Preview mode: _syncFromCloud may not exist yet when INITIAL_SESSION fires
   // (auth.js loads after config.js). Always re-run it once scripts are ready.
-  if(window.PREVIEW_USER_ID){
+  if(window.PREVIEW_TARGET_USER_ID){
     setTimeout(async function(){
-      if(!currentUser){
-        currentUser = { id: window.PREVIEW_USER_ID, email: '' };
-        if(typeof _updateAuthUI === 'function') _updateAuthUI();
-      }
-      if(typeof _syncFromCloud === 'function') await _syncFromCloud();
+      if(await loadAdminPreviewBundle() && typeof _syncFromCloud === 'function') await _syncFromCloud();
     }, 800);
   }
 }

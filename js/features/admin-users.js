@@ -94,24 +94,45 @@
     _loadProfileById(userId);
   };
 
-  window.adminDeactivateUser = function(userId, name) {
+  window.adminDeactivateUser = async function(userId, name) {
     if (!confirm('Deactivate "' + name + '"? This hides their profile and blocks portal access.')) return;
     if (!sb) { adminToast('Supabase not available', 'err'); return; }
-    Promise.all([
-      sb.from('user_profiles').update({ is_active: false }).eq('id', userId),
-      sb.from('athlete_profiles').update({ is_discoverable: false }).eq('user_id', userId)
-    ]).then(function(results){
+    adminToast('Deactivating user...', '');
+    try {
+      var results = await Promise.all([
+        sb.from('user_profiles').update({ is_active: false }).eq('id', userId),
+        sb.from('athlete_profiles').update({ is_discoverable: false }).eq('user_id', userId)
+      ]);
       var firstErr = results.find(function(r){ return r && r.error; });
       if (firstErr) {
         adminToast('Could not fully deactivate: ' + firstErr.error.message + '. Use the Supabase dashboard for auth disable.', 'err');
-      } else {
-        if (sb.rpc) sb.rpc('admin_disable_user', { target_user_id: userId });
-        adminToast('User deactivated.', 'ok');
-        if (typeof adminAudit === 'function') adminAudit('user.deactivate', 'user', userId, { name: name });
+        return;
+      }
+
+      if (!sb.rpc) {
+        adminToast('Profile hidden, but auth disable RPC is unavailable. Use the Supabase dashboard to block login.', 'err');
+        if (typeof adminAudit === 'function') adminAudit('user.deactivate.partial', 'user', userId, { name: name, reason: 'rpc_unavailable' });
         _usersLoaded = false;
         _loadUsers();
+        return;
       }
-    });
+
+      var disabled = await sb.rpc('admin_disable_user', { target_user_id: userId });
+      if (disabled && disabled.error) {
+        adminToast('Profile hidden, but auth disable failed: ' + disabled.error.message, 'err');
+        if (typeof adminAudit === 'function') adminAudit('user.deactivate.partial', 'user', userId, { name: name, reason: disabled.error.message });
+        _usersLoaded = false;
+        _loadUsers();
+        return;
+      }
+
+      adminToast('User deactivated and auth disabled.', 'ok');
+      if (typeof adminAudit === 'function') adminAudit('user.deactivate', 'user', userId, { name: name });
+      _usersLoaded = false;
+      _loadUsers();
+    } catch(e) {
+      adminToast('Deactivate failed: ' + (e && e.message ? e.message : 'Unknown error'), 'err');
+    }
   };
 
   // ── 2. PROFILE INSPECTOR TAB ──────────────────────────────────────────────

@@ -18,7 +18,10 @@
     if (!q.trim() || !sb) { if (wrap) wrap.innerHTML = ''; return; }
 
     var r = await sb.from('athlete_profiles').select('user_id, profile_data').limit(200);
-    if (r.error || !r.data) { if (wrap) wrap.innerHTML = ''; return; }
+    if (r.error || !r.data) {
+      if (wrap) wrap.innerHTML = '<div class="admin-suggest-item">Search failed. Try again.</div>';
+      return;
+    }
 
     var lq = q.toLowerCase();
     var matches = r.data.filter(function(row){
@@ -42,7 +45,7 @@
     if (wrap) wrap.innerHTML = html;
   };
 
-  window.adminStartImpersonate = function(userId, displayName) {
+  window.adminStartImpersonate = async function(userId, displayName) {
     var sugWrap = document.getElementById('admin-impersonate-suggestions');
     if (sugWrap) sugWrap.innerHTML = '';
     var qInput = document.getElementById('admin-impersonate-q');
@@ -53,10 +56,17 @@
 
     var wrap = document.getElementById('admin-impersonate-result');
     if (!wrap) return;
-    wrap.innerHTML = '<iframe'
+    wrap.innerHTML = '<div class="admin-loading">Starting read-only preview...</div>';
+    if (typeof adminAudit === 'function') {
+      await adminAudit('preview.start', 'user', userId, { name: displayName || userId });
+    }
+
+    wrap.innerHTML = '<div class="admin-notice">Read-only admin preview. Sensitive access is audited.</div>'
+      + '<iframe'
       + ' src="/athlete?preview_as=' + encodeURIComponent(userId) + '&preview_t=' + Date.now() + '"'
       + ' class="admin-preview-iframe"'
-      + ' sandbox="allow-scripts allow-same-origin allow-forms"'
+      + ' sandbox="allow-scripts allow-same-origin"'
+      + ' onerror="this.insertAdjacentHTML(\'beforebegin\',\'<div class=&quot;admin-empty&quot;>Preview failed to load.</div>\')"'
       + ' title="Preview as ' + _esc(displayName || userId) + '"'
       + '></iframe>';
   };

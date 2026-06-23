@@ -239,7 +239,12 @@ async function handlePublishToggle(){
   const recs = lsGet('juke_endorsements');
   pd._avatar = typeof avatar==='string'?avatar:'';
   pd._banner = typeof banner==='string'?banner:'';
-  pd._recommendations = (Array.isArray(recs)?recs:[]).filter(e=>e&&e.status==='endorsed');
+  const athleteName=((pd['p-fname']||pd.fname||'')+' '+(pd['p-lname']||pd.lname||'')).trim().toLowerCase();
+  pd._recommendations = (Array.isArray(recs)?recs:[]).filter(e=>{
+    if(!e||e.status!=='endorsed')return false;
+    const recAthlete=(e.athleteName||'').trim().toLowerCase();
+    return !recAthlete||!athleteName||recAthlete===athleteName;
+  });
   pd._positions = Array.from(document.querySelectorAll('#pos-grid .pos-chip.selected input')).map(i=>i.value);
   pd['pf-div']    = document.getElementById('pf-div')?.value||'';
   pd['pf-region'] = document.getElementById('pf-region')?.value||'';

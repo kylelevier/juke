@@ -121,7 +121,7 @@ function _getFitPrefs(){
 }
 async function cloudSave(){
   if(!sb||!currentUser)return;
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   const profile=lsGet('juke_player');
   const payload={
     user_id:currentUser.id,
@@ -153,7 +153,12 @@ async function _syncPublishedAthleteProfile(profile){
   pd._positions=pd.positions||pd._positions||[];
   pd._avatar=typeof avatar==='string'?avatar:'';
   pd._banner=typeof banner==='string'?banner:'';
-  pd._recommendations=(Array.isArray(recs)?recs:[]).filter(e=>e&&e.status==='endorsed');
+  const athleteName=((pd['p-fname']||pd.fname||'')+' '+(pd['p-lname']||pd.lname||'')).trim().toLowerCase();
+  pd._recommendations=(Array.isArray(recs)?recs:[]).filter(e=>{
+    if(!e||e.status!=='endorsed')return false;
+    const recAthlete=(e.athleteName||'').trim().toLowerCase();
+    return !recAthlete||!athleteName||recAthlete===athleteName;
+  });
 
   // If avatar or banner are absent locally (different device / cleared storage),
   // fetch the existing Supabase value so we don't silently wipe photos.
@@ -194,19 +199,24 @@ function _applyFitPrefs(prefs){
 async function _syncFromCloud(){
   if(!sb||!currentUser)return;
   let data=null;
+  if(window.PREVIEW_TARGET_USER_ID){
+    const bundle = window.PREVIEW_BUNDLE || (typeof loadAdminPreviewBundle === 'function' ? await loadAdminPreviewBundle() : null);
+    if(!bundle) return;
+    const playerData = bundle.player_data || {};
+    data = {
+      profile: bundle.profile || bundle.profile_data || playerData.profile || {},
+      pipeline: bundle.pipeline || playerData.pipeline || {},
+      notes: bundle.notes || playerData.notes || {},
+      fit: bundle.fit || playerData.fit || null,
+      readiness: bundle.readiness || playerData.readiness || null
+    };
+  } else {
   const cloudRes=await sb.from('player_data').select('*').eq('user_id',currentUser.id).maybeSingle();
   if(cloudRes.error){
     if(cloudRes.error.code !== 'PGRST116') console.error('JUKE cloud load failed:', cloudRes.error);
   }else{
     data=cloudRes.data;
   }
-  if(window.PREVIEW_USER_ID && (!data || !data.profile || !Object.keys(data.profile).length)){
-    const pubRes=await sb.from('athlete_profiles').select('profile_data').eq('user_id',currentUser.id).maybeSingle();
-    if(pubRes.error){
-      console.error('JUKE preview profile load failed:', pubRes.error);
-    }else if(pubRes.data&&pubRes.data.profile_data){
-      data=Object.assign({profile:pubRes.data.profile_data}, data||{});
-    }
   }
   if(!data)return;
   if(data.profile&&Object.keys(data.profile).length){

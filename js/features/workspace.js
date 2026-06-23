@@ -44,6 +44,22 @@ async function openSchoolWorkspace(schoolName){
   if(!sb||!currentUser){_renderWsOffline();return;}
 
   try{
+    if(window.PREVIEW_TARGET_USER_ID){
+      const rows=window.PREVIEW_BUNDLE?.board_records||window.PREVIEW_BUNDLE?.player_programs||[];
+      const ppRow=rows.find(row=>(row.school||row.programs?.school)===schoolName);
+      if(!ppRow){_renderWsOffline('No workspace data for this program.');return;}
+      const sections=(window.PREVIEW_BUNDLE?.board_sections||{})[schoolName]||{};
+      _wsPPId=ppRow.id;_wsData.ppId=_wsPPId;_wsData.ppCreatedAt=ppRow.created_at;
+      _wsData.log=sections.program_communications||[];
+      _wsData.contacts=sections.program_contacts||[];
+      _wsData.tasks=sections.program_tasks||[];
+      _wsData.offer=sections.program_offers||{status:'none'};
+      _wsData.notes=sections.program_notes||[];
+      _wsData.jukeAlert=null;
+      _renderWorkspace();
+      return;
+    }
+
     const {data:prog}=await sb.from('programs').select('id').eq('school',schoolName).single();
     if(!prog){_renderWsOffline('School not found in database.');return;}
 
@@ -52,10 +68,10 @@ async function openSchoolWorkspace(schoolName){
       .select('id,stage,created_at').eq('user_id',currentUser.id).eq('program_id',prog.id).single();
     if(existing){
       ppRow=existing;
-      if(existing.stage!==curStage && !window.PREVIEW_USER_ID)
+      if(existing.stage!==curStage && !window.PREVIEW_TARGET_USER_ID)
         await sb.from('player_programs').update({stage:curStage,updated_at:new Date().toISOString()}).eq('id',existing.id);
     }else{
-      if(window.PREVIEW_USER_ID){_renderWsOffline('No workspace data for this program.');return;}
+      if(window.PREVIEW_TARGET_USER_ID){_renderWsOffline('No workspace data for this program.');return;}
       const {data:created}=await sb.from('player_programs')
         .insert({user_id:currentUser.id,program_id:prog.id,stage:curStage})
         .select('id,stage,created_at').single();
@@ -69,7 +85,7 @@ async function openSchoolWorkspace(schoolName){
       sb.from('program_tasks').select('*').eq('player_program_id',_wsPPId).order('created_at'),
       sb.from('program_offers').select('*').eq('player_program_id',_wsPPId).maybeSingle(),
       sb.from('program_notes').select('*').eq('player_program_id',_wsPPId).order('created_at',{ascending:false}),
-      sb.rpc('get_stale_programs',{stale_days:14}),
+      window.PREVIEW_TARGET_USER_ID ? Promise.resolve({data:[]}) : sb.rpc('get_stale_programs',{stale_days:14}),
     ]);
     _wsData.log=logRes.data||[];
     _wsData.contacts=conRes.data||[];
@@ -104,6 +120,7 @@ function _renderWorkspace(){
 
 function _renderJukeBar(){
   const bar=document.getElementById('ws-juke-bar');
+  if(window.PREVIEW_TARGET_USER_ID){bar.classList.remove('show');return;}
   if(_wsData.jukeAlert){
     const d=_wsData.jukeAlert.days_since_contact;
     document.getElementById('ws-juke-msg').innerHTML=`It's been <strong style="color:#FF0080;">${d} day${d!==1?'s':''}</strong> since your last logged contact.`;
@@ -245,7 +262,7 @@ function wsHideNoteForm(){
 }
 
 async function wsAddLog(){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   if(!_wsPPId)return;
   const type=document.getElementById('ws-log-type')?.value||'phone_call';
   const note=(document.getElementById('ws-log-note')?.value||'').trim();
@@ -258,7 +275,7 @@ async function wsAddLog(){
 }
 
 async function wsAddNote(){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   if(!_wsPPId)return;
   const content=(document.getElementById('ws-note-text')?.value||'').trim();
   if(!content)return;
@@ -353,7 +370,7 @@ function wsToggleOffer(){
 }
 
 async function wsAddContact(){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   if(!_wsPPId)return;
   const name=(document.getElementById('ws-c-name')?.value||'').trim();
   if(!name)return;
@@ -369,7 +386,7 @@ async function wsAddContact(){
 }
 
 async function wsToggleTask(id,done){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   const {error}=await sb.from('program_tasks')
     .update({completed:done,completed_at:done?new Date().toISOString():null}).eq('id',id);
   if(!error){
@@ -380,7 +397,7 @@ async function wsToggleTask(id,done){
 }
 
 async function wsAddTask(){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   if(!_wsPPId)return;
   const text=(document.getElementById('ws-t-text')?.value||'').trim();
   if(!text)return;
@@ -394,7 +411,7 @@ async function wsAddTask(){
 }
 
 async function wsSetOfferStatus(status){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   const update={status,updated_at:new Date().toISOString()};
   let error;
   if(_wsData.offer?.id){
@@ -407,7 +424,7 @@ async function wsSetOfferStatus(status){
 }
 
 async function wsUpdateOfferField(key,rawVal){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   const num=parseInt(rawVal.replace(/[$,\s]/g,''));
   const val=isNaN(num)?null:num;
   const update={[key]:val,updated_at:new Date().toISOString()};
@@ -422,7 +439,7 @@ async function wsUpdateOfferField(key,rawVal){
 }
 
 async function wsUpdateOfferNote(val){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   const notes=val.trim()||null;
   const update={notes,updated_at:new Date().toISOString()};
   let error;
@@ -436,7 +453,7 @@ async function wsUpdateOfferNote(val){
 }
 
 async function wsChangeStage(newStage){
-  if(window.PREVIEW_USER_ID)return;
+  if(window.PREVIEW_TARGET_USER_ID)return;
   if(!_wsSchool)return;
   statusData[_wsSchool]=newStage;
   lsSet('juke_status',statusData);
@@ -456,6 +473,7 @@ function _renderWsOffline(msg='Sign in to track this school.'){
 
 // ── JUKE LOGIN BANNER ─────────────────────────────────────────────────────────
 async function checkJukeLoginAlerts(){
+  if(window.PREVIEW_TARGET_USER_ID)return;
   if(!sb||!currentUser)return;
   try{
     const {data}=await sb.rpc('get_stale_programs',{stale_days:14});

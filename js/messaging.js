@@ -64,7 +64,7 @@
   }
 
   function _myRole() {
-    if (window.PREVIEW_USER_ID) return 'athlete';
+    if (window.PREVIEW_TARGET_USER_ID) return 'athlete';
     try {
       var a = JSON.parse(localStorage.getItem('juke_auth') || '{}');
       if (a.profiles && a.profiles.length) {
@@ -77,7 +77,7 @@
   }
 
   function _myDisplayName() {
-    if (window.PREVIEW_USER_ID) {
+    if (window.PREVIEW_TARGET_USER_ID) {
       var p = window.PREVIEW_PROFILE || {};
       var n = ((p['p-fname'] || p.fname || '') + ' ' + (p['p-lname'] || p.lname || '')).trim();
       return n || 'Preview Athlete';
@@ -89,7 +89,7 @@
   }
 
   function _myOrg() {
-    if (window.PREVIEW_USER_ID) {
+    if (window.PREVIEW_TARGET_USER_ID) {
       var p = window.PREVIEW_PROFILE || {};
       return p['p-school'] || p.school || '';
     }
@@ -497,7 +497,7 @@
     if (!body)           return;
     if (!_activeConvId)  return;
     if (!currentUser)    return;
-    if (window.PREVIEW_USER_ID) {
+    if (window.PREVIEW_TARGET_USER_ID) {
       _toast('Preview mode is read-only.');
       return;
     }
@@ -531,7 +531,7 @@
 
   async function _trySend(tempId, body, convId, attempt) {
     if (!sb || !currentUser) return;
-    if (window.PREVIEW_USER_ID) return;
+    if (window.PREVIEW_TARGET_USER_ID) return;
 
     var r = await sb.from('messages')
       .insert({ conversation_id: convId, sender_id: currentUser.id, body: body })
@@ -605,7 +605,7 @@
     // Persist to Supabase
     if (school && typeof saveBoardContact === 'function') {
       saveBoardContact(school, { lastContactDate: today });
-    } else if (sb && !window.PREVIEW_USER_ID) {
+    } else if (sb && !window.PREVIEW_TARGET_USER_ID) {
       sb.from('player_programs')
         .update({ last_contact_date: today, updated_at: new Date().toISOString() })
         .eq('id', ppId);
