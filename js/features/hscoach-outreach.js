@@ -1,18 +1,97 @@
+// Live activity data loaded from get_hs_activity() RPC
+let _hsLiveActivity = null; // null = not loaded yet, [] = loaded (may be empty)
+
+async function loadHsActivity(){
+  const client=window.sb||window._hsSb||null;
+  if(!client) return;
+  try{
+    const {data,error}=await client.rpc('get_hs_activity');
+    if(error){ console.warn('JUKE hs activity load failed:',error); return; }
+    _hsLiveActivity = data||[];
+    renderActivity();
+  }catch(e){ console.warn('JUKE hs activity load failed:',e); }
+}
+
 function renderActivity(){
   if(activityView==='cards') renderActivityCards();
   else renderActivityTable();
 }
 
+function _hsActivityByProgram(rows){
+  // Group by (viewer_id + viewer_org) → list of athletes viewed
+  const map = new Map();
+  (rows||[]).forEach(row=>{
+    const key=row.viewer_id;
+    if(!map.has(key)) map.set(key,{viewer_id:row.viewer_id,name:row.viewer_name||'',org:row.viewer_org||'',athletes:[],viewed_at:row.viewed_at});
+    const entry=map.get(key);
+    if(row.athlete_user_id) entry.athletes.push({uid:row.athlete_user_id,fname:row.athlete_fname||'',lname:row.athlete_lname||''});
+    if(row.viewed_at>entry.viewed_at) entry.viewed_at=row.viewed_at;
+  });
+  return [...map.values()].sort((a,b)=>b.viewed_at.localeCompare(a.viewed_at));
+}
+
+function _hsRelTime(ts){
+  if(!ts) return '';
+  const diff=Date.now()-new Date(ts).getTime();
+  const mins=Math.floor(diff/60000);
+  if(mins<2) return 'just now';
+  if(mins<60) return mins+'m ago';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return hrs+'h ago';
+  const days=Math.floor(hrs/24);
+  if(days<7) return days+'d ago';
+  return Math.floor(days/7)+'w ago';
+}
+
 function renderActivityCards(){
   const grid = el('activity-grid'); if(!grid) return;
-  if(typeof _hsRosterSource!=='undefined' && _hsRosterSource==='live'){
-    grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">No recruiter activity yet</div><div class="empty-state-sub">Live activity for this roster will appear here as recruiters view your athletes.</div></div>';
+
+  // Use live data if available, demo fallback otherwise
+  if(_hsLiveActivity !== null){
+    if(!_hsLiveActivity.length){
+      grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">No recruiter activity yet</div><div class="empty-state-sub">Activity appears here as college coaches view your athletes on JUKE.</div></div>';
+      return;
+    }
+    const groups = _hsActivityByProgram(_hsLiveActivity);
+    grid.innerHTML = groups.map(g=>{
+      const org=hsEsc(g.org||g.name||'Unknown Program');
+      const abbr=(g.org||g.name||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,3).toUpperCase();
+      const domain=(g.org||'').toLowerCase().replace(/[^a-z0-9]+/g,'')+'.edu';
+      return `<div class="activity-card">
+        <div class="ac-hd">
+          <div class="ac-logo">
+            <img src="${logoUrl(domain)}" alt="${org}" onerror="this.parentNode.innerHTML='<span class=ac-logo-init>${abbr}</span>'">
+          </div>
+          <div>
+            <div class="ac-school">${org}</div>
+            <div class="ac-div">${hsEsc(g.name||'')}</div>
+          </div>
+        </div>
+        <div class="ac-athletes">
+          <div class="ac-athletes-lbl">Viewed your athletes</div>
+          ${g.athletes.map(a=>{
+            const live=ATHLETES.find(x=>x._userId===a.uid);
+            const id=live?live.id:null;
+            const name=hsEsc((a.fname||live?.fname||'')+(a.lname||live?.lname||''?' ':'')+( a.lname||live?.lname||''));
+            return id
+              ? `<span class="ac-athlete-chip" onclick="openSP(${hsJsArg(id)})">${name}</span>`
+              : `<span class="ac-athlete-chip">${name}</span>`;
+          }).join('')}
+        </div>
+        <div class="ac-date">Last active ${_hsRelTime(g.viewed_at)}</div>
+        <div class="ac-ft">
+          <button class="ac-btn" onclick="openCollegeCoachMessage(${hsJsArg(g.org||g.name)})">Message Recruiters →</button>
+        </div>
+      </div>`;
+    }).join('');
     return;
   }
+
+  // Demo data fallback while live data is loading / roster is demo
   grid.innerHTML = ACTIVITY.map(act=>{
     const athletes = act.athletes.map(id=>ATHLETES.find(a=>a.id===id)).filter(Boolean);
     const logoSrc = logoUrl(act.domain);
-    return `<div class="activity-card">
+    return `<div class="activity-card is-demo">
       <div class="ac-hd">
         <div class="ac-logo">
           <img src="${logoSrc}" alt="${act.school}" onerror="this.parentNode.innerHTML='<span class=ac-logo-init>${act.abbr}</span>'">
@@ -28,7 +107,7 @@ function renderActivityCards(){
           ${initials(a)} ${hsEsc(a.fname)} ${hsEsc(a.lname)}
         </span>`).join('')}
       </div>
-      <div class="ac-date">Last active ${act.date}</div>
+      <div class="ac-date">Demo · ${act.date}</div>
       <div class="ac-ft">
         <button class="ac-btn" onclick="openCollegeCoachMessage('${act.school}')">Message Recruiters →</button>
       </div>
@@ -38,21 +117,49 @@ function renderActivityCards(){
 
 function renderActivityTable(){
   const tbody = el('activity-tbody'); if(!tbody) return;
-  if(typeof _hsRosterSource!=='undefined' && _hsRosterSource==='live'){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim)">No live recruiter activity yet.</td></tr>';
+
+  if(_hsLiveActivity !== null){
+    if(!_hsLiveActivity.length){
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim)">No recruiter activity yet.</td></tr>';
+      return;
+    }
+    const groups = _hsActivityByProgram(_hsLiveActivity);
+    tbody.innerHTML = groups.map(g=>{
+      const org=hsEsc(g.org||g.name||'Unknown Program');
+      const abbr=(g.org||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,3).toUpperCase();
+      const domain=(g.org||'').toLowerCase().replace(/[^a-z0-9]+/g,'')+'.edu';
+      return `<tr>
+        <td>
+          <span class="at-logo"><img src="${logoUrl(domain)}" alt="${org}" onerror="this.textContent='${abbr[0]}'"></span>
+          <span class="at-program">${org}</span>
+        </td>
+        <td style="font-size:11px;color:var(--text-muted)">${hsEsc(g.name||'')}</td>
+        <td>${g.athletes.map(a=>{
+          const live=ATHLETES.find(x=>x._userId===a.uid);
+          const id=live?live.id:null;
+          const name=hsEsc((a.fname||live?.fname||'')+' '+(a.lname||live?.lname||''));
+          return id
+            ? `<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0" onclick="openSP(${hsJsArg(id)})">${name}</span>`
+            : `<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0">${name}</span>`;
+        }).join('')}</td>
+        <td style="font-size:11px;color:var(--text-dim)">${_hsRelTime(g.viewed_at)}</td>
+        <td><button class="rt-btn blue" onclick="openCollegeCoachMessage(${hsJsArg(g.org||g.name)})">Message</button></td>
+      </tr>`;
+    }).join('');
     return;
   }
+
   tbody.innerHTML = ACTIVITY.map(act=>{
     const athletes = act.athletes.map(id=>ATHLETES.find(a=>a.id===id)).filter(Boolean);
     const logoSrc = logoUrl(act.domain);
-    return `<tr>
+    return `<tr class="rt-demo-row">
       <td>
         <span class="at-logo"><img src="${logoSrc}" alt="${act.school}" onerror="this.textContent='${act.abbr[0]}'"></span>
         <span class="at-program">${act.school}</span>
       </td>
       <td style="font-size:11px;color:var(--text-muted)">${act.div}</td>
       <td>${athletes.map(a=>`<span class="ac-athlete-chip" style="display:inline-flex;margin:2px 4px 2px 0" onclick="openSP(${hsJsArg(a.id)})">${hsEsc(a.fname)} ${hsEsc(a.lname)}</span>`).join('')}</td>
-      <td style="font-size:11px;color:var(--text-dim)">${act.date}</td>
+      <td style="font-size:11px;color:var(--text-dim)">Demo · ${act.date}</td>
       <td><button class="rt-btn blue" onclick="openCollegeCoachMessage('${act.school}')">Message</button></td>
     </tr>`;
   }).join('');
@@ -125,14 +232,17 @@ function sendOutreach(){
   const subj = el('outreach-subject').value;
   const body = el('outreach-body').value;
   if(!to||!subj||!body){ alert('Please fill in the recipient, subject, and message.'); return; }
+  const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')].map(t=>t.dataset.id);
+  // Save draft to localStorage
+  const drafts = (() => { try{ return JSON.parse(localStorage.getItem('juke_hs_outreach_drafts'))||[]; }catch(e){ return []; } })();
+  drafts.unshift({ to, subj, body, athleteIds: selected, savedAt: new Date().toISOString() });
+  try{ localStorage.setItem('juke_hs_outreach_drafts', JSON.stringify(drafts.slice(0,20))); }catch(e){}
   if(window.JukeOnboarding){
-    const selected = [...document.querySelectorAll('#outreach-athlete-row .athlete-tag.selected')].map(t=>t.dataset.id);
     JukeOnboarding.mark('hs_coach','firstOutreach',{to,athleteIds:selected});
-    JukeOnboarding.event('hs_coach','outreach_sent',{to,athleteCount:selected.length});
+    JukeOnboarding.event('hs_coach','outreach_draft_saved',{to,athleteCount:selected.length});
   }
   const msg = el('outreach-msg');
-  msg.classList.add('show');
-  setTimeout(()=>msg.classList.remove('show'), 2500);
+  if(msg){ msg.textContent='Draft saved!'; msg.classList.add('show'); setTimeout(()=>{ msg.classList.remove('show'); msg.textContent='Draft saved!'; }, 2500); }
   el('outreach-to').value='';
   el('outreach-subject').value='';
   el('outreach-body').value='';

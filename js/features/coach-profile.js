@@ -168,6 +168,10 @@ function openAthlete(id){
     ? findCoachAthlete(id)
     : ATHLETES.find(x=>String(x.id)===String(id));
   if(!a) return;
+  // Log view event — fire-and-forget, live athletes only
+  const _lvUid = typeof _athleteUserId==='function'?_athleteUserId(id):null;
+  if(_lvUid&&window.sb&&_coachUser())
+    _coachFire(()=>window.sb.rpc('log_athlete_view',{p_athlete_user_id:_lvUid}));
   const stage = getPipelineStage(id);
   const aid = typeof jsArg === 'function' ? jsArg(id) : JSON.stringify(id);
   const note = coachNotes[id]||'';

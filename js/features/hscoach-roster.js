@@ -170,18 +170,17 @@ async function loadPublishedHsRoster(){
   const client=window.sb||window._hsSb||null;
   if(!client) return;
   try{
-    const {data,error}=await client
-      .from('athlete_profiles')
-      .select('id,user_id,profile_data,published_at,updated_at')
-      .eq('is_discoverable',true)
-      .order('updated_at',{ascending:false});
+    // Use server-side school-matched RPC (replaces client-side fuzzy matching)
+    const {data,error}=await client.rpc('get_hs_roster');
     if(error){
-      console.warn('JUKE HS live roster load failed:', error);
+      // RPC not available or school not set — fall through to demo
+      if(!/not authenticated|school not set/i.test(error.message||''))
+        console.warn('JUKE HS live roster load failed:', error);
       return;
     }
     const live=(data||[])
       .map(_hsMapPublishedAthlete)
-      .filter(a=>a.fname!=='Unnamed'&&_hsSchoolMatchesCoach(a.school));
+      .filter(a=>a.fname!=='Unnamed');
     _hsLiveProfilesLoaded=true;
     if(live.length) _hsApplyRoster(live,'live');
     else _hsApplyRoster(HS_DEMO_ATHLETES.map(a=>({...a,pos:[...a.pos],programs:a.programs.map(p=>({...p}))})),'demo');
@@ -364,7 +363,10 @@ function switchHsTab(id){
   const btn = el('tab-'+id);
   if(content) content.classList.add('active');
   if(btn) btn.classList.add('active');
-  if(id==='activity') loadEndorsementRequests();
+  if(id==='activity'){
+    loadEndorsementRequests();
+    if(typeof loadHsActivity==='function') loadHsActivity();
+  }
 }
 
 // ──────────────────────────────────────────────
@@ -536,6 +538,9 @@ async function _hsLoadProfileFromBackend(){
         school:data.school,city:data.city,state:data.state,league:data.league,bio:data.bio});
       updateHSCard();
     }
+    // Load banner/logo from Storage if not already set locally
+    if(data.banner_url&&!ls('banner')) renderBannerPhoto(data.banner_url);
+    if(data.logo_url&&!ls('logo')) renderLogoPhoto(data.logo_url);
   }catch(e){
     console.warn('JUKE hs coach profile load failed:',e);
   }
@@ -544,30 +549,51 @@ async function _hsLoadProfileFromBackend(){
 // ──────────────────────────────────────────────
 // PHOTO UPLOAD
 // ──────────────────────────────────────────────
-function handleBanner(input){
+async function _hsUploadMedia(file, slot){
+  const client=window.sb||window._hsSb||null;
+  const cu=window.currentUser||null;
+  if(!client||!cu) return null;
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  const path=`${cu.id}/${slot}.${ext}`;
+  const {error}=await client.storage.from('hs-coach-media').upload(path,file,{upsert:true,contentType:file.type});
+  if(error){ console.warn('JUKE hs media upload failed:',error); return null; }
+  const {data:{publicUrl}}=client.storage.from('hs-coach-media').getPublicUrl(path);
+  // Persist url to hs_coach_profiles
+  const col=slot==='banner'?'banner_url':'logo_url';
+  client.from('hs_coach_profiles').upsert({user_id:cu.id,[col]:publicUrl,updated_at:new Date().toISOString()},{onConflict:'user_id'})
+    .then(({error:e})=>{ if(e) console.warn('JUKE hs media url save failed:',e); });
+  return publicUrl;
+}
+
+async function handleBanner(input){
   const file = input.files[0]; if(!file) return;
+  const url = await _hsUploadMedia(file,'banner');
+  if(url){ renderBannerPhoto(url); return; }
+  // Fallback: base64 localStorage
   const reader = new FileReader();
   reader.onload = e => { lss('banner', e.target.result); renderBannerPhoto(e.target.result); };
   reader.readAsDataURL(file);
 }
-function renderBannerPhoto(dataUrl){
+function renderBannerPhoto(src){
   const banner = el('coach-banner'); if(!banner) return;
   const existing = banner.querySelector('img.banner-img'); if(existing) existing.remove();
   const ph = el('coach-banner-ph'); if(ph) ph.style.display='none';
-  const img = document.createElement('img'); img.src=dataUrl; img.alt='Banner'; img.className='banner-img';
+  const img = document.createElement('img'); img.src=src; img.alt='Banner'; img.className='banner-img';
   banner.insertBefore(img, banner.firstChild);
 }
-function handleLogo(input){
+async function handleLogo(input){
   const file = input.files[0]; if(!file) return;
+  const url = await _hsUploadMedia(file,'logo');
+  if(url){ renderLogoPhoto(url); return; }
   const reader = new FileReader();
   reader.onload = e => { lss('logo', e.target.result); renderLogoPhoto(e.target.result); };
   reader.readAsDataURL(file);
 }
-function renderLogoPhoto(dataUrl){
+function renderLogoPhoto(src){
   const circle = el('coach-logo-circle'); if(!circle) return;
   const existing = circle.querySelector('img.logo-img'); if(existing) existing.remove();
   const init = el('coach-logo-init'); if(init) init.style.display='none';
-  const img = document.createElement('img'); img.src=dataUrl; img.alt='Logo'; img.className='logo-img';
+  const img = document.createElement('img'); img.src=src; img.alt='Logo'; img.className='logo-img';
   img.style.cssText='width:100%;height:100%;object-fit:contain;display:block;';
   circle.insertBefore(img, circle.firstChild);
 }

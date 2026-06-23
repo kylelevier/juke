@@ -112,7 +112,7 @@ Goal: remove production recruiter state from localStorage.
 - [x] Persist recruiter next actions to backend.
 - [x] Persist recruiter evaluations to backend.
 - [x] Persist recruiter program needs to backend.
-- [!] Add verified program/staff membership model.
+- [x] Add verified program/staff membership model.
 - [!] Add RLS tests for recruiter private data.
 - [x] Add empty/error states when no live athlete data is available.
 
@@ -121,15 +121,15 @@ Goal: remove production recruiter state from localStorage.
 Goal: replace fuzzy/demo roster with verified roster ownership.
 
 - [x] Remove hardcoded demo roster from production mode.
-- [!] Add roster membership/invitation schema.
-- [!] Add verified HS coach school/staff membership.
-- [ ] Replace fuzzy school-name matching with membership query.
+- [x] Add roster membership/invitation schema.
+- [x] Add verified HS coach school/staff membership.
+- [x] Replace fuzzy school-name matching with membership query.
 - [x] Persist HS coach profile to backend.
-- [ ] Move HS coach banner/logo to Storage.
+- [x] Move HS coach banner/logo to Storage.
 - [x] Persist HS coach notes to backend.
-- [ ] Replace fake recruiter activity with real activity events.
-- [!] Add privacy policy/RLS for recruiter activity visibility.
-- [ ] Rename fake outreach send to draft, or implement real delivery.
+- [x] Replace fake recruiter activity with real activity events.
+- [x] Add privacy policy/RLS for recruiter activity visibility.
+- [x] Rename fake outreach send to draft, or implement real delivery.
 
 ## Chunk 9 - Admin Hardening
 
