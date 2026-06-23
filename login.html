@@ -140,16 +140,25 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
   const user = session.user;
 
-  // Role: prefer stored value, default to athlete for alpha
-  let role = user.user_metadata?.juke_role || 'athlete';
+  var profileRes = await sb.from('user_profiles').select('role,is_active,display_name,org').eq('id', user.id).maybeSingle();
+  if (profileRes.data && profileRes.data.is_active === false) {
+    await sb.auth.signOut();
+    localStorage.removeItem('juke_auth');
+    setStatus('This account has been disabled. Contact JUKE support.', true);
+    document.getElementById('google-btn').disabled = false;
+    return;
+  }
+
+  // Role: prefer stored profile value, then metadata, default to athlete for alpha
+  let role = profileRes.data?.role || user.user_metadata?.juke_role || 'athlete';
 
   // Persist juke_auth for portal gating (coaches need this)
-  const name = user.user_metadata?.full_name || user.email || 'User';
+  const name = profileRes.data?.display_name || user.user_metadata?.full_name || user.email || 'User';
   localStorage.setItem('juke_auth', JSON.stringify({
     name,
     type: role,
     activeProfileId: 'primary',
-    profiles: [{ id: 'primary', type: role, org: user.user_metadata?.org || '' }]
+    profiles: [{ id: 'primary', type: role, org: profileRes.data?.org || user.user_metadata?.org || '' }]
   }));
 
   const next = safeNextUrl(NEXT_URL);

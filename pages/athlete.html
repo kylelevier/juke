@@ -31,7 +31,7 @@
   <span id="preview-mode-notice">Read-only · changes are blocked</span>
 </div>
 <script>
-  if(window.PREVIEW_USER_ID){
+  if(new URLSearchParams(location.search).get('preview_as')){
     var _b=document.getElementById('preview-mode-banner');
     if(_b) _b.style.display='flex';
   }

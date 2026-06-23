@@ -78,6 +78,17 @@
     var r = await sb.auth.signInWithPassword({ email: email, password: pw });
     btn.disabled = false; btn.textContent = 'Sign In';
     if (r.error) { _setMsg('hscoach-signin-msg', r.error.message, 'error'); return; }
+    if (r.data && r.data.user) {
+      try {
+        var pr = await sb.from('user_profiles').select('is_active').eq('id', r.data.user.id).maybeSingle();
+        if (pr.data && pr.data.is_active === false) {
+          await sb.auth.signOut();
+          localStorage.removeItem('juke_auth');
+          _setMsg('hscoach-signin-msg', 'This account has been disabled. Contact JUKE support.', 'error');
+          return;
+        }
+      } catch(e) {}
+    }
     _setMsg('hscoach-signin-msg', 'Signed in!', 'success');
     setTimeout(closeHsCoachAuth, 600);
   };

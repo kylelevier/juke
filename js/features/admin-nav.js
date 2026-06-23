@@ -9,6 +9,7 @@ var currentUser = null;
 if (sb) {
   sb.auth.onAuthStateChange(function(event, session) {
     currentUser = (session && session.user) ? session.user : null;
+    _verifyAdminAccess();
     _updateAdminChip();
   });
 }
@@ -51,6 +52,40 @@ function _updateAdminChip() {
 function _toggleAdminChip() {
   var dd = document.getElementById('admin-chip-dd');
   if (dd) dd.classList.toggle('open');
+}
+
+async function _verifyAdminAccess() {
+  if (!sb || !currentUser) return;
+  try {
+    var r = await sb.from('user_profiles').select('role,is_active').eq('id', currentUser.id).maybeSingle();
+    if (!r.error && r.data) {
+      if (r.data.is_active === false || r.data.role !== 'admin') {
+        await sb.auth.signOut();
+        localStorage.removeItem('juke_auth');
+        location.replace('/login.html');
+      }
+    }
+  } catch(e) {}
+}
+
+async function adminAudit(action, targetType, targetId, details) {
+  if (!sb) return;
+  var payload = {
+    action: action,
+    target_type: targetType || null,
+    target_id: targetId == null ? null : String(targetId),
+    details: details || {},
+    admin_user_id: currentUser && currentUser.id ? currentUser.id : null,
+    created_at: new Date().toISOString()
+  };
+  try {
+    await sb.from('admin_audit_events').insert(payload);
+  } catch(e) {}
+  try {
+    var local = JSON.parse(localStorage.getItem('juke_admin_audit_pending') || '[]');
+    local.unshift(payload);
+    localStorage.setItem('juke_admin_audit_pending', JSON.stringify(local.slice(0, 100)));
+  } catch(e) {}
 }
 
 async function adminSignOut() {

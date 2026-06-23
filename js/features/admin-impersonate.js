@@ -17,7 +17,7 @@
     var wrap = document.getElementById('admin-impersonate-suggestions');
     if (!q.trim() || !sb) { if (wrap) wrap.innerHTML = ''; return; }
 
-    var r = await sb.from('athlete_profiles').select('user_id, profile_data').limit(30);
+    var r = await sb.from('athlete_profiles').select('user_id, profile_data').limit(200);
     if (r.error || !r.data) { if (wrap) wrap.innerHTML = ''; return; }
 
     var lq = q.toLowerCase();
@@ -54,7 +54,7 @@
     var wrap = document.getElementById('admin-impersonate-result');
     if (!wrap) return;
     wrap.innerHTML = '<iframe'
-      + ' src="/athlete?preview_as=' + encodeURIComponent(userId) + '"'
+      + ' src="/athlete?preview_as=' + encodeURIComponent(userId) + '&preview_t=' + Date.now() + '"'
       + ' class="admin-preview-iframe"'
       + ' sandbox="allow-scripts allow-same-origin allow-forms"'
       + ' title="Preview as ' + _esc(displayName || userId) + '"'

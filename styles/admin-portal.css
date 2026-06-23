@@ -95,6 +95,13 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .admin-inline-input:focus{border-color:var(--magenta);}
 .admin-inline-select{border:1px solid var(--border-mid);border-radius:6px;padding:5px 8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;}
 .admin-editing-row td{background:rgba(255,0,128,.03);}
+.admin-program-editor{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.admin-program-editor-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.admin-program-editor-title{font-weight:700;font-size:14px;margin-bottom:2px;}
+.admin-program-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 12px;}
+.admin-program-field{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);}
+.admin-program-field .admin-inline-input{text-transform:none;letter-spacing:0;font-weight:400;color:var(--text);}
+.admin-program-textarea{min-height:68px;resize:vertical;}
 
 /* ── PROFILE CARD ── */
 .admin-profile-card{background:#0D0D0D;border-radius:12px;margin:0 24px 16px;overflow:hidden;}

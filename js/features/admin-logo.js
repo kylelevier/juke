@@ -102,6 +102,7 @@
       }
       _msg(cell,'Saved ✓','ok');
       _logEntry(school, url, true, null);
+      if (typeof adminAudit === 'function') adminAudit('program.logo_update', 'program', school, { school: school, url: url });
 
       // Repaint this school wherever it is shown.
       document.querySelectorAll('[data-logo]').forEach(function(w){

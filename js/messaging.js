@@ -487,6 +487,10 @@
     if (!body)           return;
     if (!_activeConvId)  return;
     if (!currentUser)    return;
+    if (window.PREVIEW_USER_ID) {
+      _toast('Preview mode is read-only.');
+      return;
+    }
     if (body.length > MAX_MSG_LEN) {
       _toast('Message too long (max ' + MAX_MSG_LEN + ' characters)');
       return;
@@ -517,6 +521,7 @@
 
   async function _trySend(tempId, body, convId, attempt) {
     if (!sb || !currentUser) return;
+    if (window.PREVIEW_USER_ID) return;
 
     var r = await sb.from('messages')
       .insert({ conversation_id: convId, sender_id: currentUser.id, body: body })
@@ -590,7 +595,7 @@
     // Persist to Supabase
     if (school && typeof saveBoardContact === 'function') {
       saveBoardContact(school, { lastContactDate: today });
-    } else if (sb) {
+    } else if (sb && !window.PREVIEW_USER_ID) {
       sb.from('player_programs')
         .update({ last_contact_date: today, updated_at: new Date().toISOString() })
         .eq('id', ppId);

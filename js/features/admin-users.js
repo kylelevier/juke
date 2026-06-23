@@ -95,13 +95,19 @@
   };
 
   window.adminDeactivateUser = function(userId, name) {
-    if (!confirm('Deactivate "' + name + '"? This sets is_active = false on their profile.')) return;
+    if (!confirm('Deactivate "' + name + '"? This hides their profile and blocks portal access.')) return;
     if (!sb) { adminToast('Supabase not available', 'err'); return; }
-    sb.from('user_profiles').update({ is_active: false }).eq('id', userId).then(function(r){
-      if (r.error) {
-        adminToast('Could not update: ' + r.error.message + '. Use the Supabase dashboard.', 'err');
+    Promise.all([
+      sb.from('user_profiles').update({ is_active: false }).eq('id', userId),
+      sb.from('athlete_profiles').update({ is_discoverable: false }).eq('user_id', userId)
+    ]).then(function(results){
+      var firstErr = results.find(function(r){ return r && r.error; });
+      if (firstErr) {
+        adminToast('Could not fully deactivate: ' + firstErr.error.message + '. Use the Supabase dashboard for auth disable.', 'err');
       } else {
+        if (sb.rpc) sb.rpc('admin_disable_user', { target_user_id: userId });
         adminToast('User deactivated.', 'ok');
+        if (typeof adminAudit === 'function') adminAudit('user.deactivate', 'user', userId, { name: name });
         _usersLoaded = false;
         _loadUsers();
       }
@@ -125,7 +131,7 @@
     if (!sb) { if (wrap) wrap.innerHTML = '<div class="admin-empty">Supabase not available.</div>'; return; }
     if (wrap) wrap.innerHTML = '<div class="admin-loading">Searching…</div>';
 
-    var r = await sb.from('athlete_profiles').select('user_id, profile_data, is_discoverable, published_at, updated_at').limit(20);
+    var r = await sb.from('athlete_profiles').select('user_id, profile_data, is_discoverable, published_at, updated_at').limit(200);
     if (r.error) { if (wrap) wrap.innerHTML = '<div class="admin-empty">Error: ' + _esc(r.error.message) + '</div>'; return; }
 
     var lq = q.toLowerCase();
@@ -164,16 +170,21 @@
     if (!sb) return;
 
     Promise.all([
-      sb.from('athlete_profiles').select('*').eq('user_id', userId).single(),
-      sb.from('player_programs').select('*').eq('user_id', userId).order('updated_at', { ascending: false })
+      sb.from('athlete_profiles').select('*').eq('user_id', userId).maybeSingle(),
+      sb.from('player_programs').select('id,stage,last_contact_date,next_action,next_action_date,program_id,programs(school,state)').eq('user_id', userId).order('updated_at', { ascending: false }),
+      sb.from('player_data').select('profile,pipeline').eq('user_id', userId).maybeSingle()
     ]).then(function(results){
-      var apRes = results[0], ppRes = results[1];
+      var apRes = results[0], ppRes = results[1], pdRes = results[2];
       if (!wrap) return;
 
       var html = '';
 
       if (apRes.error || !apRes.data) {
-        html += '<div class="admin-notice">No published athlete profile found for this user.</div>';
+        if (pdRes && pdRes.data && pdRes.data.profile) {
+          html += _renderProfileCard({ profile_data: pdRes.data.profile, is_discoverable: false, updated_at: '' });
+        } else {
+          html += '<div class="admin-notice">No athlete profile found for this user.</div>';
+        }
       } else {
         html += _renderProfileCard(apRes.data);
       }
@@ -184,11 +195,28 @@
           + '<th>School</th><th>Stage</th><th>Last Contact</th><th>Next Action</th>'
           + '</tr></thead><tbody>';
         ppRes.data.forEach(function(pp){
+          var schoolName = (pp.programs && pp.programs.school) || pp.program_id || '—';
+          var schoolState = (pp.programs && pp.programs.state) ? ' <span class="admin-dim">(' + _esc(pp.programs.state) + ')</span>' : '';
           html += '<tr>'
-            + '<td>' + _esc(pp.program_id || '—') + '</td>'
+            + '<td>' + _esc(schoolName) + schoolState + '</td>'
             + '<td><span class="admin-stage-badge stage-' + _esc(pp.stage || '') + '">' + _esc(pp.stage || '—') + '</span></td>'
             + '<td class="admin-dim">' + (pp.last_contact_date || '—') + '</td>'
             + '<td class="admin-dim">' + _esc(pp.next_action || '—') + '</td>'
+            + '</tr>';
+        });
+        html += '</tbody></table>';
+      } else if (pdRes && pdRes.data && pdRes.data.pipeline && Object.keys(pdRes.data.pipeline).length) {
+        var pipe = pdRes.data.pipeline || {};
+        var names = Object.keys(pipe).sort();
+        html += '<div class="admin-section-hd">Board (' + names.length + ' schools)</div>';
+        html += '<table class="admin-table admin-board-table"><thead><tr>'
+          + '<th>School</th><th>Stage</th><th>Last Contact</th><th>Next Action</th>'
+          + '</tr></thead><tbody>';
+        names.forEach(function(name){
+          html += '<tr>'
+            + '<td>' + _esc(name) + '</td>'
+            + '<td><span class="admin-stage-badge stage-' + _esc(pipe[name] || '') + '">' + _esc(pipe[name] || '—') + '</span></td>'
+            + '<td class="admin-dim">—</td><td class="admin-dim">—</td>'
             + '</tr>';
         });
         html += '</tbody></table>';

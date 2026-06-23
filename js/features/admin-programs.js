@@ -7,6 +7,37 @@
   var _progFilter   = '';
   var _editingId    = null;
 
+  var PROGRAM_FIELD_LABELS = {
+    school: 'School',
+    state: 'State',
+    governing_body: 'Governing Body',
+    division: 'Division',
+    flag_football_conference: 'Flag Football Conference',
+    varsity_or_club: 'Varsity or Club',
+    school_type: 'School Type',
+    region: 'Region',
+    scholarship_available: 'Scholarship Available',
+    school_size_enrollment: 'School Size',
+    hbcu: 'HBCU',
+    notes: 'Notes',
+    religious_affiliation: 'Religious Affiliation',
+    estimated_cost_of_attendance: 'Est. Cost of Attendance',
+    avg_financial_aid_award: 'Avg Financial Aid Award',
+    athlete_interest_recruiting_form: 'Athlete Interest / Recruiting Form',
+    logo_url: 'Logo URL'
+  };
+  var PROGRAM_EDIT_EXCLUDE = {
+    id: true,
+    created_at: true,
+    updated_at: true
+  };
+  var PROGRAM_CANONICAL_FIELDS = [
+    'school','state','governing_body','division','flag_football_conference','varsity_or_club',
+    'school_type','region','scholarship_available','school_size_enrollment','hbcu','notes',
+    'religious_affiliation','estimated_cost_of_attendance','avg_financial_aid_award',
+    'athlete_interest_recruiting_form','logo_url'
+  ];
+
   // ── 4. PROGRAMS TAB ──────────────────────────────────────────────────────
 
   window.initAdminPrograms = function() {
@@ -51,26 +82,16 @@
       var isEditing = _editingId === p.id;
       if (isEditing) {
         html += '<tr class="admin-editing-row">'
-          + '<td><input class="admin-inline-input" id="edit-school-' + p.id + '" value="' + _esc(p.school || '') + '"/></td>'
-          + '<td><input class="admin-inline-input short" id="edit-state-' + p.id + '" value="' + _esc(p.state || '') + '" maxlength="2"/></td>'
-          + '<td><select class="admin-inline-select" id="edit-div-' + p.id + '">'
-            + _divOptions(p.division)
-          + '</select></td>'
-          + '<td class="admin-dim">' + (p.logo_url ? '<img class="admin-logo-thumb" src="' + _esc(p.logo_url) + '" alt="">' : '—') + '</td>'
-          + '<td class="admin-actions">'
-            + '<button class="admin-action-btn ok" onclick="adminSaveProgram(' + p.id + ')">Save</button>'
-            + '<button class="admin-action-btn" onclick="adminCancelEdit()">Cancel</button>'
-          + '</td>'
+          + '<td colspan="5">' + _programEditorHtml(p) + '</td>'
           + '</tr>';
       } else {
         html += '<tr>'
           + '<td>' + _esc(p.school || '—') + '</td>'
           + '<td>' + _esc(p.state || '—') + '</td>'
           + '<td>' + _esc(p.division || '—') + '</td>'
-          + '<td>' + (p.logo_url ? '<img class="admin-logo-thumb" src="' + _esc(p.logo_url) + '" alt="">' : '<span class="admin-dim">—</span>') + '</td>'
+          + '<td class="admin-dim">' + (p.logo_url ? '<img class="admin-logo-thumb" src="' + _esc(p.logo_url) + '" alt="">' : '—') + '</td>'
           + '<td class="admin-actions">'
             + '<button class="admin-action-btn" onclick="adminEditProgram(' + p.id + ')">Edit</button>'
-            + '<button class="admin-action-btn warn" onclick="adminDeleteProgram(' + p.id + ',' + JSON.stringify(p.school) + ')">Delete</button>'
           + '</td>'
           + '</tr>';
       }
@@ -80,11 +101,43 @@
     wrap.innerHTML = html;
   }
 
-  function _divOptions(current) {
-    var opts = ['', 'NCAA D1', 'NCAA D2', 'NCAA D3', 'NAIA', 'NJCAA'];
-    return opts.map(function(o){
-      return '<option value="' + _esc(o) + '"' + (o === current ? ' selected' : '') + '>' + (o || 'Select…') + '</option>';
-    }).join('');
+  function _editableProgramFields(p) {
+    var seen = {};
+    var fields = [];
+    var actual = Object.keys(p || {});
+    PROGRAM_CANONICAL_FIELDS.concat(actual).forEach(function(k){
+      if (actual.indexOf(k) === -1) return;
+      if (seen[k] || PROGRAM_EDIT_EXCLUDE[k]) return;
+      seen[k] = true;
+      fields.push(k);
+    });
+    return fields;
+  }
+
+  function _programEditorHtml(p) {
+    var fields = _editableProgramFields(p);
+    var html = '<div class="admin-program-editor">';
+    html += '<div class="admin-program-editor-hd">'
+      + '<div><div class="admin-program-editor-title">' + _esc(p.school || 'Program') + '</div>'
+      + '<div class="admin-dim">Edit the full program row. Blank values are saved as empty fields.</div></div>'
+      + '<div class="admin-actions"><button class="admin-action-btn ok" onclick="adminSaveProgram(' + p.id + ')">Save</button>'
+      + '<button class="admin-action-btn" onclick="adminCancelEdit()">Cancel</button></div>'
+      + '</div>';
+    html += '<div class="admin-program-grid">';
+    fields.forEach(function(k){
+      var val = p[k] == null ? '' : p[k];
+      var label = PROGRAM_FIELD_LABELS[k] || k.replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+      var isLong = String(val).length > 80 || /notes|url|form|logo/.test(k);
+      html += '<label class="admin-program-field"><span>' + _esc(label) + '</span>';
+      if (isLong) {
+        html += '<textarea class="admin-inline-input admin-program-textarea" data-program-field="' + _esc(k) + '">' + _esc(val) + '</textarea>';
+      } else {
+        html += '<input class="admin-inline-input" data-program-field="' + _esc(k) + '" value="' + _esc(val) + '"/>';
+      }
+      html += '</label>';
+    });
+    html += '</div></div>';
+    return html;
   }
 
   window.adminFilterPrograms = function(q) {
@@ -109,30 +162,28 @@
   };
 
   window.adminSaveProgram = async function(id) {
-    var school   = (document.getElementById('edit-school-' + id) || {}).value || '';
-    var state    = (document.getElementById('edit-state-' + id) || {}).value || '';
-    var division = (document.getElementById('edit-div-' + id) || {}).value || '';
+    var row = document.querySelector('.admin-editing-row');
+    var patch = {};
+    row && row.querySelectorAll('[data-program-field]').forEach(function(el){
+      patch[el.getAttribute('data-program-field')] = el.value.trim();
+    });
+    var school = patch.school || '';
     if (!school.trim()) { adminToast('School name required', 'err'); return; }
     if (!sb) return;
 
-    var r = await sb.from('programs').update({ school: school.trim(), state: state.trim(), division: division || null }).eq('id', id);
+    var r = await sb.from('programs').update(patch).eq('id', id).select().single();
     if (r.error) { adminToast('Save failed: ' + r.error.message, 'err'); return; }
 
     var prog = _programs.find(function(p){ return p.id === id; });
-    if (prog) { prog.school = school.trim(); prog.state = state.trim(); prog.division = division || null; }
+    if (prog) Object.assign(prog, r.data || patch);
     _editingId = null;
     adminToast('Program saved.', 'ok');
+    if (typeof adminAudit === 'function') adminAudit('program.update', 'program', id, { school: school.trim(), fields: Object.keys(patch) });
     _renderPrograms();
   };
 
   window.adminDeleteProgram = async function(id, name) {
-    if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
-    if (!sb) return;
-    var r = await sb.from('programs').delete().eq('id', id);
-    if (r.error) { adminToast('Delete failed: ' + r.error.message, 'err'); return; }
-    _programs = _programs.filter(function(p){ return p.id !== id; });
-    adminToast('Program deleted.', 'ok');
-    _renderPrograms();
+    adminToast('Program deletion is disabled.', 'err');
   };
 
   // ── ADD PROGRAM MODAL ─────────────────────────────────────────────────────
@@ -168,6 +219,7 @@
     }
     _programs.unshift(r.data);
     adminToast('Program added.', 'ok');
+    if (typeof adminAudit === 'function') adminAudit('program.create', 'program', r.data && r.data.id, { school: school.trim() });
     adminCloseAddProgram();
     _renderPrograms();
   };

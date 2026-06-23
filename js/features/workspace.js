@@ -52,9 +52,10 @@ async function openSchoolWorkspace(schoolName){
       .select('id,stage,created_at').eq('user_id',currentUser.id).eq('program_id',prog.id).single();
     if(existing){
       ppRow=existing;
-      if(existing.stage!==curStage)
+      if(existing.stage!==curStage && !window.PREVIEW_USER_ID)
         await sb.from('player_programs').update({stage:curStage,updated_at:new Date().toISOString()}).eq('id',existing.id);
     }else{
+      if(window.PREVIEW_USER_ID){_renderWsOffline('No workspace data for this program.');return;}
       const {data:created}=await sb.from('player_programs')
         .insert({user_id:currentUser.id,program_id:prog.id,stage:curStage})
         .select('id,stage,created_at').single();
@@ -244,6 +245,7 @@ function wsHideNoteForm(){
 }
 
 async function wsAddLog(){
+  if(window.PREVIEW_USER_ID)return;
   if(!_wsPPId)return;
   const type=document.getElementById('ws-log-type')?.value||'phone_call';
   const note=(document.getElementById('ws-log-note')?.value||'').trim();
@@ -256,6 +258,7 @@ async function wsAddLog(){
 }
 
 async function wsAddNote(){
+  if(window.PREVIEW_USER_ID)return;
   if(!_wsPPId)return;
   const content=(document.getElementById('ws-note-text')?.value||'').trim();
   if(!content)return;
@@ -350,6 +353,7 @@ function wsToggleOffer(){
 }
 
 async function wsAddContact(){
+  if(window.PREVIEW_USER_ID)return;
   if(!_wsPPId)return;
   const name=(document.getElementById('ws-c-name')?.value||'').trim();
   if(!name)return;
@@ -365,6 +369,7 @@ async function wsAddContact(){
 }
 
 async function wsToggleTask(id,done){
+  if(window.PREVIEW_USER_ID)return;
   const {error}=await sb.from('program_tasks')
     .update({completed:done,completed_at:done?new Date().toISOString():null}).eq('id',id);
   if(!error){
@@ -375,6 +380,7 @@ async function wsToggleTask(id,done){
 }
 
 async function wsAddTask(){
+  if(window.PREVIEW_USER_ID)return;
   if(!_wsPPId)return;
   const text=(document.getElementById('ws-t-text')?.value||'').trim();
   if(!text)return;
@@ -388,6 +394,7 @@ async function wsAddTask(){
 }
 
 async function wsSetOfferStatus(status){
+  if(window.PREVIEW_USER_ID)return;
   const update={status,updated_at:new Date().toISOString()};
   let error;
   if(_wsData.offer?.id){
@@ -400,6 +407,7 @@ async function wsSetOfferStatus(status){
 }
 
 async function wsUpdateOfferField(key,rawVal){
+  if(window.PREVIEW_USER_ID)return;
   const num=parseInt(rawVal.replace(/[$,\s]/g,''));
   const val=isNaN(num)?null:num;
   const update={[key]:val,updated_at:new Date().toISOString()};
@@ -414,6 +422,7 @@ async function wsUpdateOfferField(key,rawVal){
 }
 
 async function wsUpdateOfferNote(val){
+  if(window.PREVIEW_USER_ID)return;
   const notes=val.trim()||null;
   const update={notes,updated_at:new Date().toISOString()};
   let error;
@@ -427,6 +436,7 @@ async function wsUpdateOfferNote(val){
 }
 
 async function wsChangeStage(newStage){
+  if(window.PREVIEW_USER_ID)return;
   if(!_wsSchool)return;
   statusData[_wsSchool]=newStage;
   lsSet('juke_status',statusData);

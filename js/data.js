@@ -71,6 +71,7 @@ let _boardCache={};
 // Returns the row id (ppId) or null if not logged in / program not found.
 async function _resolvePPId(schoolName){
   if(!sb||!currentUser) return null;
+  if(window.PREVIEW_USER_ID) return _boardCache[schoolName]?.ppId || null;
   if(_boardCache[schoolName]?.ppId) return _boardCache[schoolName].ppId;
   // Look up program id
   const {data:prog}=await sb.from('programs').select('id').eq('school',schoolName).maybeSingle();
@@ -97,6 +98,7 @@ async function loadBoardRecord(schoolName){
 
 // Persist card attribute toggles for a school to Supabase + localStorage.
 async function saveBoardAttrs(schoolName,attrs){
+  if(window.PREVIEW_USER_ID) return;
   // Merge into localStorage cache immediately (optimistic)
   const cur=lsGet('juke_card_attrs');
   cur[schoolName]=Object.assign(cur[schoolName]||{},attrs);
@@ -117,6 +119,7 @@ async function saveBoardAttrs(schoolName,attrs){
 
 // Update stage in Supabase after a drag-drop move.
 async function saveBoardStage(schoolName,stage){
+  if(window.PREVIEW_USER_ID) return;
   statusData[schoolName]=stage;
   lsSet('juke_status',statusData);
   const ppId=await _resolvePPId(schoolName);
@@ -126,6 +129,7 @@ async function saveBoardStage(schoolName,stage){
 
 // Update next action / last contact date fields.
 async function saveBoardContact(schoolName,{lastContactDate,nextAction,nextActionDate}){
+  if(window.PREVIEW_USER_ID) return;
   const ppId=await _resolvePPId(schoolName);
   if(!ppId) return;
   const patch={updated_at:new Date().toISOString()};
@@ -145,6 +149,7 @@ async function loadBoardSection(schoolName, table){
 }
 
 async function addBoardItem(schoolName, table, payload){
+  if(window.PREVIEW_USER_ID) return null;
   const ppId=await _resolvePPId(schoolName);
   if(!ppId) return null;
   const {data}=await sb.from(table).insert({player_program_id:ppId,...payload}).select().single();
@@ -152,17 +157,20 @@ async function addBoardItem(schoolName, table, payload){
 }
 
 async function updateBoardItem(table, id, patch){
+  if(window.PREVIEW_USER_ID) return null;
   const {data}=await sb.from(table).update({...patch,updated_at:new Date().toISOString()}).eq('id',id).select().single();
   return data;
 }
 
 async function deleteBoardItem(table, id){
+  if(window.PREVIEW_USER_ID) return;
   await sb.from(table).delete().eq('id',id);
 }
 
 // ── Conversation ↔ Program linking ───────────────────────────
 // Sets player_program_id on a conversation row so threads have school context.
 async function linkConversationToProgram(convId, ppId){
+  if(window.PREVIEW_USER_ID) return;
   if(!sb||!convId||!ppId) return;
   await sb.from('conversations').update({player_program_id:ppId}).eq('id',convId);
 }
@@ -198,6 +206,7 @@ async function getConversationByProgram(ppId){
 //     for all using (auth.uid() = athlete_user_id);
 async function saveRecommendationRequest(payload){
   if(!sb||!currentUser) return null;
+  if(window.PREVIEW_USER_ID) return null;
   const {data,error}=await sb.from('recommendation_requests').insert({
     athlete_user_id: currentUser.id,
     athlete_name:    payload.athleteName||null,

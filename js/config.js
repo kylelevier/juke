@@ -53,6 +53,18 @@ if(sb){
     if(window.PREVIEW_USER_ID && currentUser){
       currentUser = Object.assign({}, currentUser, { id: window.PREVIEW_USER_ID });
     }
+    if(currentUser && !window.PREVIEW_USER_ID){
+      try{
+        const {data:profile}=await sb.from('user_profiles').select('is_active').eq('id',currentUser.id).maybeSingle();
+        if(profile && profile.is_active===false){
+          await sb.auth.signOut();
+          currentUser=null;
+          localStorage.removeItem('juke_auth');
+          location.replace('/login.html');
+          return;
+        }
+      }catch(e){}
+    }
     if(currentUser && window.JukeOnboarding) JukeOnboarding.start('athlete');
     if(typeof _updateAuthUI === 'function') _updateAuthUI();
     if(currentUser && event === 'SIGNED_IN' && typeof _syncFromCloud === 'function'){

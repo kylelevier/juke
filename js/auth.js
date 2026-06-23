@@ -68,7 +68,22 @@ async function handleSignIn(){
   const {error}=await sb.auth.signInWithPassword({email,password:pw});
   btn.disabled=false;btn.textContent='Sign In';
   if(error){msg.textContent=error.message;msg.className='auth-msg error';}
-  else{closeAuthModal();}
+  else{
+    const user=(await sb.auth.getUser()).data?.user;
+    if(user){
+      try{
+        const {data:profile}=await sb.from('user_profiles').select('is_active').eq('id',user.id).maybeSingle();
+        if(profile&&profile.is_active===false){
+          await sb.auth.signOut();
+          localStorage.removeItem('juke_auth');
+          msg.textContent='This account has been disabled. Contact JUKE support.';
+          msg.className='auth-msg error';
+          return;
+        }
+      }catch(e){}
+    }
+    closeAuthModal();
+  }
 }
 async function handleSignUp(){
   if(!sb){alert('Supabase not configured — add your URL and key to the file.');return;}

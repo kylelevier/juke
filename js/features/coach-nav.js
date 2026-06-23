@@ -117,7 +117,22 @@ async function coachSignIn() {
   var r = await sb.auth.signInWithPassword({ email: email, password: pw });
   btn.disabled = false; btn.textContent = 'Sign In';
   if (r.error) { msg.textContent = r.error.message; msg.className = 'coach-auth-msg error'; }
+  else if (r.data && r.data.user && !(await _coachEnsureActive(r.data.user.id, msg))) { return; }
   else { closeCoachAuth(); }
+}
+
+async function _coachEnsureActive(userId, msg) {
+  try {
+    var pr = await sb.from('user_profiles').select('is_active').eq('id', userId).maybeSingle();
+    if (pr.data && pr.data.is_active === false) {
+      await sb.auth.signOut();
+      localStorage.removeItem('juke_auth');
+      msg.textContent = 'This account has been disabled. Contact JUKE support.';
+      msg.className = 'coach-auth-msg error';
+      return false;
+    }
+  } catch(e) {}
+  return true;
 }
 
 async function coachSignUp() {
