@@ -188,6 +188,21 @@ function openSP(id){
   const st = athleteStatus(a);
   const endorsed = endorsements[id];
   const savedNote = ls('note_'+id)||'';
+  // Async: load note from backend for live athletes (updates textarea if backend has newer data)
+  const sid=String(id||'');
+  const uid=sid.startsWith('live_')?sid.slice(5):null;
+  const client=window.sb||window._hsSb||null;
+  const cu=window.currentUser||null;
+  if(uid&&client&&cu&&!savedNote){
+    client.from('hs_coach_notes').select('content').eq('coach_id',cu.id).eq('athlete_user_id',uid).maybeSingle()
+      .then(({data})=>{
+        if(data&&data.content){
+          lss('note_'+id,data.content);
+          const area=el('sp-note-area');
+          if(area&&!area.value) area.value=data.content;
+        }
+      }).catch(()=>{});
+  }
   el('sp-title').textContent = a.fname+' '+a.lname;
   const idArg = hsJsArg(a.id);
   const messageId = a._userId || ('athlete_'+a.id);
@@ -255,7 +270,21 @@ function openSP(id){
 
 function saveSPNote(id){
   const area = el('sp-note-area'); if(!area) return;
-  lss('note_'+id, area.value);
+  const content=area.value;
+  lss('note_'+id, content);
+  // Backend write for live athletes
+  const s=String(id||'');
+  const uid=s.startsWith('live_')?s.slice(5):null;
+  const client=window.sb||window._hsSb||null;
+  const cu=window.currentUser||null;
+  if(uid&&client&&cu){
+    client.from('hs_coach_notes').upsert({
+      coach_id:cu.id, athlete_user_id:uid,
+      content:content, updated_at:new Date().toISOString()
+    },{onConflict:'coach_id,athlete_user_id'}).then(({error})=>{
+      if(error) console.warn('JUKE hs coach note write failed:',error);
+    });
+  }
 }
 
 function closeSP(e){

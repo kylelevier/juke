@@ -105,28 +105,28 @@ Goal: make signed-in board state cloud-first and conflict-safe.
 
 Goal: remove production recruiter state from localStorage.
 
-- [ ] Remove demo athletes from production mode.
-- [ ] Persist recruiter pipeline to backend.
-- [ ] Persist recruiter boards/lists to backend.
-- [ ] Persist recruiter private notes to backend.
-- [ ] Persist recruiter next actions to backend.
-- [ ] Persist recruiter evaluations to backend.
-- [ ] Persist recruiter program needs to backend.
+- [x] Remove demo athletes from production mode.
+- [x] Persist recruiter pipeline to backend.
+- [x] Persist recruiter boards/lists to backend.
+- [x] Persist recruiter private notes to backend.
+- [x] Persist recruiter next actions to backend.
+- [x] Persist recruiter evaluations to backend.
+- [x] Persist recruiter program needs to backend.
 - [!] Add verified program/staff membership model.
 - [!] Add RLS tests for recruiter private data.
-- [ ] Add empty/error states when no live athlete data is available.
+- [x] Add empty/error states when no live athlete data is available.
 
 ## Chunk 8 - HS Coach Portal Persistence
 
 Goal: replace fuzzy/demo roster with verified roster ownership.
 
-- [ ] Remove hardcoded demo roster from production mode.
+- [x] Remove hardcoded demo roster from production mode.
 - [!] Add roster membership/invitation schema.
 - [!] Add verified HS coach school/staff membership.
 - [ ] Replace fuzzy school-name matching with membership query.
-- [ ] Persist HS coach profile to backend.
+- [x] Persist HS coach profile to backend.
 - [ ] Move HS coach banner/logo to Storage.
-- [ ] Persist HS coach notes to backend.
+- [x] Persist HS coach notes to backend.
 - [ ] Replace fake recruiter activity with real activity events.
 - [!] Add privacy policy/RLS for recruiter activity visibility.
 - [ ] Rename fake outreach send to draft, or implement real delivery.

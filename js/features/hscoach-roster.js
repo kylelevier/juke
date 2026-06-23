@@ -262,6 +262,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderActivity();
   renderOutreachAthletes();
   setTimeout(loadPublishedHsRoster, 120);
+  setTimeout(_hsLoadProfileFromBackend, 300);
 });
 
 // ──────────────────────────────────────────────
@@ -480,21 +481,64 @@ function renderRosterAttention(){
 }
 
 function saveHSProfile(){
-  lss('profile',{
-    fname:  el('hs-fname')?.value,
-    lname:  el('hs-lname')?.value,
-    title:  el('hs-title')?.value,
-    school: el('hs-school')?.value,
-    city:   el('hs-city')?.value,
-    state:  el('hs-state')?.value,
-    league: el('hs-league')?.value,
-    bio:    el('hs-bio')?.value,
-  });
+  const profile={
+    fname:  el('hs-fname')?.value||'',
+    lname:  el('hs-lname')?.value||'',
+    title:  el('hs-title')?.value||'',
+    school: el('hs-school')?.value||'',
+    city:   el('hs-city')?.value||'',
+    state:  el('hs-state')?.value||'',
+    league: el('hs-league')?.value||'',
+    bio:    el('hs-bio')?.value||'',
+  };
+  lss('profile', profile);
   if(window.JukeOnboarding){
-    JukeOnboarding.mark('hs_coach','setupDone',{school:el('hs-school')?.value||''});
+    JukeOnboarding.mark('hs_coach','setupDone',{school:profile.school});
+  }
+  // Backend write
+  const client=window.sb||window._hsSb||null;
+  const cu=window.currentUser||null;
+  if(client&&cu){
+    client.from('hs_coach_profiles').upsert({
+      user_id:cu.id, fname:profile.fname, lname:profile.lname,
+      title:profile.title, school:profile.school, city:profile.city,
+      state:profile.state, league:profile.league, bio:profile.bio,
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'}).then(({error})=>{
+      if(error) console.warn('JUKE hs coach profile write failed:',error);
+    });
   }
   const msg = el('hs-save-msg');
   if(msg){ msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2200); }
+}
+
+// Load HS coach profile from backend and populate form
+async function _hsLoadProfileFromBackend(){
+  const client=window.sb||window._hsSb||null;
+  const cu=window.currentUser||null;
+  if(!client||!cu) return;
+  try{
+    const {data,error}=await client.from('hs_coach_profiles').select('*').eq('user_id',cu.id).maybeSingle();
+    if(error||!data) return;
+    // Populate form fields only if they don't already have values from localStorage
+    const saved=ls('profile');
+    if(!saved){
+      if(data.fname&&el('hs-fname')) el('hs-fname').value=data.fname;
+      if(data.lname&&el('hs-lname')) el('hs-lname').value=data.lname;
+      if(data.title&&el('hs-title')) el('hs-title').value=data.title;
+      if(data.school&&el('hs-school')) el('hs-school').value=data.school;
+      if(data.city&&el('hs-city')) el('hs-city').value=data.city;
+      if(data.state&&el('hs-state')) el('hs-state').value=data.state;
+      if(data.league&&el('hs-league')) el('hs-league').value=data.league;
+      if(data.bio&&el('hs-bio')) el('hs-bio').value=data.bio;
+      // Persist to localStorage so subsequent loads are fast
+      lss('profile',{fname:data.fname,lname:data.lname,title:data.title,
+        school:data.school,city:data.city,state:data.state,league:data.league,bio:data.bio});
+      updateHSCard();
+    }
+  }catch(e){
+    console.warn('JUKE hs coach profile load failed:',e);
+  }
 }
 
 // ──────────────────────────────────────────────

@@ -112,6 +112,11 @@ async function loadPublishedAthletes(){
       return;
     }
     const live=(data||[]).map(_coachMapPublishedAthlete).filter(a=>a.name!=='Unnamed Athlete');
+    if(live.length){
+      // Remove demo athletes once live data is available
+      const demoCount=ATHLETES.filter(a=>isDemoAthlete(a)).length;
+      if(demoCount) ATHLETES.splice(0,ATHLETES.length,...ATHLETES.filter(a=>!isDemoAthlete(a)));
+    }
     const existing=new Set(ATHLETES.map(a=>String(a.id)));
     live.forEach(a=>{
       if(!existing.has(String(a.id))){
@@ -119,9 +124,16 @@ async function loadPublishedAthletes(){
         existing.add(String(a.id));
       }
     });
+    if(!live.length && !ATHLETES.some(a=>a._live)){
+      // No live athletes found — show empty state banner
+      const grid=document.getElementById('athlete-grid');
+      if(grid) grid.dataset.noLiveAthletes='1';
+    }
     _coachLiveProfilesLoaded=true;
     filterAthletes();
     if(typeof renderCoachFeed==='function') renderCoachFeed();
+    // Sync recruiter board/pipeline state from backend now that auth is confirmed
+    await _coachSyncFromBackend();
   }catch(e){
     console.warn('JUKE coach live athlete load failed:', e);
   }
@@ -139,6 +151,126 @@ const COACH_PIPELINE_STAGES = [
 // ── STORAGE ──────────────────────────────────────────────────────────────────
 function ls(k){try{return JSON.parse(localStorage.getItem('juke_coach_'+k))||null;}catch{return null;}}
 function lss(k,v){try{localStorage.setItem('juke_coach_'+k,JSON.stringify(v));}catch{}}
+
+// ── BACKEND HELPERS ───────────────────────────────────────────────────────────
+// Extracts auth UUID from a live athlete's local ID (live_<uuid> → uuid).
+// Returns null for demo athletes (integer IDs) — skip all backend writes for them.
+function _athleteUserId(localId){
+  const s=String(localId||'');
+  return s.startsWith('live_') ? s.slice(5) : null;
+}
+function _coachUser(){ return window.currentUser||null; }
+function _coachFire(fn){
+  if(!window.sb||!_coachUser()) return;
+  Promise.resolve().then(fn).catch(e=>console.warn('JUKE recruiter write failed:',e));
+}
+
+// Pull all recruiter state from backend and merge into in-memory store.
+// Called after published athletes are loaded (auth is guaranteed by then).
+async function _coachSyncFromBackend(){
+  const cu=_coachUser();
+  if(!window.sb||!cu) return;
+  try{
+    const [
+      {data:pRows,error:pErr},
+      {data:bRows,error:bErr},
+      {data:nRows,error:nErr},
+      {data:eRows,error:eErr},
+      {data:needRows,error:needErr}
+    ]=await Promise.all([
+      window.sb.from('recruiter_pipeline').select('*').eq('recruiter_id',cu.id),
+      window.sb.from('recruiter_boards').select('*').eq('recruiter_id',cu.id).order('created_at'),
+      window.sb.from('recruiter_notes').select('*').eq('recruiter_id',cu.id),
+      window.sb.from('recruiter_evaluations').select('*').eq('recruiter_id',cu.id).order('created_at',{ascending:false}),
+      window.sb.from('recruiter_needs').select('*').eq('recruiter_id',cu.id).order('created_at',{ascending:false}),
+    ]);
+
+    // Pipeline: rebuild for live athletes; preserve demo athletes as-is
+    if(!pErr&&pRows&&pRows.length){
+      const fresh={};
+      for(const s of COACH_PIPELINE_STAGES) fresh[s.key]=[];
+      // Keep demo athletes in current stages
+      for(const s of COACH_PIPELINE_STAGES){
+        fresh[s.key]=(coachPipeline[s.key]||[]).filter(id=>!_athleteUserId(id));
+      }
+      for(const row of pRows){
+        const lid='live_'+row.athlete_user_id;
+        if(fresh[row.stage]) fresh[row.stage].push(lid);
+        if(row.last_activity_ts)
+          coachLastActivity[lid]={ts:new Date(row.last_activity_ts).getTime(),text:row.last_activity_text||''};
+        if(row.next_action) coachNextActions[lid]=row.next_action;
+      }
+      coachPipeline=fresh;
+      lss('pipeline',coachPipeline);
+      lss('last_activity',coachLastActivity);
+      lss('next_actions',coachNextActions);
+    }
+
+    // Boards: replace defaults only if backend has boards
+    if(!bErr&&bRows&&bRows.length){
+      coachBoards=bRows.map(b=>({id:b.id,name:b.name}));
+      lss('boards2',coachBoards);
+      const {data:tagRows,error:tagErr}=await window.sb
+        .from('recruiter_board_athletes')
+        .select('board_id,athlete_user_id')
+        .in('board_id',bRows.map(b=>b.id));
+      if(!tagErr&&tagRows&&tagRows.length){
+        const fresh={};
+        for(const [aid,bids] of Object.entries(coachTags)){
+          if(!_athleteUserId(aid)) fresh[aid]=bids; // keep demo tags
+        }
+        for(const row of tagRows){
+          const lid='live_'+row.athlete_user_id;
+          if(!fresh[lid]) fresh[lid]=[];
+          if(!fresh[lid].includes(row.board_id)) fresh[lid].push(row.board_id);
+        }
+        coachTags=fresh;
+        lss('tags',coachTags);
+      }
+    }
+
+    // Notes
+    if(!nErr&&nRows){
+      for(const row of nRows) coachNotes['live_'+row.athlete_user_id]=row.content;
+      lss('notes',coachNotes);
+    }
+
+    // Evaluations — group by athlete local ID
+    if(!eErr&&eRows&&eRows.length){
+      const byAthlete={};
+      for(const row of eRows){
+        const lid='live_'+row.athlete_user_id;
+        if(!byAthlete[lid]) byAthlete[lid]=[];
+        byAthlete[lid].push({
+          id:row.id, visibility:'program_private',
+          eventName:row.event_name, eventDate:row.event_date,
+          evaluatedPosition:row.evaluated_position, flagFit:row.flag_fit,
+          grades:row.grades||{}, notes:row.notes||'',
+          createdAt:row.created_at
+        });
+      }
+      for(const [lid,evals] of Object.entries(byAthlete)) coachEvaluations[lid]=evals;
+      lss('evaluations',coachEvaluations);
+    }
+
+    // Needs
+    if(!needErr&&needRows&&needRows.length){
+      coachNeeds=needRows.map(row=>({
+        id:row.id, classYear:row.class_year, position:row.position,
+        priority:row.priority, slotType:row.slot_type, minGpa:row.min_gpa,
+        region:row.region, notes:row.notes, visibility:row.visibility,
+        createdAt:row.created_at
+      }));
+      lss('needs',coachNeeds);
+    }
+
+    renderPipeline();
+    filterAthletes();
+    renderBoardChips();
+  }catch(e){
+    console.warn('JUKE recruiter backend sync failed:',e);
+  }
+}
 
 let coachProfile = ls('profile') || {name:"Recruiter Sarah Mitchell",title:"Head Flag Football Coach",school:"Northern Arizona University",div:"NCAA D1",conf:"Big Sky Conference",loc:"Flagstaff, AZ",seasons:5,bio:"Building a program that develops champions on and off the field. NAU Flag Football is a fast-growing D1 program with a commitment to academic excellence and athletic development. We are actively recruiting skilled playmakers for the 2025–26 roster."};
 // Migrate old pipeline keys if present (contacted→contacting, visit→recruiting)
@@ -393,9 +525,19 @@ function filterAthletes(){
     });
   }
   if(_prospectView==='table'){
-    document.getElementById('prospect-tbody').innerHTML = results.map(a=>athleteTableRow(a)).join('');
+    const tbody=document.getElementById('prospect-tbody');
+    if(!results.length&&_coachLiveProfilesLoaded&&!ATHLETES.some(a=>a._live)){
+      tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim)">No published athlete profiles yet. Athletes with discoverable JUKE profiles will appear here.</td></tr>';
+    } else {
+      tbody.innerHTML = results.map(a=>athleteTableRow(a)).join('');
+    }
   } else {
-    document.getElementById('athlete-grid').innerHTML = results.map(a=>athleteCard(a)).join('');
+    const grid=document.getElementById('athlete-grid');
+    if(!results.length&&_coachLiveProfilesLoaded&&!ATHLETES.some(a=>a._live)){
+      grid.innerHTML='<div style="grid-column:1/-1;padding:60px 20px;text-align:center"><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">No athlete profiles published yet</div><div style="font-size:13px;color:var(--text-dim)">Athletes who publish their JUKE profile will appear here.</div></div>';
+    } else {
+      grid.innerHTML = results.map(a=>athleteCard(a)).join('');
+    }
   }
 }
 
@@ -531,9 +673,21 @@ function athleteInBoard(athleteId, boardId){
 function toggleAthleteBoard(athleteId, boardId){
   if(!coachTags[athleteId]) coachTags[athleteId]=[];
   const idx=coachTags[athleteId].findIndex(id=>coachSameId(id,boardId));
-  if(idx>-1) coachTags[athleteId].splice(idx,1);
+  const removing=idx>-1;
+  if(removing) coachTags[athleteId].splice(idx,1);
   else coachTags[athleteId].push(boardId);
   lss('tags',coachTags);
+  const uid=_athleteUserId(athleteId);
+  if(uid){
+    const bid=String(boardId);
+    if(removing){
+      _coachFire(()=>window.sb.from('recruiter_board_athletes').delete()
+        .eq('board_id',bid).eq('athlete_user_id',uid));
+    } else {
+      _coachFire(()=>window.sb.from('recruiter_board_athletes').upsert(
+        {board_id:bid,athlete_user_id:uid},{onConflict:'board_id,athlete_user_id'}));
+    }
+  }
   renderBoardChips();
   if(activeBoardFilter!==null) renderPipeline();
   openAthlete(athleteId);
@@ -541,9 +695,13 @@ function toggleAthleteBoard(athleteId, boardId){
 function newBoard(){
   const name=prompt('Board name (e.g. "2027 DB/Rushers", "Priority Targets"):');
   if(!name||!name.trim()) return;
-  const b={id:Date.now(),name:name.trim()};
+  const b={id:String(Date.now()),name:name.trim()};
   coachBoards.push(b);
   lss('boards2',coachBoards);
+  const cu=_coachUser();
+  if(window.sb&&cu) _coachFire(()=>window.sb.from('recruiter_boards').insert({
+    id:b.id, recruiter_id:cu.id, name:b.name
+  }));
   renderBoardChips();
 }
 function removeBoard(boardId){
@@ -554,6 +712,8 @@ function removeBoard(boardId){
   });
   lss('boards2',coachBoards);
   lss('tags',coachTags);
+  // Board delete cascades to recruiter_board_athletes via FK
+  _coachFire(()=>window.sb.from('recruiter_boards').delete().eq('id',String(boardId)).eq('recruiter_id',_coachUser().id));
   if(activeBoardFilter===boardId) setBoardFilter(null);
   else renderBoardChips();
 }
@@ -708,10 +868,17 @@ function _setStageKey(id, stageKey){
     if(!hadStage) JukeOnboarding.mark('college_coach','firstAthleteAdded',{athleteId:id,stage:stageKey});
     if(hadStage) JukeOnboarding.mark('college_coach','firstStageMove',{athleteId:id,stage:stageKey});
   }
-  coachLastActivity[id] = {ts:Date.now(), type:'stage',
-    text: COACH_PIPELINE_STAGES.find(s=>s.key===stageKey)?.label||''};
+  const stageLabel=COACH_PIPELINE_STAGES.find(s=>s.key===stageKey)?.label||'';
+  coachLastActivity[id] = {ts:Date.now(), type:'stage', text:stageLabel};
   lss('pipeline', coachPipeline);
   lss('last_activity', coachLastActivity);
+  // Backend write for live athletes
+  const uid=_athleteUserId(id);
+  if(uid) _coachFire(()=>window.sb.from('recruiter_pipeline').upsert({
+    recruiter_id:_coachUser().id, athlete_user_id:uid, stage:stageKey,
+    last_activity_ts:new Date().toISOString(), last_activity_text:stageLabel,
+    updated_at:new Date().toISOString()
+  },{onConflict:'recruiter_id,athlete_user_id'}));
   renderPipeline();
   filterAthletes();
   updateHeaderStats();
