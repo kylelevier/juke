@@ -200,6 +200,10 @@ async function _syncFromCloud(){
   }
   if(!data)return;
   if(data.profile&&Object.keys(data.profile).length){
+    if(window.PREVIEW_USER_ID){
+      window.PREVIEW_PROFILE=data.profile;
+      if(typeof renderPreviewAthleteChip === 'function') renderPreviewAthleteChip(data.profile);
+    }
     lsSet('juke_player',data.profile);
     if(typeof loadPlayerProfile === 'function') loadPlayerProfile();
     if(typeof profileAwards !== 'undefined' && !profileAwards.length && typeof addAward === 'function') addAward();

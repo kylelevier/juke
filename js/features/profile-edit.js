@@ -54,6 +54,7 @@ function renderEndorsementSection(){
 }
 
 function submitEndorsementRequest(){
+  if(window.PREVIEW_USER_ID){alert('Preview mode is read-only.');return;}
   var name=(document.getElementById('end-req-name')||{}).value||'';
   var school=(document.getElementById('end-req-school')||{}).value||'';
   var title=(document.getElementById('end-req-title')||{}).value||'';
@@ -61,7 +62,9 @@ function submitEndorsementRequest(){
   if(!name.trim()){alert('Please enter your coach\'s name.');return;}
   var auth=null;try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
   var apid=(auth&&auth.activeProfileId)||'athlete';
-  var athleteName=auth&&auth.name?auth.name:((pv('p-fname')+' '+pv('p-lname')).trim()||'Athlete');
+  var athleteName=window.PREVIEW_USER_ID
+    ? ((pv('p-fname')+' '+pv('p-lname')).trim()||'Preview Athlete')
+    : (auth&&auth.name?auth.name:((pv('p-fname')+' '+pv('p-lname')).trim()||'Athlete'));
   var existing=getEndorsements();
   if(existing.some(function(e){return e.coachName.toLowerCase()===name.trim().toLowerCase();})){
     alert('A request for this coach already exists.');return;

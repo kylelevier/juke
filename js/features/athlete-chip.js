@@ -2,6 +2,50 @@
 // Renders the header avatar/name chip with profile-switcher dropdown.
 // Loaded on athlete.html only. Coach portals have their own chip implementations.
 (function(){
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function initials(name){
+    var parts=String(name||'Athlete').trim().split(/\s+/).filter(Boolean);
+    return ((parts[0]||'A')[0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+  }
+  function renderPreviewChip(profile){
+    var chip=document.getElementById('juke-user-chip');
+    if(!chip) return;
+    var p=profile||{};
+    var name=((p['p-fname']||p.fname||'')+' '+(p['p-lname']||p.lname||'')).trim()||'Preview Athlete';
+    var school=p['p-school']||p.school||'';
+    chip.innerHTML=
+      '<div class="juke-user-av">'+esc(initials(name))+'</div>'
+      +'<span class="juke-user-name">'+esc(name.split(/\s+/)[0]||'Preview')+'</span>'
+      +'<div class="juke-chip-dd" id="juke-chip-dd">'
+        +'<div class="juke-chip-dd-header">'
+          +'<div class="juke-chip-dd-name">'+esc(name)+'</div>'
+          +'<div class="juke-chip-dd-role">Admin Preview'+(school?' · '+esc(school):'')+'</div>'
+        +'</div>'
+        +'<div class="juke-chip-dd-section">'
+          +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="return false">Read-only Preview</button>'
+        +'</div>'
+      +'</div>';
+    chip.style.display='flex';
+    if(!chip._previewBound){
+      chip._previewBound=true;
+      chip.addEventListener('click',function(e){
+        if(e.target.closest('.juke-chip-dd')) return;
+        var dd=document.getElementById('juke-chip-dd');
+        if(dd) dd.classList.toggle('open');
+      });
+      document.addEventListener('click',function(e){
+        if(!e.target.closest('#juke-user-chip')){
+          var dd=document.getElementById('juke-chip-dd');
+          if(dd) dd.classList.remove('open');
+        }
+      });
+    }
+  }
+  window.renderPreviewAthleteChip=renderPreviewChip;
+  if(window.PREVIEW_USER_ID){
+    renderPreviewChip(window.PREVIEW_PROFILE||null);
+    return;
+  }
   var auth=null;
   try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
   if(!auth) return;

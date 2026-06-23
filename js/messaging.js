@@ -64,6 +64,7 @@
   }
 
   function _myRole() {
+    if (window.PREVIEW_USER_ID) return 'athlete';
     try {
       var a = JSON.parse(localStorage.getItem('juke_auth') || '{}');
       if (a.profiles && a.profiles.length) {
@@ -76,6 +77,11 @@
   }
 
   function _myDisplayName() {
+    if (window.PREVIEW_USER_ID) {
+      var p = window.PREVIEW_PROFILE || {};
+      var n = ((p['p-fname'] || p.fname || '') + ' ' + (p['p-lname'] || p.lname || '')).trim();
+      return n || 'Preview Athlete';
+    }
     try {
       var a = JSON.parse(localStorage.getItem('juke_auth') || '{}');
       return a.name || (currentUser && currentUser.email) || 'User';
@@ -83,6 +89,10 @@
   }
 
   function _myOrg() {
+    if (window.PREVIEW_USER_ID) {
+      var p = window.PREVIEW_PROFILE || {};
+      return p['p-school'] || p.school || '';
+    }
     try {
       var a = JSON.parse(localStorage.getItem('juke_auth') || '{}');
       if (a.profiles && a.profiles.length) {
