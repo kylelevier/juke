@@ -61,11 +61,18 @@ function renderProfileView(){
 
   var hasData=first||highlight||gpa||height||forty||positions.length||intro;
   if(!hasData){
-    container.innerHTML='<div class="pv-empty-state">'
-      +'<div class="pv-empty-icon">📋</div>'
-      +'<div class="pv-empty-title">Your recruiting card is empty</div>'
-      +'<div class="pv-empty-sub">Complete your profile to show up in coach searches and start getting noticed.</div>'
-      +'<button class="pv-edit-btn" onclick="openProfileEdit()">Build Your Profile →</button>'
+    container.innerHTML='<div class="pv-empty-state pv-welcome-state">'
+      +'<div class="pv-welcome-badge">Your Recruiting Profile</div>'
+      +'<div class="pv-welcome-title">Coaches are looking for athletes like you.</div>'
+      +'<div class="pv-welcome-sub">Your profile is the first thing a college coach sees. It takes about 10 minutes to build — and it stays in front of every recruiter in the system.</div>'
+      +'<div class="pv-welcome-checklist">'
+      +'<div class="pv-wc-item"><span class="pv-wc-dot"></span><span>A photo and your basic info</span></div>'
+      +'<div class="pv-wc-item"><span class="pv-wc-dot"></span><span>Your highlight film link (most important)</span></div>'
+      +'<div class="pv-wc-item"><span class="pv-wc-dot"></span><span>Your GPA and test scores</span></div>'
+      +'<div class="pv-wc-item"><span class="pv-wc-dot"></span><span>Season stats and a short bio</span></div>'
+      +'</div>'
+      +'<button class="pv-edit-btn pv-welcome-btn" onclick="openProfileEdit()">Build My Profile →</button>'
+      +'<div class="pv-welcome-note">Free · Auto-saves · Visible to verified college coaches</div>'
       +'</div>';
     return;
   }
@@ -283,6 +290,7 @@ function updateCompletenessScore(){
   barEl.style.width=score+'%';
   barEl.style.background=score<40?'#FF4D4D':score<70?'#FF9800':'#FF0080';
   if(score===100){nudgeEl.textContent='✓ Complete — your profile is showing up in coach searches';}
+  else if(score===0){nudgeEl.textContent='Start with your name and a photo — you\'re one step from being visible.';}
   else if(missing.length){nudgeEl.textContent=missing[0];}
 }
 

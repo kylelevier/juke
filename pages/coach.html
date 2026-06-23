@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JUKE — Recruiter Portal</title>
-<link rel="icon" type="image/png" href="../Juke_favicon.png">
+<link rel="icon" type="image/svg+xml" href="../juke_favicon.svg">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Archivo:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -314,6 +314,35 @@
   </div>
 </div>
 
+<!-- ── INVITE ATHLETES MODAL ── -->
+<div class="invite-modal-overlay" id="invite-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title">
+  <div class="invite-modal">
+    <button class="invite-modal-close" onclick="closeInviteModal()" aria-label="Close">×</button>
+    <div id="invite-modal-form-view">
+      <div class="invite-modal-hd">
+        <div class="invite-modal-title" id="invite-modal-title">Invite Athletes to JUKE</div>
+        <div class="invite-modal-sub">Enter up to 10 athlete emails. Each will receive a personalized invite from you.</div>
+      </div>
+      <div class="invite-email-list" id="invite-email-list">
+        <div class="invite-email-row">
+          <input class="invite-email-input" type="email" placeholder="athlete@email.com" autocomplete="off">
+          <button class="invite-email-rm" onclick="removeInviteRow(this)" tabindex="-1" aria-label="Remove">×</button>
+        </div>
+      </div>
+      <button class="invite-add-row" id="invite-add-row" onclick="addInviteRow()">+ Add another email</button>
+      <div class="invite-modal-msg" id="invite-modal-msg"></div>
+      <button class="invite-submit-btn" id="invite-submit-btn" onclick="submitInvites()">Send Invites</button>
+    </div>
+    <div id="invite-modal-success-view" style="display:none">
+      <div class="invite-success-icon">✓</div>
+      <div class="invite-success-title">Invites sent!</div>
+      <div class="invite-success-sub" id="invite-success-sub"></div>
+      <button class="invite-submit-btn" onclick="closeInviteModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/features/coach-invite.js"></script>
 <script src="../js/messaging.js"></script>
 <script src="../js/features/messaging-modal.js?v=msg-coach-search-1"></script>
 

@@ -17,7 +17,8 @@
     var wrap = document.getElementById('admin-impersonate-suggestions');
     if (!q.trim() || !sb) { if (wrap) wrap.innerHTML = ''; return; }
 
-    var r = await sb.from('athlete_profiles').select('user_id, profile_data').limit(200);
+    // Search player_data (all users, including unpublished) and fall back to athlete_profiles
+    var r = await sb.from('player_data').select('user_id, profile').limit(200);
     if (r.error || !r.data) {
       if (wrap) wrap.innerHTML = '<div class="admin-suggest-item">Search failed. Try again.</div>';
       return;
@@ -25,18 +26,22 @@
 
     var lq = q.toLowerCase();
     var matches = r.data.filter(function(row){
-      var pd = row.profile_data || {};
-      return ((pd['p-fname'] || '') + ' ' + (pd['p-lname'] || '')).toLowerCase().includes(lq);
+      var pd = row.profile || {};
+      var fname = pd.fname || pd['p-fname'] || '';
+      var lname = pd.lname || pd['p-lname'] || '';
+      return (fname + ' ' + lname).toLowerCase().includes(lq);
     }).slice(0, 8);
 
     if (!matches.length) { if (wrap) wrap.innerHTML = ''; return; }
 
     var html = '';
     matches.forEach(function(row){
-      var pd = row.profile_data || {};
-      var name = ((pd['p-fname'] || '') + ' ' + (pd['p-lname'] || '')).trim() || row.user_id;
-      var pos  = (pd.positions || []).join(', ') || '';
-      var school = pd['p-school'] || '';
+      var pd = row.profile || {};
+      var fname = pd.fname || pd['p-fname'] || '';
+      var lname = pd.lname || pd['p-lname'] || '';
+      var name = (fname + ' ' + lname).trim() || row.user_id;
+      var pos  = (pd.positions || pd._positions || []).join(', ') || '';
+      var school = pd.school || pd['p-school'] || '';
       html += '<div class="admin-suggest-item" onclick="adminStartImpersonate(\'' + row.user_id + '\',' + JSON.stringify(name).replace(/"/g, '&quot;') + ')">'
         + '<span class="admin-suggest-name">' + _esc(name) + '</span>'
         + '<span class="admin-suggest-meta">' + _esc([pos, school].filter(Boolean).join(' · ')) + '</span>'

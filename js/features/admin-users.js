@@ -15,7 +15,7 @@
   };
 
   var _userPage     = 1;
-  var _userPageSize = 50;
+  var _userPageSize = 20;
   var _userTotal    = 0;
   var _userSearchTimer = null;
 

@@ -107,6 +107,7 @@
 
         normalizeAuth(user,profile,role);
         clearGate();
+        document.dispatchEvent(new CustomEvent('juke:auth-ready'));
       }catch(e){
         localStorage.removeItem('juke_auth');
         failAndRedirect('Access check failed','Sending you to sign in.','/login.html?next='+safeNext());

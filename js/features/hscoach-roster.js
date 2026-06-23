@@ -159,6 +159,8 @@ function _hsMapPublishedAthlete(row, idx){
 function _hsApplyRoster(athletes, source){
   ATHLETES.splice(0, ATHLETES.length, ...athletes);
   _hsRosterSource=source;
+  var banner=el('demo-roster-banner');
+  if(banner) banner.style.display=(source==='demo')?'':'none';
   updateHSCard();
   renderRoster();
   renderActivity();

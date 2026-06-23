@@ -125,60 +125,81 @@
 
 // ── JUKE USER CHIP ──
 (function(){
-  var auth=null;
-  try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
-  if(!auth) return;
-  var chip=document.getElementById('juke-user-chip');
-  if(!chip) return;
-  var parts=auth.name.trim().split(' ');
-  var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
   var RL={athlete:'Athlete',college_coach:'Recruiter',hs_coach:'Coach'};
-  var activeProfile=null;
-  if(auth.profiles&&auth.profiles.length){
-    var apid=auth.activeProfileId||auth.profiles[0].id;
-    activeProfile=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
+  var _listenersAttached=false;
+
+  function _paintSchoolChip(org){
+    var nameEl=document.getElementById('hd-school-short');
+    var abbrEl=document.getElementById('hd-abbr');
+    if(!nameEl||!abbrEl||!org) return;
+    nameEl.textContent=org;
+    var words=org.trim().split(/\s+/);
+    var abbr=(words[0][0]+(words.length>1?words[words.length-1][0]:'')).toUpperCase();
+    abbrEl.textContent=abbr;
   }
-  var roleOrg=activeProfile&&activeProfile.org?'Coach · '+activeProfile.org:'Coach';
-  var profilesHTML='';
-  if(auth.profiles&&auth.profiles.length){
-    profilesHTML+='<div class="juke-chip-dd-divider"></div><div class="juke-chip-dd-section">';
-    auth.profiles.forEach(function(p){
-      var isA=p.id===(auth.activeProfileId||'');
-      profilesHTML+='<button class="juke-chip-dd-profile'+(isA?' is-active':'')+'"'
-        +(isA?'':' onclick="switchProfile(\''+p.id+'\')"')+'>'
-        +'<span class="jcp-dot'+(isA?' on':'')+'"></span>'
-        +'<span class="jcp-info"><span class="jcp-org">'+(p.org||RL[p.type]||p.type)+'</span><span class="jcp-role">'+(RL[p.type]||p.type)+'</span></span>'
-        +(isA?'<span class="jcp-check">✓</span>':'')
-        +'</button>';
-    });
-    profilesHTML+='</div>';
-  }
-  chip.innerHTML=
-    '<div class="juke-user-av">'+inits+'</div>'
-    +'<span class="juke-user-name">'+parts[0]+'</span>'
-    +'<div class="juke-chip-dd" id="juke-chip-dd">'
-      +'<div class="juke-chip-dd-header">'
-        +'<div class="juke-chip-dd-name">'+auth.name+'</div>'
-        +'<div class="juke-chip-dd-role">'+roleOrg+'</div>'
-      +'</div>'
-      +profilesHTML
-      +'<div class="juke-chip-dd-section">'
-        +'<button class="juke-chip-dd-item" onclick="location.href=\'../preview.html\'">+ Add Account</button>'
-      +'</div>'
-      +'<div class="juke-chip-dd-divider"></div>'
-      +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
-    +'</div>';
-  chip.style.display='flex';
-  chip.addEventListener('click',function(e){
-    if(e.target.closest('.juke-chip-dd')) return;
-    document.getElementById('juke-chip-dd').classList.toggle('open');
-  });
-  document.addEventListener('click',function(e){
-    if(!e.target.closest('#juke-user-chip')){
-      var dd=document.getElementById('juke-chip-dd');
-      if(dd) dd.classList.remove('open');
+
+  function _paintChip(){
+    var auth=null;
+    try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
+    if(!auth) return;
+    var chip=document.getElementById('juke-user-chip');
+    if(!chip) return;
+    var parts=auth.name.trim().split(' ');
+    var inits=(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+    var activeProfile=null;
+    if(auth.profiles&&auth.profiles.length){
+      var apid=auth.activeProfileId||auth.profiles[0].id;
+      activeProfile=auth.profiles.find(function(p){return p.id===apid;})||auth.profiles[0];
     }
-  });
+    var roleOrg=activeProfile&&activeProfile.org?'Coach · '+activeProfile.org:'Coach';
+    var profilesHTML='';
+    if(auth.profiles&&auth.profiles.length){
+      profilesHTML+='<div class="juke-chip-dd-divider"></div><div class="juke-chip-dd-section">';
+      auth.profiles.forEach(function(p){
+        var isA=p.id===(auth.activeProfileId||'');
+        profilesHTML+='<button class="juke-chip-dd-profile'+(isA?' is-active':'')+'"'
+          +(isA?'':' onclick="switchProfile(\''+p.id+'\')"')+'>'
+          +'<span class="jcp-dot'+(isA?' on':'')+'"></span>'
+          +'<span class="jcp-info"><span class="jcp-org">'+(p.org||RL[p.type]||p.type)+'</span><span class="jcp-role">'+(RL[p.type]||p.type)+'</span></span>'
+          +(isA?'<span class="jcp-check">✓</span>':'')
+          +'</button>';
+      });
+      profilesHTML+='</div>';
+    }
+    chip.innerHTML=
+      '<div class="juke-user-av">'+inits+'</div>'
+      +'<span class="juke-user-name">'+parts[0]+'</span>'
+      +'<div class="juke-chip-dd" id="juke-chip-dd">'
+        +'<div class="juke-chip-dd-header">'
+          +'<div class="juke-chip-dd-name">'+auth.name+'</div>'
+          +'<div class="juke-chip-dd-role">'+roleOrg+'</div>'
+        +'</div>'
+        +profilesHTML
+        +'<div class="juke-chip-dd-section">'
+          +'<button class="juke-chip-dd-item" onclick="location.href=\'../preview.html\'">+ Add Account</button>'
+        +'</div>'
+        +'<div class="juke-chip-dd-divider"></div>'
+        +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
+      +'</div>';
+    chip.style.display='flex';
+    if(activeProfile&&activeProfile.org) _paintSchoolChip(activeProfile.org);
+    if(!_listenersAttached){
+      _listenersAttached=true;
+      chip.addEventListener('click',function(e){
+        if(e.target.closest('.juke-chip-dd')) return;
+        document.getElementById('juke-chip-dd').classList.toggle('open');
+      });
+      document.addEventListener('click',function(e){
+        if(!e.target.closest('#juke-user-chip')){
+          var dd=document.getElementById('juke-chip-dd');
+          if(dd) dd.classList.remove('open');
+        }
+      });
+    }
+  }
+
+  _paintChip();
+  document.addEventListener('juke:auth-ready', _paintChip);
 })();
 
 function switchProfile(profileId){

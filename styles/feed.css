@@ -204,6 +204,45 @@
 .wiz-film-hero{background:rgba(255,0,128,.05);border:1px solid rgba(255,0,128,.22);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
 .wiz-film-hero .form-label{color:rgba(255,0,128,.7);}
 .wiz-film-hero-sub{font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.5;}
+.wiz-film-hero--elevated{padding:20px 20px 16px;background:rgba(255,0,128,.07);border:2px solid rgba(255,0,128,.3);margin-bottom:16px;}
+.wiz-film-hero-label{font-family:'Archivo Condensed',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.05em;color:#FF0080;line-height:1;margin-bottom:6px;}
+.wiz-film-hero-context{font-size:12px;color:var(--text-muted);line-height:1.6;}
+.wiz-film-input{font-size:15px!important;padding:12px 14px!important;border-color:rgba(255,0,128,.3)!important;}
+.wiz-film-input:focus{border-color:#FF0080!important;box-shadow:0 0 0 3px rgba(255,0,128,.12)!important;}
+/* film extra links collapsible */
+.film-extra-links{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:4px;}
+.film-extra-summary{list-style:none;padding:9px 14px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;background:var(--surface2);}
+.film-extra-summary::-webkit-details-marker{display:none;}
+.film-extra-body{padding:14px;}
+/* ── WELCOME EMPTY STATE ─────────────────────────────── */
+.pv-welcome-state{padding:36px 24px 44px;text-align:center;max-width:420px;margin:0 auto;}
+.pv-welcome-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FF0080;background:rgba(255,0,128,.1);border:1px solid rgba(255,0,128,.2);border-radius:20px;padding:4px 12px;margin-bottom:18px;}
+.pv-welcome-title{font-family:'Archivo Condensed',sans-serif;font-size:28px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.04em;color:var(--text);line-height:1.1;margin-bottom:12px;}
+.pv-welcome-sub{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:24px;}
+.pv-welcome-checklist{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:24px;}
+.pv-wc-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);}
+.pv-wc-dot{width:7px;height:7px;border-radius:50%;background:#FF0080;flex-shrink:0;}
+.pv-welcome-btn{display:inline-block;font-family:'Archivo Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#FF0080;color:#fff;border:none;border-radius:10px;padding:13px 28px;cursor:pointer;transition:opacity .15s;box-shadow:0 4px 16px rgba(255,0,128,.25);margin-bottom:14px;}
+.pv-welcome-btn:hover{opacity:.88;}
+.pv-welcome-note{font-size:10px;color:var(--text-dim);letter-spacing:.04em;}
+/* ── STEP 1 ONBOARDING CARD ─────────────────────────── */
+.pv-onboard-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:24px;}
+.pv-onboard-title{font-family:'Archivo Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text);margin-bottom:6px;}
+.pv-onboard-body{font-size:12px;color:var(--text-muted);line-height:1.65;margin-bottom:12px;}
+.pv-onboard-checklist{display:flex;flex-wrap:wrap;gap:7px;}
+.pv-onboard-item{font-size:11px;font-weight:600;padding:5px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;color:var(--text-muted);}
+/* ── CONTACT DETAILS COLLAPSIBLE ────────────────────── */
+.wiz-contact-details{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:14px;}
+.wiz-contact-summary{list-style:none;padding:10px 14px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;background:var(--surface2);display:flex;align-items:center;gap:6px;}
+.wiz-contact-summary::-webkit-details-marker{display:none;}
+.wiz-contact-hint{font-weight:400;font-size:11px;color:var(--text-dim);}
+.wiz-contact-grid{padding:14px;}
+/* ── USA FOOTBALL / EVENT COLLAPSIBLES ──────────────── */
+.wiz-verified-details{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.wiz-verified-summary{list-style:none;padding:10px 14px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;background:var(--surface2);display:flex;align-items:center;gap:6px;}
+.wiz-verified-summary::-webkit-details-marker{display:none;}
+.wiz-verified-hint{font-weight:400;font-size:11px;color:var(--text-dim);}
+.wiz-verified-details .form-grid{padding:0 14px 14px;}
 /* three-word inputs grid */
 .wiz-three-words{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
 @media(max-width:480px){.wiz-three-words{grid-template-columns:1fr;}}

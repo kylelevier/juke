@@ -1,15 +1,6 @@
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
-const ATHLETES = [
-  {id:1,name:"Camryn Wells",pos:["WR","PR"],year:2026,gpa:3.9,state:"TX",city:"Dallas",height:"5'6\"",forty:"4.38",vertical:"32\"",twenty:"3.08",shuttle:"4.24",broad:"8'8\"",verifiedSource:"USA Football Talent ID",verifiedDate:"Feb 2026",events:[{name:"USA Football Talent ID - Dallas",date:"Feb 2026",location:"Dallas, TX",source:"USA Football",verified:true}],school:"DeSoto HS",division:"D1",sports:["Track","Soccer"],bio:"3× All-State WR. 89 catches for 1,240 yards in 2024. Track star with 4.38 speed.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
-  {id:2,name:"Destiny Okafor",pos:["QB"],year:2025,gpa:3.7,state:"FL",city:"Miami",height:"5'9\"",forty:"4.62",vertical:"28\"",school:"Miami Central HS",division:"D1",sports:["Basketball"],bio:"Dual-threat QB with D1 upside. 24 TDs, 4 INTs. Committed football IQ."},
-  {id:3,name:"Maya Thornton",pos:["CB","S"],year:2026,gpa:4.0,state:"CA",city:"Inglewood",height:"5'7\"",forty:"4.44",vertical:"30\"",twenty:"3.16",shuttle:"4.31",broad:"8'2\"",verifiedSource:"USA Football Talent ID",verifiedDate:"Mar 2026",events:[{name:"USA Football Talent ID - Los Angeles",date:"Mar 2026",location:"Los Angeles, CA",source:"USA Football",verified:true}],school:"Inglewood HS",division:"D1",sports:["Soccer","Basketball"],bio:"2024 SoCal Defensive POY. 12 INTs. Lockdown corner with elite instincts.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
-  {id:4,name:"Jayla Monroe",pos:["RB","WR"],year:2027,gpa:3.5,state:"GA",city:"Atlanta",height:"5'5\"",forty:"4.41",vertical:"31\"",school:"Westlake HS",division:"D2",sports:["Soccer"],bio:"Explosive playmaker. 900 rush yards + 40 catches in 2024. Makes people miss."},
-  {id:5,name:"Simone Reeves",pos:["QB","WR"],year:2026,gpa:3.8,state:"OH",city:"Columbus",height:"5'8\"",forty:"4.55",vertical:"29\"",school:"Dublin Jerome HS",division:"D1",sports:["Volleyball"],bio:"72% completion rate, 1,800 yards. Elite IQ and composure under pressure.",highlight:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
-  {id:6,name:"Imani Clarke",pos:["S","LB"],year:2025,gpa:3.6,state:"TX",city:"Houston",height:"5'8\"",forty:"4.51",vertical:"33\"",school:"Klein Oak HS",division:"D1",sports:["Track","Soccer"],bio:"Rangy safety with closing speed. 8 sacks from LB. Elite athlete."},
-  {id:7,name:"Taylor Brooks",pos:["WR","KR"],year:2026,gpa:3.4,state:"AZ",city:"Phoenix",height:"5'5\"",forty:"4.35",vertical:"34\"",twenty:"3.02",shuttle:"4.18",broad:"8'10\"",verifiedSource:"USA Football Talent ID",verifiedDate:"Nov 2025",events:[{name:"USA Football Talent ID - Phoenix",date:"Nov 2025",location:"Phoenix, AZ",source:"USA Football",verified:true}],school:"Desert Vista HS",division:"D1",sports:["Track"],bio:"Fastest player in AZ. Track sprinter. Can take any touch to the house."},
-  {id:8,name:"Nia Washington",pos:["QB"],year:2027,gpa:4.0,state:"NC",city:"Charlotte",height:"5'10\"",forty:"4.68",vertical:"27\"",school:"Providence Day School",division:"D1",sports:["Basketball"],bio:"Top-ranked 2027 QB. Strong arm, high IQ, exceptional leader on and off the field."},
-];
+const ATHLETES = [];
 
 let _coachLiveProfilesLoaded = false;
 
@@ -34,9 +25,6 @@ function findCoachAthlete(id){
   return ATHLETES.find(a=>coachSameId(a.id,id));
 }
 
-function isDemoAthlete(a){
-  return !!a && !a._live;
-}
 
 function escHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, c=>({
@@ -112,11 +100,6 @@ async function loadPublishedAthletes(){
       return;
     }
     const live=(data||[]).map(_coachMapPublishedAthlete).filter(a=>a.name!=='Unnamed Athlete');
-    if(live.length){
-      // Remove demo athletes once live data is available
-      const demoCount=ATHLETES.filter(a=>isDemoAthlete(a)).length;
-      if(demoCount) ATHLETES.splice(0,ATHLETES.length,...ATHLETES.filter(a=>!isDemoAthlete(a)));
-    }
     const existing=new Set(ATHLETES.map(a=>String(a.id)));
     live.forEach(a=>{
       if(!existing.has(String(a.id))){
@@ -124,11 +107,6 @@ async function loadPublishedAthletes(){
         existing.add(String(a.id));
       }
     });
-    if(!live.length && !ATHLETES.some(a=>a._live)){
-      // No live athletes found — show empty state banner
-      const grid=document.getElementById('athlete-grid');
-      if(grid) grid.dataset.noLiveAthletes='1';
-    }
     _coachLiveProfilesLoaded=true;
     filterAthletes();
     if(typeof renderCoachFeed==='function') renderCoachFeed();
@@ -154,7 +132,7 @@ function lss(k,v){try{localStorage.setItem('juke_coach_'+k,JSON.stringify(v));}c
 
 // ── BACKEND HELPERS ───────────────────────────────────────────────────────────
 // Extracts auth UUID from a live athlete's local ID (live_<uuid> → uuid).
-// Returns null for demo athletes (integer IDs) — skip all backend writes for them.
+// Returns null for non-live IDs — skips backend writes for any local-only entries.
 function _athleteUserId(localId){
   const s=String(localId||'');
   return s.startsWith('live_') ? s.slice(5) : null;
@@ -185,14 +163,9 @@ async function _coachSyncFromBackend(){
       window.sb.from('recruiter_needs').select('*').eq('recruiter_id',cu.id).order('created_at',{ascending:false}),
     ]);
 
-    // Pipeline: rebuild for live athletes; preserve demo athletes as-is
     if(!pErr&&pRows&&pRows.length){
       const fresh={};
       for(const s of COACH_PIPELINE_STAGES) fresh[s.key]=[];
-      // Keep demo athletes in current stages
-      for(const s of COACH_PIPELINE_STAGES){
-        fresh[s.key]=(coachPipeline[s.key]||[]).filter(id=>!_athleteUserId(id));
-      }
       for(const row of pRows){
         const lid='live_'+row.athlete_user_id;
         if(fresh[row.stage]) fresh[row.stage].push(lid);
@@ -216,9 +189,7 @@ async function _coachSyncFromBackend(){
         .in('board_id',bRows.map(b=>b.id));
       if(!tagErr&&tagRows&&tagRows.length){
         const fresh={};
-        for(const [aid,bids] of Object.entries(coachTags)){
-          if(!_athleteUserId(aid)) fresh[aid]=bids; // keep demo tags
-        }
+        const fresh={};
         for(const row of tagRows){
           const lid='live_'+row.athlete_user_id;
           if(!fresh[lid]) fresh[lid]=[];
@@ -524,17 +495,18 @@ function filterAthletes(){
       return (av-bv)*_sortDir;
     });
   }
+  const noAthletes = !ATHLETES.length && _coachLiveProfilesLoaded;
   if(_prospectView==='table'){
     const tbody=document.getElementById('prospect-tbody');
-    if(!results.length&&_coachLiveProfilesLoaded&&!ATHLETES.some(a=>a._live)){
-      tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim)">No published athlete profiles yet. Athletes with discoverable JUKE profiles will appear here.</td></tr>';
+    if(noAthletes){
+      tbody.innerHTML='<tr><td colspan="9"><div class="prospects-empty-state"><p class="pes-sub">No athletes on your roster yet.</p><button class="pes-btn" onclick="openInviteModal()">Invite Athletes</button></div></td></tr>';
     } else {
       tbody.innerHTML = results.map(a=>athleteTableRow(a)).join('');
     }
   } else {
     const grid=document.getElementById('athlete-grid');
-    if(!results.length&&_coachLiveProfilesLoaded&&!ATHLETES.some(a=>a._live)){
-      grid.innerHTML='<div style="grid-column:1/-1;padding:60px 20px;text-align:center"><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">No athlete profiles published yet</div><div style="font-size:13px;color:var(--text-dim)">Athletes who publish their JUKE profile will appear here.</div></div>';
+    if(noAthletes){
+      grid.innerHTML='<div class="prospects-empty-state"><div class="pes-icon">📋</div><h3 class="pes-title">No athletes yet</h3><p class="pes-sub">Invite your athletes to JUKE. Once they sign up and publish their profile, they\'ll appear here.</p><button class="pes-btn" onclick="openInviteModal()">Invite Athletes</button></div>';
     } else {
       grid.innerHTML = results.map(a=>athleteCard(a)).join('');
     }
@@ -546,14 +518,13 @@ function athleteTableRow(a){
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
   const needBadge = needsMatchBadge(a);
   const evBadge = eventBadge(a);
-  const demo = isDemoAthlete(a);
   const aid = jsArg(a.id);
   const stageBadge = stage
     ? `<span style="font-family:'Archivo Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid ${stage.color};color:${stage.color};background:${stage.color}18">${stage.label}</span>`
     : '<span style="color:var(--text-dim);font-size:11px;">—</span>';
-  return `<tr class="${demo?'pt-demo-row':''}" onclick="openAthlete(${aid})">
+  return `<tr onclick="openAthlete(${aid})">
     <td>
-      <div class="pt-name">${a.name}${demo?' <span class="pt-demo-badge">Demo</span>':''}${endorsed?' <span style="font-size:9px;color:#00A040">✓ Recommended</span>':''}</div>
+      <div class="pt-name">${a.name}${endorsed?' <span style="font-size:9px;color:#00A040">✓ Recommended</span>':''}</div>
       <div class="pt-school">${a.school} · ${a.city}, ${a.state}</div>
       ${needBadge||evBadge?`<div class="pt-badge-row">${needBadge}${evBadge}</div>`:''}
     </td>
@@ -633,10 +604,8 @@ function pipelineBadgeHtml(id){
 function athleteCard(a){
   const stage = getPipelineStage(a.id);
   const endorsed = getEndorsementForAthlete(a.name).length > 0;
-  const demo = isDemoAthlete(a);
   const aid = jsArg(a.id);
-  return `<div class="athlete-card${demo?' is-demo':''}" onclick="openAthlete(${aid})">
-    ${demo?'<div class="demo-card-badge">Demo</div>':''}
+  return `<div class="athlete-card" onclick="openAthlete(${aid})">
     ${pipelineBadgeHtml(a.id)}
     <div class="athlete-card-hd">
       <div class="athlete-av"><div class="athlete-av-init">${initials(a.name)}</div></div>
@@ -788,7 +757,7 @@ function renderPipeline(){
       const posText=(a.pos||[]).map(flagPositionLabel).join('/');
       const meta=[posText, `'${String(a.year).slice(2)}`, a.state].filter(Boolean).join(' · ');
       const schoolLine=[a.school, a.city].filter(Boolean).join(' · ');
-      return `<div class="pl-card${isDemoAthlete(a)?' is-demo':''}" draggable="true" data-athlete-id="${escHtml(id)}"
+      return `<div class="pl-card" draggable="true" data-athlete-id="${escHtml(id)}"
           style="border-left-color:${s.color}"
           ondragstart="_onDragStart(event,${jsArg(id)})"
           ondragend="_onDragEnd(event)"
@@ -806,7 +775,6 @@ function renderPipeline(){
         <div class="pl-card-foot">
           <span class="pl-last">${escHtml(laText)}</span>
           ${evaluationBadge(id)}
-          ${isDemoAthlete(a)?'<span class="pl-demo">Demo</span>':''}
           ${a._live?'<span class="pl-live">Live profile</span>':''}
         </div>
         ${boardNames.length?`<div class="pl-board-tags">${boardNames.map(n=>`<span class="pl-board-tag">${escHtml(n)}</span>`).join('')}</div>`:''}

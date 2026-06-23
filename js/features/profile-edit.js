@@ -106,9 +106,9 @@ async function submitEndorsementRequest(){
 
 // ── BIO BUILDER ───────────────────────────────────────────
 const BIO_FORMULAS = {
-  stats:    '[Role]. [Stat 1], [Stat 2]. [What makes you rare].',
+  stats:    '[Position]. [Stat 1], [Stat 2]. [What makes you rare].',
   identity: '[Position identity] with [key trait]. [Proof].',
-  fit:      'Competing for a [D1/D2] spot. [Stats]. [What I bring to your program].'
+  fit:      'Competing for a [D1/D2] spot at [position]. [Stats]. [What I bring to your program].'
 };
 function bioApplyFormula(key){
   const ta=document.getElementById('p-intro');

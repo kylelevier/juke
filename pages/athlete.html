@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <link rel="icon" type="image/png" href="../Juke_favicon.png">
+  <link rel="icon" type="image/svg+xml" href="../juke_favicon.svg">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,900&family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -341,6 +341,16 @@
   <!-- ══ STEP 1: IDENTITY ══ -->
   <div class="wiz-step-content active" id="wiz-content-1">
     <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
+      <div class="pv-onboard-card">
+        <div class="pv-onboard-title">Here's what you're building</div>
+        <div class="pv-onboard-body">A recruiting card that goes directly to college coaches — your film, stats, academics, and bio in one place. Takes about 10 minutes. Have these ready:</div>
+        <div class="pv-onboard-checklist">
+          <span class="pv-onboard-item">📸 A headshot or action photo</span>
+          <span class="pv-onboard-item">🎬 Your Hudl or highlight film link</span>
+          <span class="pv-onboard-item">📊 Last season's stats</span>
+          <span class="pv-onboard-item">🎓 Your GPA (coaches always check)</span>
+        </div>
+      </div>
       <div class="wiz-section-hd"><span class="wiz-section-title">The first thing a coach sees. Make it unmistakably you.</span></div>
       <!-- Photo uploads -->
       <input type="file" id="wiz-banner-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleBannerUpload(this)"/>
@@ -366,10 +376,15 @@
           </select></div>
         <div class="form-group"><div class="form-label">City, State</div><input class="form-input" id="p-city" placeholder="Dallas, TX" oninput="saveProfile();profileUpdate()"/></div>
         <div class="form-group"><div class="form-label">High School / Club Team</div><input class="form-input" id="p-school" placeholder="Lincoln HS / JUKE Elite" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Email</div><input class="form-input" id="p-email" placeholder="your@email.com" type="email" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Cell Phone</div><input class="form-input" id="p-phone" placeholder="(555) 123-4567" oninput="profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Parent / Guardian</div><input class="form-input" id="p-parent" placeholder="Name · (555) 000-0000" oninput="profileUpdate()"/></div>
       </div>
+      <details class="wiz-contact-details">
+        <summary class="wiz-contact-summary">+ Add contact info <span class="wiz-contact-hint">(coaches use this to reach you directly)</span></summary>
+        <div class="form-grid wiz-contact-grid">
+          <div class="form-group"><div class="form-label">Email</div><input class="form-input" id="p-email" placeholder="your@email.com" type="email" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Cell Phone</div><input class="form-input" id="p-phone" placeholder="(555) 123-4567" oninput="profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Parent / Guardian</div><input class="form-input" id="p-parent" placeholder="Name · (555) 000-0000" oninput="profileUpdate()"/></div>
+        </div>
+      </details>
       <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Position(s) — select all that apply</span></div>
       <div class="pos-grid" id="pos-grid">
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="QB"/>QB</label>
@@ -382,31 +397,37 @@
         <label class="pos-chip" onclick="togglePos(this)"><input type="checkbox" value="Utility"/>Utility</label>
       </div>
     </div>
-    <div class="wiz-nav"><button class="btn btn-primary" onclick="goStep(2)">Next: Film →</button></div>
+    <div class="wiz-nav"><button class="btn btn-primary" onclick="goStep(2)">Next: Add Your Film (most important step) →</button></div>
   </div>
 
   <!-- ══ STEP 2: FILM ══ -->
   <div class="wiz-step-content" id="wiz-content-2">
     <div class="wiz-form-col" style="max-width:680px;margin:0 auto;">
-      <div class="wiz-section-hd"><span class="wiz-section-title">Film is the first thing a coach opens. Add your reel before anything else.</span></div>
-      <div class="wiz-film-hero">
-        <div class="form-label">★ Highlight Reel — Most Important Field on This Entire Profile</div>
-        <input class="form-input" id="p-highlight" placeholder="https://www.hudl.com/v/..." oninput="profileUpdate()" style="margin-top:6px;"/>
-        <div class="wiz-film-hero-sub">Paste your Hudl, Vimeo, or YouTube link. This is the first button a coach sees on your card.</div>
+      <div class="wiz-section-hd"><span class="wiz-section-title">Film is the first thing a coach opens. This single link does more work than anything else on your profile.</span></div>
+      <div class="wiz-film-hero wiz-film-hero--elevated">
+        <div class="wiz-film-hero-label">Highlight Reel</div>
+        <div class="wiz-film-hero-context">This is the most important field on your entire profile. A coach will click this before reading a single word about you.</div>
+        <input class="form-input wiz-film-input" id="p-highlight" placeholder="https://www.hudl.com/v/..." oninput="profileUpdate()" style="margin-top:10px;"/>
+        <div class="wiz-film-hero-sub">Paste your Hudl, Vimeo, or YouTube link. Don't have film yet? Add it when you do — you can still build everything else now.</div>
       </div>
-      <div class="form-group"><div class="form-label">Game Film URL (optional)</div><input class="form-input" id="p-gamefilm" placeholder="https://www.hudl.com/v/..." oninput="profileUpdate()"/></div>
-      <div class="form-group"><div class="form-label">Full Recruiting Profile URL (optional)</div><input class="form-input" id="p-profileurl" placeholder="https://..." oninput="profileUpdate()"/></div>
-      <details class="film-tip-box" style="margin:10px 0 20px;">
-        <summary>💡 What coaches want to see in your film <span class="ftb-caret">▸</span></summary>
+      <details class="film-tip-box" style="margin:16px 0 20px;">
+        <summary>💡 What college coaches want to see in women's flag football film <span class="ftb-caret">▸</span></summary>
         <div class="ftb-body">
           <div class="ftb-grid">
-            <div class="ftb-item"><span class="ftb-icon">🎯</span><div><strong>Route running</strong> — Show full routes from snap to separation. Coaches watch feet, not just hands.</div></div>
-            <div class="ftb-item"><span class="ftb-icon">🔄</span><div><strong>Variety</strong> — Different plays and different looks. Don't show the same route 5 times.</div></div>
-            <div class="ftb-item"><span class="ftb-icon">🏆</span><div><strong>Competitive moments</strong> — Playoffs and close games beat garbage time every time.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🎯</span><div><strong>Route running</strong> — Full routes from snap to separation. Coaches watch your feet, not just your hands.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🔄</span><div><strong>Variety</strong> — Different plays and matchups. Don't show the same route five times.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🏆</span><div><strong>Competitive moments</strong> — Championship games and close matchups beat blowouts every time.</div></div>
             <div class="ftb-item"><span class="ftb-icon">⚡</span><div><strong>Speed in context</strong> — Beating a defender matters more than running in open space.</div></div>
-            <div class="ftb-item"><span class="ftb-icon">🎬</span><div><strong>Length</strong> — 2–3 minute highlight reel is ideal. Coaches lose interest after 4 minutes.</div></div>
+            <div class="ftb-item"><span class="ftb-icon">🎬</span><div><strong>Length</strong> — 2–3 minutes is ideal for a highlight reel. Coaches lose focus after 4 minutes.</div></div>
             <div class="ftb-item"><span class="ftb-icon">📅</span><div><strong>Keep it current</strong> — Update every season. Film from 2+ years ago gets discounted fast.</div></div>
           </div>
+        </div>
+      </details>
+      <details class="film-extra-links">
+        <summary class="film-extra-summary">+ Add game film or full profile link (optional)</summary>
+        <div class="film-extra-body">
+          <div class="form-group"><div class="form-label">Game Film URL</div><input class="form-input" id="p-gamefilm" placeholder="https://www.hudl.com/v/..." oninput="profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Full Recruiting Profile URL</div><input class="form-input" id="p-profileurl" placeholder="https://..." oninput="profileUpdate()"/></div>
         </div>
       </details>
       <div class="wiz-section-hd" style="margin-top:4px"><span class="wiz-section-title">Measurables</span></div>
@@ -416,29 +437,33 @@
         <div class="form-group"><div class="form-label">40-Yard Dash</div><input class="form-input" id="p-forty" placeholder="4.8s" oninput="saveProfile();profileUpdate()"/></div>
         <div class="form-group"><div class="form-label">Vertical Jump</div><input class="form-input" id="p-vertical" placeholder='24"' oninput="saveProfile();profileUpdate()"/></div>
       </div>
-      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">USA Football Verified Tests</span></div>
-      <div class="form-grid">
-        <div class="form-group"><div class="form-label">20-Yard Dash</div><input class="form-input" id="p-twenty" placeholder="3.12s" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">5-10-5 Shuttle</div><input class="form-input" id="p-shuttle" placeholder="4.38s" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Broad Jump</div><input class="form-input" id="p-broad" placeholder='8&apos;4"' oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Verified Source</div><input class="form-input" id="p-verified-source" placeholder="USA Football Talent ID" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Verified Date</div><input class="form-input" id="p-verified-date" placeholder="Feb 15, 2026" oninput="saveProfile();profileUpdate()"/></div>
-      </div>
-      <div class="wiz-section-hd" style="margin-top:24px"><span class="wiz-section-title">Event Attendance</span></div>
-      <div class="form-grid">
-        <div class="form-group"><div class="form-label">Event Name</div><input class="form-input" id="p-event-name" placeholder="USA Football Talent ID - Dallas" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Event Date</div><input class="form-input" id="p-event-date" placeholder="Feb 15, 2026" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Event Location</div><input class="form-input" id="p-event-location" placeholder="Dallas, TX" oninput="saveProfile();profileUpdate()"/></div>
-        <div class="form-group"><div class="form-label">Event Source</div>
-          <select class="form-select" id="p-event-source" onchange="saveProfile();profileUpdate()">
-            <option value="">Select source</option>
-            <option>USA Football</option>
-            <option>Juke Camp</option>
-            <option>Tournament</option>
-            <option>School Upload</option>
-          </select>
+      <details class="wiz-verified-details" style="margin-top:24px;">
+        <summary class="wiz-verified-summary">+ USA Football Verified Tests <span class="wiz-verified-hint">(adds a verified badge to your profile)</span></summary>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group"><div class="form-label">20-Yard Dash</div><input class="form-input" id="p-twenty" placeholder="3.12s" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">5-10-5 Shuttle</div><input class="form-input" id="p-shuttle" placeholder="4.38s" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Broad Jump</div><input class="form-input" id="p-broad" placeholder='8&apos;4"' oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Verified Source</div><input class="form-input" id="p-verified-source" placeholder="USA Football Talent ID" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Verified Date</div><input class="form-input" id="p-verified-date" placeholder="Feb 15, 2026" oninput="saveProfile();profileUpdate()"/></div>
         </div>
-      </div>
+      </details>
+      <details class="wiz-verified-details" style="margin-top:12px;">
+        <summary class="wiz-verified-summary">+ Event Attendance <span class="wiz-verified-hint">(camps, showcases, tournaments)</span></summary>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group"><div class="form-label">Event Name</div><input class="form-input" id="p-event-name" placeholder="USA Football Talent ID - Dallas" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Event Date</div><input class="form-input" id="p-event-date" placeholder="Feb 15, 2026" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Event Location</div><input class="form-input" id="p-event-location" placeholder="Dallas, TX" oninput="saveProfile();profileUpdate()"/></div>
+          <div class="form-group"><div class="form-label">Event Source</div>
+            <select class="form-select" id="p-event-source" onchange="saveProfile();profileUpdate()">
+              <option value="">Select source</option>
+              <option>USA Football</option>
+              <option>Juke Camp</option>
+              <option>Tournament</option>
+              <option>School Upload</option>
+            </select>
+          </div>
+        </div>
+      </details>
     </div>
     <div class="wiz-nav">
       <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
@@ -487,22 +512,22 @@
             <div class="bio-formula-chips">
               <div class="bio-formula-chip" onclick="bioApplyFormula('stats')">
                 <div class="bfc-name">Stats-Led</div>
-                <div class="bfc-ex">"[Role]. [Stat 1], [Stat 2]. [What makes you rare]."</div>
+                <div class="bfc-ex">"Deep threat WR. 48 catches, 920 yards. Fastest player on the field."</div>
               </div>
               <div class="bio-formula-chip" onclick="bioApplyFormula('identity')">
                 <div class="bfc-name">Identity-Led</div>
-                <div class="bfc-ex">"[Position identity] with [key trait]. [Proof]."</div>
+                <div class="bfc-ex">"Lockdown corner with elite closing speed. 0 TDs allowed in 14 games."</div>
               </div>
               <div class="bio-formula-chip" onclick="bioApplyFormula('fit')">
                 <div class="bfc-name">Program Fit</div>
-                <div class="bfc-ex">"Competing for a [D1/D2] spot. [Stats]. [What I bring]."</div>
+                <div class="bfc-ex">"Competing for a D1 spot at WR. 11 TDs, 3.9 GPA. I make every team around me better."</div>
               </div>
             </div>
           </div>
 
           <!-- Textarea -->
           <div class="bio-textarea-wrap">
-            <textarea class="form-textarea" id="p-intro" rows="3" placeholder="e.g. Dual-threat QB with D1 upside. 24 TDs, 4 INTs last season. Committed football IQ and a 3.9 GPA." oninput="saveProfile();profileUpdate();bioUpdate()" maxlength="280"></textarea>
+            <textarea class="form-textarea" id="p-intro" rows="3" placeholder="e.g. Deep threat WR with D1 upside. 48 catches, 920 yards, 11 TDs last season. 4.0 GPA and the fastest player on my team." oninput="saveProfile();profileUpdate();bioUpdate()" maxlength="280"></textarea>
             <span class="bio-char-count" id="bio-char-count">0 / 280</span>
           </div>
 

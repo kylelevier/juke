@@ -59,6 +59,16 @@ function _updateCoachAuthUI() {
       + '</div>'
     + '</div>';
 
+  if (org) {
+    var nameEl = document.getElementById('hd-school-name-short');
+    var abbrEl = document.getElementById('hd-school-abbr');
+    if (nameEl) nameEl.textContent = org;
+    if (abbrEl) {
+      var words = org.trim().split(/\s+/);
+      abbrEl.textContent = (words[0][0] + (words.length > 1 ? words[words.length-1][0] : '')).toUpperCase();
+    }
+  }
+
   // Close dropdown on outside click
   setTimeout(function(){
     document.addEventListener('click', function closeDD(e){

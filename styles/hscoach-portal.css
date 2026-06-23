@@ -517,3 +517,9 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
   .msg-bubble-wrap{max-width:88%;}
   #content-messages{height:calc(100vh - 104px);height:calc(100dvh - 104px);}
 }
+
+/* Demo roster onboarding banner */
+.demo-roster-banner{display:flex;align-items:flex-start;gap:14px;background:#fffbf0;border:1px solid #f5c842;border-radius:10px;padding:16px 20px;margin:0 0 20px;}
+.drb-icon{font-size:22px;line-height:1;flex-shrink:0;margin-top:1px;}
+.drb-title{font-family:'Archivo Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#92610a;margin-bottom:4px;}
+.drb-sub{font-size:13px;color:#7a5c1e;line-height:1.5;}
