@@ -127,7 +127,10 @@ async function signInWithGoogle() {
   setStatus('Redirecting to Google…');
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/login.html' + (NEXT_URL ? '?next=' + encodeURIComponent(NEXT_URL) : '') }
+    options: {
+      redirectTo: window.location.origin + '/login.html' + (NEXT_URL ? '?next=' + encodeURIComponent(NEXT_URL) : ''),
+      queryParams: { prompt: 'select_account' }
+    }
   });
   if (error) {
     setStatus(error.message, true);
@@ -160,9 +163,12 @@ sb.auth.getSession().then(async ({ data }) => {
   window.location.replace(next || PORTAL[role] || PORTAL.athlete);
 });
 
-// Handle OAuth callback — only act on a fresh sign-in, not session restore on page load
+// Handle OAuth callback — only act when we actually just returned from Google
+// (URL contains access_token or code). Prevents firing on session restores.
+var _isOAuthReturn = window.location.hash.includes('access_token') || window.location.search.includes('code=');
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (event !== 'SIGNED_IN' || !session) return;
+  if (!_isOAuthReturn || event !== 'SIGNED_IN' || !session) return;
+  _isOAuthReturn = false; // only handle once
 
   setStatus('Signing you in…');
   document.getElementById('google-btn').disabled = true;

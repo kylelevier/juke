@@ -55,7 +55,7 @@
       applied:  '<span class="req-badge req-badge--applied">Approved · Activated</span>'
     }[r.status] || r.status;
 
-    var roleLabel = r.role_requested === 'college_coach' ? 'College Recruiter' : 'HS / Youth Coach';
+    var roleLabel = r.role_requested === 'college_coach' ? 'College Recruiter' : 'Coach';
     var date = new Date(r.created_at).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' });
 
     var actions = '';
