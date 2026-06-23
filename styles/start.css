@@ -99,6 +99,9 @@ input::placeholder{color:rgba(255,255,255,.35)}
 .google-icon{width:18px;height:18px;flex-shrink:0}
 .start-status{min-height:18px;font-size:13px;color:rgba(255,255,255,.68);text-align:center}
 .start-status.error{color:#ff8a8a}
+.start-signin-link{font-size:13px;color:rgba(255,255,255,.35);text-align:center;margin-top:4px}
+.start-signin-link a{color:rgba(255,255,255,.55);text-decoration:none;font-weight:500}
+.start-signin-link a:hover{color:#FF0080}
 @media(max-width:520px){
   body{
     align-items:flex-start;
