@@ -142,7 +142,7 @@ SELECT is(
 -- ── TABLE: recruiter_pipeline ─────────────────────────────────────────────────
 
 INSERT INTO public.recruiter_pipeline (recruiter_id, athlete_user_id, stage)
-  VALUES ('cccccccc-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', 'contacted')
+  VALUES ('cccccccc-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', 'contacting')
   ON CONFLICT DO NOTHING;
 
 PERFORM _as_user('cccccccc-0000-0000-0000-000000000003');

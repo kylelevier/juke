@@ -11,6 +11,9 @@ if (sb) {
     currentUser = (session && session.user) ? session.user : null;
     _verifyAdminAccess();
     _updateAdminChip();
+    if (currentUser) setTimeout(function(){
+      if (typeof initAdminUsers === 'function') initAdminUsers();
+    }, 0);
   });
 }
 

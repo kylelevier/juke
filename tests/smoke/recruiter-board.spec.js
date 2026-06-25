@@ -32,24 +32,28 @@ test.describe('recruiter board persistence', () => {
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) return { error: error.message };
       const token = data.session?.access_token;
-      return { token };
+      const userId = data.user?.id;
+      return { token, userId };
     }, { url: SUPABASE_URL, key: SUPABASE_KEY, email: RECRUITER_EMAIL, password: RECRUITER_PASSWORD });
 
     expect(authResult.error).toBeUndefined();
     const token = authResult.token;
+    const recruiterId = authResult.userId;
+    expect(recruiterId).toBeTruthy();
 
     // Write a stage via the Supabase REST API directly.
-    const writeResult = await page.evaluate(async ({ url, key, token, athleteId }) => {
+    const writeResult = await page.evaluate(async ({ url, key, token, recruiterId, athleteId }) => {
       const client = supabase.createClient(url, key, {
         global: { headers: { Authorization: `Bearer ${token}` } }
       });
       const { error } = await client.from('recruiter_pipeline').upsert({
+        recruiter_id: recruiterId,
         athlete_user_id: athleteId,
-        stage: 'contacted',
+        stage: 'contacting',
         updated_at: new Date().toISOString()
       }, { onConflict: 'recruiter_id,athlete_user_id' });
       return { error: error ? error.message : null };
-    }, { url: SUPABASE_URL, key: SUPABASE_KEY, token, athleteId: ATHLETE_USER_ID });
+    }, { url: SUPABASE_URL, key: SUPABASE_KEY, token, recruiterId, athleteId: ATHLETE_USER_ID });
 
     expect(writeResult.error).toBeNull();
 
@@ -67,7 +71,7 @@ test.describe('recruiter board persistence', () => {
     }, { url: SUPABASE_URL, key: SUPABASE_KEY, token, athleteId: ATHLETE_USER_ID });
 
     expect(readResult.error).toBeNull();
-    expect(readResult.data?.stage).toBe('contacted');
+    expect(readResult.data?.stage).toBe('contacting');
 
     // Isolation check: open a second unauthenticated client and confirm it
     // cannot read this recruiter's pipeline row.

@@ -38,6 +38,7 @@ const STAGE_COLORS = {saved:'#0057FF',interested:'#0057FF',contacted:'#7B2FFF',a
 
 let _hsLiveProfilesLoaded = false;
 let _hsRosterSource = 'demo';
+let _hsAuthRetryAttached = false;
 
 // Recommendations are backend-owned. This cache is only for immediate UI updates
 // after a successful submit in the current session.
@@ -171,7 +172,8 @@ function _hsApplyRoster(athletes, source){
 async function loadPublishedHsRoster(){
   if(_hsLiveProfilesLoaded) return;
   const client=window.sb||window._hsSb||null;
-  if(!client) return;
+  const cu=window.currentUser||window._hsCurrentUser||null;
+  if(!client||!cu) return _hsRetryAfterAuth();
   try{
     // Use server-side school-matched RPC (replaces client-side fuzzy matching)
     const {data,error}=await client.rpc('get_hs_roster');
@@ -209,6 +211,15 @@ function statusColor(st){
 function logoUrl(domain){ return 'https://logo.clearbit.com/'+domain; }
 
 function initials(a){ return (a.fname[0]+(a.lname?a.lname[0]:'')).toUpperCase(); }
+
+function _hsRetryAfterAuth(){
+  if(_hsAuthRetryAttached) return;
+  _hsAuthRetryAttached=true;
+  document.addEventListener('juke:auth-ready', function(){
+    loadPublishedHsRoster();
+    _hsLoadProfileFromBackend();
+  });
+}
 
 // ── SEED SCHOOL FROM ACTIVE AUTH PROFILE ─────────────────────────────────────
 function seedSchoolFromAuth(){
@@ -529,7 +540,7 @@ function saveHSProfile(){
 async function _hsLoadProfileFromBackend(){
   const client=window.sb||window._hsSb||null;
   const cu=window.currentUser||null;
-  if(!client||!cu) return;
+  if(!client||!cu) return _hsRetryAfterAuth();
   try{
     const {data,error}=await client.from('hs_coach_profiles').select('*').eq('user_id',cu.id).maybeSingle();
     if(error||!data) return;

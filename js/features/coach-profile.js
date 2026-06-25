@@ -673,7 +673,7 @@ function seedSchoolFromAuth(){
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
-(function init(){
+function initCoachPortalData(){
   seedSchoolFromAuth();
   updateCoachCard();
   updateHeaderStats();
@@ -681,9 +681,14 @@ function seedSchoolFromAuth(){
   if(typeof loadPublishedAthletes==='function') loadPublishedAthletes();
   loadSchoolLogo();
   renderBoardChips();
+  if(typeof renderCoachFeed==='function') renderCoachFeed();
+}
+
+(function init(){
+  initCoachPortalData();
   const savedBanner=ls('banner');
   if(savedBanner) renderBanner(savedBanner);
   const savedLogo=ls('logo');
   if(savedLogo) renderLogo(savedLogo);
-  renderCoachFeed();
+  document.addEventListener('juke:auth-ready', initCoachPortalData);
 })();

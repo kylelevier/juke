@@ -21,47 +21,77 @@ test.describe('profile publish / unpublish', () => {
     await page.evaluate(() => localStorage.clear());
     await page.waitForLoadState('networkidle');
 
-    // Open sign-in modal and authenticate.
-    await page.click('#auth-signin-btn');
-    await page.fill('#auth-email', ATHLETE_EMAIL);
-    await page.fill('#auth-password', ATHLETE_PASSWORD);
-    await page.click('#auth-submit-btn');
+    await page.waitForFunction(() => typeof sb !== 'undefined' && !!sb, null, { timeout: 10_000 });
+    const authResult = await page.evaluate(async ({ email, password }) => {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) return { error: error.message };
+      window.localStorage.setItem('juke_auth', JSON.stringify({
+        name: data.user?.email || 'Test Athlete',
+        type: 'athlete',
+        activeProfileId: 'primary',
+        profiles: [{ id: 'primary', type: 'athlete', org: '' }]
+      }));
+      return { userId: data.user?.id || null };
+    }, { email: ATHLETE_EMAIL, password: ATHLETE_PASSWORD });
 
-    // Wait for the user chip to appear (auth success).
-    await expect(page.locator('#auth-user-chip')).toBeVisible({ timeout: 10_000 });
+    expect(authResult.error).toBeUndefined();
+    await page.waitForFunction(() => typeof currentUser !== 'undefined' && !!currentUser, null, { timeout: 10_000 });
+    await page.evaluate(() => {
+      if (window.JukeOnboarding) window.JukeOnboarding.dismiss('athlete', 'quickStart');
+      document.getElementById('onboarding-athlete-modal')?.remove();
+    });
   });
 
   test('athlete can publish profile and toggle returns success', async ({ page }) => {
     // Navigate to Profile tab.
     await page.click('#tab-profile');
     await page.waitForLoadState('networkidle');
+    await page.evaluate(() => {
+      if (typeof openProfileEdit === 'function') openProfileEdit();
+      if (typeof goStep === 'function') goStep(5);
+      const values = {
+        'p-fname': 'Smoke',
+        'p-lname': 'Athlete',
+        'p-gradyr': '2027',
+        'p-city': 'Dallas, TX',
+        'p-school': 'Smoke Test High',
+        'p-email': 'smoke-athlete@example.com',
+        'p-gpa': '3.8',
+        'p-height': "5'7\"",
+        'p-forty': '4.8',
+        'p-intro': 'Smoke test athlete profile.'
+      };
+      for (const [id, value] of Object.entries(values)) {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+      }
+      if (typeof saveProfile === 'function') saveProfile();
+    });
 
-    // Find the publish toggle button.
-    const publishBtn = page.locator('#publish-toggle-btn');
-    await expect(publishBtn).toBeVisible({ timeout: 5_000 });
-
-    // Capture initial state.
-    const initialText = await publishBtn.textContent();
+    const publishSlider = page.locator('.toggle-switch .toggle-slider');
+    await expect(publishSlider).toBeVisible({ timeout: 5_000 });
 
     // Toggle publish.
-    await publishBtn.click();
+    page.once('dialog', dialog => dialog.accept());
+    await publishSlider.click();
 
     // Expect a toast confirming success (not an error toast).
-    const toast = page.locator('.toast, .juke-toast, [role="status"]');
-    await expect(toast).toBeVisible({ timeout: 8_000 });
-    const toastText = (await toast.textContent()).toLowerCase();
-    expect(toastText).not.toMatch(/error|fail/);
+    const status = page.locator('#publish-status');
+    await expect(status).toContainText(/published|unpublished|failed/i, { timeout: 8_000 });
+    const statusText = (await status.textContent()).toLowerCase();
+    expect(statusText).not.toMatch(/error|fail/);
 
     // Toggle back to restore state.
-    await publishBtn.click();
+    page.once('dialog', dialog => dialog.accept());
+    await publishSlider.click();
     await page.waitForTimeout(1_500);
   });
 
   test('published profile is readable without auth via athlete_profiles', async ({ page, browser }) => {
     // Get the athlete's user id from the signed-in context.
     const userId = await page.evaluate(async () => {
-      if (!window.sb || !window.currentUser) return null;
-      return window.currentUser.id;
+      if (typeof sb === 'undefined' || typeof currentUser === 'undefined' || !currentUser) return null;
+      return currentUser.id;
     });
 
     if (!userId) {
@@ -77,8 +107,8 @@ test.describe('profile publish / unpublish', () => {
     await anonPage.waitForLoadState('networkidle');
 
     const result = await anonPage.evaluate(async (uid) => {
-      if (!window.sb) return { error: 'no sb' };
-      const { data, error } = await window.sb
+      if (typeof sb === 'undefined' || !sb) return { error: 'no sb' };
+      const { data, error } = await sb
         .from('athlete_profiles')
         .select('user_id, profile_data')
         .eq('user_id', uid)

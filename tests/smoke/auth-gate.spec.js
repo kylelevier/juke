@@ -20,7 +20,7 @@ for (const { path, label } of GATED_PORTALS) {
 
     // The auth gate shows a brief overlay then calls location.replace after 650 ms.
     // Use waitForURL so we wait for the redirect rather than just networkidle.
-    await page.waitForURL(url => !url.includes(path), { timeout: 5_000 });
+    await page.waitForURL(url => !url.toString().includes(path), { timeout: 5_000 });
 
     const url = page.url();
     expect(url, `${label} should redirect away from ${path}`).not.toContain(path);
@@ -57,7 +57,4 @@ test('Wrong-role redirect: hs_coach with college_coach token goes to hscoach por
   // Accept any URL that is not /pages/coach.html as a pass.
   const url = page.url();
   expect(url).not.toMatch(/\/pages\/coach\.html$/);
-
-  // Clean up.
-  await page.evaluate(() => localStorage.clear());
 });

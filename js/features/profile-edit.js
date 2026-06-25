@@ -1,5 +1,11 @@
 // ── PROFILE WIZARD ──────────────────────────────────────
 let _wizStep = 1;
+let _profileCloudSaveTimer = null;
+function scheduleProfileCloudSave(delay){
+  if(typeof cloudSave !== 'function') return;
+  clearTimeout(_profileCloudSaveTimer);
+  _profileCloudSaveTimer = setTimeout(function(){ cloudSave(); }, delay || 700);
+}
 function goStep(n){
   _wizStep = n;
   for(let i=1;i<=5;i++){
@@ -247,7 +253,7 @@ function saveProfile(){
   if(_existing._banner) d._banner=_existing._banner;
   if(_existing._offers) d._offers=_existing._offers;
   lsSet('juke_player',d);
-  cloudSave();
+  scheduleProfileCloudSave();
   setTimeout(updateHeaderProfileProgress,50);
   const ind=document.getElementById('save-indicator');
   if(ind){ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),1500);}
@@ -373,7 +379,7 @@ async function handleBannerUpload(input){
     renderBannerPhoto(url);
     renderWizBanner(url);
     renderProfileView();
-    if(typeof cloudSave==='function') cloudSave();
+    scheduleProfileCloudSave(0);
     return;
   }
   // Fallback: base64 (user not yet signed in, or upload failed)
@@ -383,7 +389,7 @@ async function handleBannerUpload(input){
     renderBannerPhoto(e.target.result);
     renderWizBanner(e.target.result);
     renderProfileView();
-    if(typeof cloudSave==='function') cloudSave();
+    scheduleProfileCloudSave(0);
   };
   reader.readAsDataURL(file);
 }
@@ -422,7 +428,7 @@ async function handleAvatarUpload(input){
     renderAvatarPhoto(url);
     renderWizAvatar(url);
     renderProfileView();
-    if(typeof cloudSave==='function') cloudSave();
+    scheduleProfileCloudSave(0);
     return;
   }
   const reader = new FileReader();
@@ -431,7 +437,7 @@ async function handleAvatarUpload(input){
     renderAvatarPhoto(e.target.result);
     renderWizAvatar(e.target.result);
     renderProfileView();
-    if(typeof cloudSave==='function') cloudSave();
+    scheduleProfileCloudSave(0);
   };
   reader.readAsDataURL(file);
 }

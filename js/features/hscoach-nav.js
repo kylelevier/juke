@@ -19,6 +19,7 @@
       window._hsCurrentUser = session.user;
       signinBtn.style.display = 'none';
       // Chip is managed by existing localStorage auth code
+      document.dispatchEvent(new CustomEvent('juke:auth-ready'));
     } else {
       currentUser = null;
       window.currentUser = null;
@@ -94,21 +95,8 @@
   };
 
   window.hsCoachSignUp = async function() {
-    if (!sb) return;
-    var name = document.getElementById('hscoach-signup-name').value.trim();
-    var email = document.getElementById('hscoach-signup-email').value.trim();
-    var pw = document.getElementById('hscoach-signup-pw').value;
-    var org = document.getElementById('hscoach-signup-org').value.trim();
-    if (!name || !email || !pw) { _setMsg('hscoach-signup-msg', 'Name, email, and password are required.', 'error'); return; }
-    var btn = document.getElementById('hscoach-signup-btn');
-    btn.disabled = true; btn.textContent = 'Creating account…';
-    var r = await sb.auth.signUp({
-      email: email, password: pw,
-      options: { data: { full_name: name, role: 'hs_coach', org: org } }
-    });
-    btn.disabled = false; btn.textContent = 'Create Account';
-    if (r.error) { _setMsg('hscoach-signup-msg', r.error.message, 'error'); return; }
-    _setMsg('hscoach-signup-msg', 'Account created! Check your email to confirm, then sign in.', 'success');
+    _setMsg('hscoach-signup-msg', 'Coach accounts are approved through Request Access so athlete data stays protected.', 'error');
+    setTimeout(function(){ location.href = '/coach-access.html'; }, 900);
   };
 
   window.hsCoachSignOut = async function() {

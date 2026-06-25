@@ -337,8 +337,8 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
   .hd-school-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .hd-link{display:none;}
   .hd-right{gap:8px;min-width:0;}
-  .coach-signin-btn{display:none;}
-  .juke-user-chip{display:none!important;}
+  .coach-signin-btn{padding:5px 10px;font-size:9px;}
+  .juke-user-name{display:none;}
   .roster-workspace{padding:18px 14px 12px;}
   .roster-hero{align-items:flex-start;flex-direction:column;gap:12px;}
   .roster-title{font-size:28px;}
@@ -393,10 +393,6 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
 .hd-msg-btn:hover{background:rgba(255,255,255,.08);}
 .hd-msg-btn.has-unread{color:#FF0080;}
 .hd-msg-btn svg{width:20px;height:17px;display:block;}
-@media(max-width:600px){
-  .juke-user-chip{display:none!important;}
-}
-
 /* Messaging CSS — identical to coach.html block */
 .msg-tab-badge{display:inline-block;background:#FF0080;color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 5px;margin-left:4px;line-height:1.5;vertical-align:middle;}
 #content-messages{display:none;flex-direction:column;height:calc(100vh - 104px);height:calc(100dvh - 104px);overflow:hidden;padding:0;}

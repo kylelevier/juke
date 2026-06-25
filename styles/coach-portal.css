@@ -417,7 +417,7 @@ header{background:#0D0D0D;padding:0 24px;position:sticky;top:0;z-index:200;displ
   .hd-slogan,.hd-div{display:none;}
   .hd-school-chip{max-width:130px;padding:5px 8px;min-width:0;}
   .hd-school-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .coach-signin-btn{display:none!important;}
+  .coach-signin-btn{padding:5px 10px;font-size:9px;}
   .workspace-shell{padding:16px 12px 56px;}
   .workspace-hero{align-items:flex-start;flex-direction:column;padding:16px;}
   .workspace-title{font-size:24px;}

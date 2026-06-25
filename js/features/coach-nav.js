@@ -10,6 +10,7 @@ if (sb) {
   sb.auth.onAuthStateChange(function(event, session) {
     currentUser = (session && session.user) ? session.user : null;
     _updateCoachAuthUI();
+    if(currentUser) document.dispatchEvent(new CustomEvent('juke:auth-ready'));
   });
 }
 
@@ -146,16 +147,12 @@ async function _coachEnsureActive(userId, msg) {
 }
 
 async function coachSignUp() {
-  if (!sb) return;
-  var email = document.getElementById('coach-auth-email-up').value.trim();
-  var pw    = document.getElementById('coach-auth-pw-up').value;
-  var btn   = document.getElementById('coach-auth-btn-up');
   var msg   = document.getElementById('coach-auth-msg-up');
-  btn.disabled = true; btn.textContent = 'Creating…'; msg.className = 'coach-auth-msg';
-  var r = await sb.auth.signUp({ email: email, password: pw });
-  btn.disabled = false; btn.textContent = 'Create Account';
-  if (r.error) { msg.textContent = r.error.message; msg.className = 'coach-auth-msg error'; }
-  else { msg.textContent = 'Account created! Check your email to confirm, then sign in.'; msg.className = 'coach-auth-msg success'; }
+  if(msg){
+    msg.textContent = 'Coach accounts are approved through Request Access so athlete data stays protected.';
+    msg.className = 'coach-auth-msg error';
+  }
+  setTimeout(function(){ location.href = '/coach-access.html'; }, 900);
 }
 
 async function coachSignOut() {
