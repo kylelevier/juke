@@ -102,7 +102,7 @@ function renderProfileView(){
   var rec=g('s-rec'),ryds=g('s-ryds'),rtd=g('s-rtd'),ruyds=g('s-ruyds'),rutd=g('s-rutd');
   var flags=g('s-flags'),defint=p.defint||p['s-def-int']||'',sacks=g('s-sacks'),dtd=g('s-dtd');
 
-  var hasData=first||highlight||gpa||height||forty||positions.length||intro;
+  var hasData=first||highlight||gpa||height||forty||positions.length||intro||(Array.isArray(p._recommendations)&&p._recommendations.length);
   if(!hasData){
     container.innerHTML='<div class="pv-empty-state pv-welcome-state">'
       +'<div class="pv-welcome-badge">Your Recruiting Profile</div>'

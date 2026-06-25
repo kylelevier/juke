@@ -297,6 +297,10 @@ async function _pdUp(e){
   }
   recordMilestone(school,targetStage);
   cloudSave();
+  if(targetStage==='offered'&&window.JukeOnboarding&&!JukeOnboarding.get('athlete').milestones.firstOffer){
+    JukeOnboarding.mark('athlete','firstOffer',{school});
+    JukeOnboarding.showFirstOfferCelebration(school);
+  }
 }
 
 // ── BOARD RENDER ─────────────────────────────────────────
@@ -320,7 +324,7 @@ async function _seedStarterBoard(){
     await saveBoardStage(school,'saved');
   }
   lsSet('juke_status',statusData);
-  showToast?.('We added '+seed.length+' starter programs — move or remove them any time.');
+  showToast?.('We added '+seed.length+' starter programs to get you going.','info');
 }
 
 async function renderPipeline(){
@@ -343,7 +347,7 @@ async function renderPipeline(){
       }
     }catch(err){
       console.error('JUKE board render failed:', err);
-      showToast?.('Could not load your board. Showing this device draft.');
+      showToast?.("Couldn't load your board — showing local draft.",'error');
     }
     if(!Object.keys(statusData).length) await _seedStarterBoard();
   }
@@ -515,7 +519,7 @@ async function _markContactedToday(schoolName,btn){
     ['stalled','cooling'].includes(_calcMomentum(n).level)
   );
   _renderAttentionStrip(needsAttn);
-  showToast('Marked as contacted today');
+  showToast('Contact logged. Good follow-through.','success');
 }
 
 // ── EMPTY STAGE TOGGLE ───────────────────────────────────

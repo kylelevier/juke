@@ -95,7 +95,8 @@ Current (5 stages, migrated):
 ⚠️ The Supabase `player_programs.stage` CHECK constraint still lists the OLD 10 keys (see Technical Debt #3) — DB writes of `contacting`/`offered`/`archived` will be rejected until that constraint is updated.
 
 ### Coach pipeline (`COACH_PIPELINE_STAGES` in coach-roster.js)
-Current (5 stages): `identified` → `contacted` → `visit` → `offer` → `committed`
+Current (6 stages): `identified` → `evaluating` → `contacting` → `recruiting` → `offer` → `committed`
+✅ `recruiter_pipeline_stage_check` constraint confirmed — all 6 keys present, matches `COACH_PIPELINE_STAGES` exactly.
 
 ---
 

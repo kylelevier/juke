@@ -491,6 +491,10 @@ async function wsChangeStage(newStage){
   }
   _wsApplyStageVisual(newStage);
   cloudSave();
+  if(newStage==='offered'&&window.JukeOnboarding&&!JukeOnboarding.get('athlete').milestones.firstOffer){
+    JukeOnboarding.mark('athlete','firstOffer',{school:_wsSchool});
+    JukeOnboarding.showFirstOfferCelebration(_wsSchool);
+  }
   if(document.getElementById('tab-pipeline')?.classList.contains('active'))renderPipeline();
 }
 

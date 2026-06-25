@@ -126,8 +126,8 @@
     var tabBtn = document.getElementById('tab-messages');
     if (tabBtn) tabBtn.style.display = '';
 
-    // Upsert this user's profile row
-    await _ensureProfile();
+    // Upsert this user's profile row — fire-and-forget, never blocks rendering
+    _ensureProfile();
 
     // Load threads and badge count
     await renderMsgThreadList();
@@ -159,18 +159,18 @@
     if (tabBtn) tabBtn.style.display = 'none';
   }
 
-  // ── USER PROFILE UPSERT ──────────────────────────────────────
+  // ── USER PROFILE UPDATE ──────────────────────────────────────
+  // Updates display_name only. Role/org are owned by the portal gate and
+  // handle_new_user trigger. Using UPDATE (not upsert) to avoid PostgREST
+  // expanding column defaults and overwriting role on conflict.
   async function _ensureProfile() {
     if (!sb || !currentUser) return;
-    var payload = {
-      id:           currentUser.id,
-      role:         _myRole(),
-      display_name: _myDisplayName(),
-      org:          _myOrg(),
-      updated_at:   new Date().toISOString()
-    };
-    var r = await sb.from('user_profiles').upsert(payload, { onConflict: 'id' });
-    if (r.error) console.warn('[Juke Msg] profile upsert:', r.error.message);
+    var _timeout = new Promise(function(res) { setTimeout(res, 4000); });
+    var _update  = sb.from('user_profiles')
+      .update({ display_name: _myDisplayName(), updated_at: new Date().toISOString() })
+      .eq('id', currentUser.id);
+    var r = await Promise.race([_update, _timeout]);
+    if (r && r.error) console.warn('[Juke Msg] profile update:', r.error.message);
   }
 
   // ── FETCH THREADS ────────────────────────────────────────────
@@ -234,6 +234,7 @@
       return;
     }
 
+    list.innerHTML = '<div class="msg-loading">Loading conversations...</div>';
     _threads  = await _fetchThreads();
     _filtered = _threads.slice();
     if (_lastThreadLoadError) {
@@ -249,8 +250,15 @@
     if (!list) return;
 
     if (!threads.length) {
+      if (_threads.length) {
+        list.innerHTML = '<div class="msg-thread-empty"><strong>No matching conversations.</strong><br>'
+          + '<span>Try another name, school, or message keyword.</span></div>';
+        return;
+      }
+      var action = typeof openCoachNewMessage === 'function' ? 'openCoachNewMessage()' : 'openNewMsg()';
       list.innerHTML = '<div class="msg-thread-empty"><strong>No conversations yet.</strong><br>'
-        + '<span>Reach out to a coach from any school on your board — or use <strong>+ New Message</strong> above to start a conversation.</span></div>';
+        + '<span>Start with a coach, recruiter, or athlete connected to your recruiting work.</span>'
+        + '<button class="msg-thread-empty-action" onclick="' + action + '">Start a conversation</button></div>';
       return;
     }
 
@@ -260,6 +268,8 @@
       var preview  = t.conv.last_message_preview || 'No messages yet';
       var time     = t.conv.last_message_at ? _fmtTime(t.conv.last_message_at) : '';
       var role     = t.other.role || 'athlete';
+      var roleName = ROLE_LABELS[role] || role || 'Contact';
+      var orgName  = t.other.org || '';
       var active   = t.conv.id === _activeConvId ? ' active' : '';
       var unread   = t.unread > 0 ? ' unread' : '';
       var color    = ROLE_COLORS[role] || '#FF0080';
@@ -286,6 +296,7 @@
             + '<span class="msg-thread-name">' + _esc(name) + '</span>'
             + '<span class="msg-thread-time">' + _esc(time) + '</span>'
           + '</div>'
+          + '<div class="msg-thread-meta">' + _esc([roleName, orgName].filter(Boolean).join(' · ')) + '</div>'
           + schoolCtx
           + '<div class="msg-thread-preview">' + _esc(preview) + '</div>'
         + '</div>'
@@ -330,8 +341,10 @@
     var profile = _profiles[otherId] || { display_name: 'Loading…', role: 'athlete', org: '' };
     _paintHeader(profile);
     if (!_profiles[otherId]) {
-      var pr = await sb.from('user_profiles').select('id,display_name,role,org').eq('id', otherId).single();
-      if (pr.data) { _profiles[otherId] = pr.data; _paintHeader(pr.data); }
+      var _profileTimeout = new Promise(function(res) { setTimeout(res, 5000); });
+      var _profileFetch   = sb.from('user_profiles').select('id,display_name,role,org').eq('id', otherId).single();
+      var pr = await Promise.race([_profileFetch, _profileTimeout]);
+      if (pr && pr.data) { _profiles[otherId] = pr.data; _paintHeader(pr.data); }
     }
 
     await _loadMessages(convId);
@@ -580,11 +593,11 @@
       }
     }
 
-    var rpcParams = { conversation_id: convId, body: body };
+    var rpcParams = { p_conversation_id: convId, p_body: body };
     if (attachmentUrl) {
-      rpcParams.attachment_url  = attachmentUrl;
-      rpcParams.attachment_type = attachmentType;
-      rpcParams.attachment_name = attachmentName;
+      rpcParams.p_attachment_url  = attachmentUrl;
+      rpcParams.p_attachment_type = attachmentType;
+      rpcParams.p_attachment_name = attachmentName;
     }
 
     var r = await sb.rpc('send_message', rpcParams);
@@ -760,7 +773,7 @@
         .update({ last_contact_date: today, updated_at: new Date().toISOString() })
         .eq('id', ppId)
         .then(function(res){
-          if(res && res.error) showToast?.('Message sent, but board momentum could not be updated.');
+          if(res && res.error) showToast?.("Message sent. Board update didn't stick — try refreshing.",'warning');
         });
     }
     // Refresh visible board card so momentum dot updates instantly

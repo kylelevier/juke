@@ -134,7 +134,7 @@ async function cloudSave(){
   const {error}=await sb.from('player_data').upsert(payload,{onConflict:'user_id'});
   if(error){
     console.error('JUKE cloud save failed:', error);
-    showToast?.('Cloud save failed. Your changes are saved on this device.');
+    showToast?.("Couldn't save to cloud — changes kept on this device.",'error');
     return;
   }
   await _syncPublishedAthleteProfile(profile);
@@ -236,11 +236,30 @@ async function _syncFromCloud(){
       readiness: bundle.readiness || playerData.readiness || null
     };
   } else {
-    const cloudRes=await sb.from('player_data').select('*').eq('user_id',currentUser.id).maybeSingle();
+    const [cloudRes, recsRes] = await Promise.all([
+      sb.from('player_data').select('*').eq('user_id',currentUser.id).maybeSingle(),
+      sb.rpc('get_my_recommendations')
+    ]);
     if(cloudRes.error){
       if(cloudRes.error.code !== 'PGRST116') console.error('JUKE cloud load failed:', cloudRes.error);
     }else{
       data=cloudRes.data;
+    }
+    if(!recsRes.error && Array.isArray(recsRes.data) && recsRes.data.length){
+      if(!data) data={};
+      if(!data.profile) data.profile={};
+      // Map snake_case RPC columns to camelCase expected by profile-view.js
+      data.profile._recommendations=recsRes.data.map(function(r){
+        return {
+          status:        r.status,
+          coachName:     r.coach_name,
+          coachSchool:   r.coach_school,
+          coachTitle:    r.coach_title,
+          endorsementText: r.endorsement_text,
+          traits:        r.traits,
+          createdAt:     r.created_at
+        };
+      });
     }
   }
   if(!data)data={};

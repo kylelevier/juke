@@ -227,7 +227,6 @@ async function handlePublishToggle(){
   const consent = document.getElementById('publish-contact-consent');
   if(!currentUser){
     toggle.checked=false;
-    alert('Please sign in to publish your profile to coaches.');
     openAuthModal('signin');
     return;
   }
@@ -276,6 +275,10 @@ async function handlePublishToggle(){
   if(pill){ pill.textContent=on?'● Live':'Draft'; pill.className='publish-live-pill '+(on?'live':'draft'); }
   lsSet('juke_publish',{on,shareContact:on&&shareContact,publishedAt:on?new Date().toISOString():prior.publishedAt||null});
   if(status){status.textContent=on?'Profile published.':'Profile unpublished.';status.className='publish-status ok';}
+  if(on&&!prior.publishedAt&&window.JukeOnboarding){
+    JukeOnboarding.mark('athlete','profilePublished');
+    JukeOnboarding.showGoLiveCelebration();
+  }
   _showSyncBadge();
   renderProfileView();
 }

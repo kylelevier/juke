@@ -108,14 +108,14 @@ if(sb){
     if(typeof _updateAuthUI === 'function') _updateAuthUI();
     if(currentUser && event === 'SIGNED_IN' && typeof _syncFromCloud === 'function'){
       await _syncFromCloud();
-      if(typeof showToast==='function') showToast('Board synced to cloud ✓');
+      if(typeof showToast==='function') showToast('Board synced.','info');
       // Refresh board sync notice now that user is signed in
       if(typeof _renderBoardCols==='function') _renderBoardCols();
     }
     if(currentUser && event === 'INITIAL_SESSION' && typeof _syncFromCloud === 'function'){
       await _syncFromCloud();
     }
-    if(currentUser && event === 'INITIAL_SESSION' && typeof initMessaging === 'function') await initMessaging();
+    if(currentUser && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && typeof initMessaging === 'function') await initMessaging();
   });
   // Preview mode: _syncFromCloud may not exist yet when INITIAL_SESSION fires
   // (auth.js loads after config.js). Always re-run it once scripts are ready.

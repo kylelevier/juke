@@ -178,7 +178,7 @@ function _bdCopyDraft() {
   const text = `Subject: ${subj}\n\n${body}`;
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(text)
-      .then(() => showToast('Copied to clipboard'))
+      .then(() => showToast('Copied.','info'))
       .catch(() => _bdCopyFallback(text));
   } else {
     _bdCopyFallback(text);
@@ -191,8 +191,8 @@ function _bdCopyFallback(text) {
   ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
   document.body.appendChild(ta);
   ta.select();
-  try { document.execCommand('copy'); showToast('Copied to clipboard'); }
-  catch (e) { showToast('Copy failed — select text manually'); }
+  try { document.execCommand('copy'); showToast('Copied.','info'); }
+  catch (e) { showToast("Couldn't copy — select the text manually.",'error'); }
   ta.remove();
 }
 
@@ -209,5 +209,5 @@ async function _bdLogAndDismissDraft(btn) {
   // Remove draft section and reload overview (momentum + suggest section will update)
   document.getElementById('bd-draft-section')?.remove();
   _loadBDSection('overview');
-  showToast('Marked as contacted today');
+  showToast('Contact logged. Good follow-through.','success');
 }

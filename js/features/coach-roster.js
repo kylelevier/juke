@@ -189,7 +189,6 @@ async function _coachSyncFromBackend(){
         .in('board_id',bRows.map(b=>b.id));
       if(!tagErr&&tagRows&&tagRows.length){
         const fresh={};
-        const fresh={};
         for(const row of tagRows){
           const lid='live_'+row.athlete_user_id;
           if(!fresh[lid]) fresh[lid]=[];

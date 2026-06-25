@@ -67,7 +67,7 @@ let _boardCache={};
 function _boardSaveError(message,error){
   const detail=error?.message?`: ${error.message}`:'';
   console.error(`JUKE board save failed: ${message}`, error||'');
-  showToast?.(`${message}${detail}`);
+  showToast?.(`${message}${detail}`,'error');
 }
 
 function _pipelineFromBoardMeta(meta){
@@ -97,7 +97,7 @@ async function migrateLocalBoardDraftIfNeeded(playerDataPipeline){
     for(const [school,stage] of Object.entries(local)){
       if(stage&&stage!=='none') await saveBoardStage(school,stage);
     }
-    showToast?.('Local draft saved to your account.');
+    showToast?.('Draft saved to your account.','info');
     return _pipelineFromBoardMeta(await loadAllBoardRecords({silent:true})||{});
   }
   if(!_samePipeline(local,cloud)){
@@ -107,10 +107,10 @@ async function migrateLocalBoardDraftIfNeeded(playerDataPipeline){
       for(const [school,stage] of Object.entries(local)){
         if(stage&&stage!=='none') await saveBoardStage(school,stage);
       }
-      showToast?.('Local draft merged into your saved board.');
+      showToast?.('Draft merged into your board.','info');
       return _pipelineFromBoardMeta(await loadAllBoardRecords({silent:true})||{});
     }
-    showToast?.('Saved board loaded. Local draft backed up.');
+    showToast?.('Board loaded. Local draft backed up.','info');
   }
   return cloud;
 }

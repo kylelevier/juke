@@ -199,7 +199,7 @@ function _renderBDOverview(body){
 
 function _bdAdoptRecommendation(action){
   const input=document.getElementById('bd-na');
-  if(input){input.value=action;_bdSaveContact();showToast('Next action updated');}
+  if(input){input.value=action;_bdSaveContact();showToast('Next step locked in.','success');}
 }
 
 // Draft engine lives in board-detail-draft.js (loaded after this file)
@@ -258,7 +258,11 @@ function _bdAddCoach(){
 
 async function _bdSaveCoach(){
   const name=document.getElementById('bdc-name')?.value.trim();
-  if(!name){showToast('Name is required');return;}
+  if(!name){
+    const f=document.getElementById('bdc-name');
+    if(f){f.style.borderColor='#ef4444';f.placeholder='Name is required';setTimeout(()=>{f.style.borderColor='';f.placeholder='Full name';},3000);}
+    return;
+  }
   const saved=await addBoardItem(_bdSchool,'program_contacts',{
     name,
     role:document.getElementById('bdc-role')?.value.trim()||null,
@@ -360,7 +364,7 @@ async function _bdSaveNote(){
   if(!content) return;
   const saved=await addBoardItem(_bdSchool,'program_notes',{content});
   if(!saved) return;
-  showToast('Note saved');
+  showToast('Noted. Saved.','success');
 }
 
 // ── VISITS ───────────────────────────────────────────────
@@ -457,7 +461,7 @@ async function _bdSaveApplication(){
     if(!created) return;
     if(created)document.getElementById('bda-id').textContent=created.id;
   }
-  showToast('Application saved');
+  showToast('Application saved. Keep going.','success');
 }
 
 // ── OFFER ────────────────────────────────────────────────
@@ -513,7 +517,7 @@ async function _bdSaveOffer(){
     if(!created) return;
     if(created)document.getElementById('bdo-id').textContent=created.id;
   }
-  showToast('Offer saved');
+  showToast("Offer saved. You've earned this.",'success');
 }
 
 // ── DEADLINES ────────────────────────────────────────────
@@ -555,7 +559,11 @@ function _bdAddDeadline(){
 
 async function _bdSaveDeadline(){
   const text=document.getElementById('bdd-text')?.value.trim();
-  if(!text){showToast('Description required');return;}
+  if(!text){
+    const f=document.getElementById('bdd-text');
+    if(f){f.style.borderColor='#ef4444';f.placeholder='Description is required';setTimeout(()=>{f.style.borderColor='';f.placeholder='e.g. Submit official transcript';},3000);}
+    return;
+  }
   const saved=await addBoardItem(_bdSchool,'program_tasks',{
     text,due_date:document.getElementById('bdd-date')?.value||null,completed:false
   });

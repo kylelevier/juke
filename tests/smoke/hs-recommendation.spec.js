@@ -80,6 +80,47 @@ test.describe('HS recommendation workflow', () => {
     expect(submitResult.error).toBeNull();
   });
 
+  test('athlete portal syncs recommendations into profile view', async ({ page }) => {
+    await page.goto('/pages/athlete.html');
+    await page.waitForLoadState('networkidle');
+
+    // Sign in through the PAGE'S own sb client so onAuthStateChange + _syncFromCloud fire.
+    await page.evaluate(async ({ email, pw }) => {
+      await sb.auth.signInWithPassword({ email, password: pw });
+    }, { email: ATHLETE_EMAIL, pw: ATHLETE_PW });
+
+    // Wait for _syncFromCloud to finish.
+    await page.waitForTimeout(4000);
+
+    // Verify _recommendations landed in localStorage.
+    const lsRecs = await page.evaluate(() => {
+      try { return JSON.parse(localStorage.getItem('juke_player') || '{}')._recommendations || []; }
+      catch(e) { return []; }
+    });
+    expect(lsRecs.length).toBeGreaterThan(0);
+    expect(lsRecs[0].status).toBe('endorsed');
+
+    // Navigate to the Profile tab and check the Coach Verified block renders.
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('nav button, [data-tab], .tab-btn'))
+        .find(el => /profile/i.test(el.textContent.trim()));
+      if (btn) btn.click();
+      else console.warn('Profile tab button not found');
+    });
+    await page.waitForTimeout(1000);
+
+    // Force-render in case the tab didn't trigger it.
+    await page.evaluate(() => {
+      if (typeof renderProfileView === 'function') renderProfileView();
+    });
+    await page.waitForTimeout(300);
+
+    const coachVerifiedCount = await page.evaluate(
+      () => document.querySelectorAll('.dpc-end-block').length
+    );
+    expect(coachVerifiedCount).toBeGreaterThan(0);
+  });
+
   test('athlete cannot read another athlete\'s recommendations', async ({ page }) => {
     await page.goto('/pages/athlete.html');
     await page.waitForLoadState('networkidle');

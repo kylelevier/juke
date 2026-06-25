@@ -277,8 +277,10 @@ async function ppTogglePipeline(){
     delete status[_ppCurrent];
   } else {
     status[_ppCurrent] = 'saved';
-    showToast(`${_ppCurrent} added to your board`);
+    const _isFirstSave=window.JukeOnboarding&&!JukeOnboarding.get('athlete').milestones.firstSchoolSaved;
     if(window.JukeOnboarding) JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:'saved'});
+    if(_isFirstSave) JukeOnboarding.showFirstWinCelebration(_ppCurrent);
+    else showToast('Good call. Added to your board.','success',{undo:function(){if(typeof removeBoardProgram==='function'){removeBoardProgram(_ppCurrent);if(typeof renderPipeline==='function')renderPipeline();}}});
   }
   lsSet('juke_status', status);
   const inPipe = status[_ppCurrent] !== 'none';
@@ -303,7 +305,12 @@ async function ppSetStatus(key){
   if(key === 'none') delete statusData[_ppCurrent];
   else {
     statusData[_ppCurrent] = key;
+    const _isFirstSave=window.JukeOnboarding&&!JukeOnboarding.get('athlete').milestones.firstSchoolSaved;
+    const _isFirstOffer=key==='offered'&&window.JukeOnboarding&&!JukeOnboarding.get('athlete').milestones.firstOffer;
     if(window.JukeOnboarding) JukeOnboarding.mark('athlete','firstSchoolSaved',{school:_ppCurrent,stage:key});
+    if(_isFirstOffer) JukeOnboarding.mark('athlete','firstOffer',{school:_ppCurrent});
+    if(_isFirstSave) JukeOnboarding.showFirstWinCelebration(_ppCurrent);
+    else if(_isFirstOffer) JukeOnboarding.showFirstOfferCelebration(_ppCurrent);
   }
   if(key !== 'none' && typeof recordMilestone === 'function') recordMilestone(_ppCurrent, key);
   lsSet('juke_status', statusData);

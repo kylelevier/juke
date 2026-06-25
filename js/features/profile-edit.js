@@ -240,6 +240,12 @@ function saveProfile(){
     sport1:fv('p-sport1'),sport1pos:fv('p-sport1pos'),sport2:fv('p-sport2'),sport2pos:fv('p-sport2pos'),
     divisions:getDivisions(),
   };
+  // Preserve server-side fields that are not owned by the edit form.
+  var _existing=lsGet('juke_player')||{};
+  if(Array.isArray(_existing._recommendations)) d._recommendations=_existing._recommendations;
+  if(_existing._avatar) d._avatar=_existing._avatar;
+  if(_existing._banner) d._banner=_existing._banner;
+  if(_existing._offers) d._offers=_existing._offers;
   lsSet('juke_player',d);
   cloudSave();
   setTimeout(updateHeaderProfileProgress,50);

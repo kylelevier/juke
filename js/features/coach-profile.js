@@ -216,11 +216,14 @@ function openAthlete(id){
     <div class="sp-section">
       <div class="sp-section-title">Measurables</div>
       <div class="sp-measurables">
-        <div class="sp-meas"><div class="sp-meas-val">${a.height}</div><div class="sp-meas-lbl">Height</div></div>
-        <div class="sp-meas"><div class="sp-meas-val">${a.forty}</div><div class="sp-meas-lbl">40-Yard</div></div>
-        <div class="sp-meas"><div class="sp-meas-val">${a.vertical}</div><div class="sp-meas-lbl">Vertical</div></div>
-        <div class="sp-meas"><div class="sp-meas-val">${a.gpa}</div><div class="sp-meas-lbl">GPA</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${a.height||'—'}</div><div class="sp-meas-lbl">Height</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${escHtml(verifiedValue(a,'twenty')||'—')}</div><div class="sp-meas-lbl">20-Yard</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${escHtml(verifiedValue(a,'shuttle')||'—')}</div><div class="sp-meas-lbl">5-10-5</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${escHtml(verifiedValue(a,'broad')||'—')}</div><div class="sp-meas-lbl">Broad Jump</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${a.forty||'—'}</div><div class="sp-meas-lbl">40-Yard</div></div>
+        <div class="sp-meas"><div class="sp-meas-val">${a.vertical||'—'}</div><div class="sp-meas-lbl">Vertical</div></div>
       </div>
+      ${verifiedBadge(a)}
     </div>
     <div class="sp-section">
       <div class="sp-section-title">About</div>

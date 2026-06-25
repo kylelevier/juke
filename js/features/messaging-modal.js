@@ -125,7 +125,13 @@
       : mode==='athlete'
         ? 'Search athletes by name…'
         : 'Search recruiters by name…';
-    return '<div class="msg-new-search-wrap">'
+    var context = mode==='athlete'
+      ? 'Find athletes by name. Results are limited to active JUKE profiles.'
+      : mode==='college_coach'
+        ? 'Find recruiters by name or school. Results are limited to active JUKE profiles.'
+        : 'Find recruiters, coaches, and recruiting coordinators by name or school.';
+    return '<div class="msg-new-context">' + _esc(context) + '</div>'
+      + '<div class="msg-new-search-wrap">'
       + '<input id="msg-new-search" class="msg-new-search" type="text" '
       +   'placeholder="'+placeholder+'" autocomplete="off" oninput="searchMsgRecipients(this.value)"/>'
       + '</div>'
@@ -200,7 +206,7 @@
       '<div id="msg-new-results" class="msg-new-results">'
         + (coaches.length
             ? coaches.map(function(u){ return _coachRow(u,school); }).join('')
-            : '<div class="msg-new-hint">No matching recruiters for this program. Search by name below.</div>')
+            : '<div class="msg-new-hint">No recruiters are linked to this program yet. Search all recruiters by name below.</div>')
       + '</div>'
       + '<div class="msg-new-search-wrap" style="margin-top:8px">'
         + '<input class="msg-new-search" type="text" placeholder="Search recruiters by name…" '
@@ -228,7 +234,7 @@
       if (r.error) { _paintSearchError(res, r.error); return; }
       res.innerHTML = (r.data||[]).length
         ? (r.data||[]).map(function(u){ return _coachRow(u,_pickedSchool||''); }).join('')
-        : '<div class="msg-new-hint">No matching recruiters found.</div>';
+        : '<div class="msg-new-hint">No matching recruiters found. Try a full name or school.</div>';
     }, 280);
   };
 
@@ -237,14 +243,14 @@
   // ── Start conversation + link to player_program ───────────
   window._msgStartWithSchool = async function(userId) {
     if (window.PREVIEW_TARGET_USER_ID) {
-      if (typeof showToast==='function') showToast('Preview mode is read-only.');
+      if (typeof showToast==='function') showToast("Preview mode — changes won't save.",'warning');
       return;
     }
     var modal = document.getElementById('msg-new-modal');
     if (modal) window._closeNewMsgModal();
 
     var r = await sb.rpc('get_or_create_conversation', {other_user_id:userId});
-    if (r.error) { if (typeof showToast==='function') showToast('Could not start conversation'); return; }
+    if (r.error) { if (typeof showToast==='function') showToast("Couldn't start that conversation — try again.",'error'); return; }
     var convId = r.data;
 
     // Link to player_programs row when school is known
@@ -273,7 +279,7 @@
       var query = q.trim().replace(/[%_,]/g,' ');
       var r = await _searchRecipients(query, roles, null);
       if (r.error) { _paintSearchError(res, r.error); return; }
-      if (!r.data||!r.data.length) { res.innerHTML='<div class="msg-new-hint">No matching people found.</div>'; return; }
+      if (!r.data||!r.data.length) { res.innerHTML='<div class="msg-new-hint">No matching people found. Try a full name or school.</div>'; return; }
       res.innerHTML = r.data.map(function(u){
         var color = ROLE_COLORS[u.role]||'#FF0080';
         var sub   = [ROLE_LABELS[u.role]||u.role,u.org].filter(Boolean).join(' · ');
@@ -290,12 +296,12 @@
   // ── openNewMsg — replaces messaging.js version ────────────
   window.openNewMsg = function(prefillId) {
     if (window.PREVIEW_TARGET_USER_ID) {
-      if (typeof showToast==='function') showToast('Preview mode is read-only.');
+      if (typeof showToast==='function') showToast("Preview mode — changes won't save.",'warning');
       return;
     }
     if (!sb||!currentUser) {
       if (_openPortalAuth()) return;
-      if (typeof showToast==='function') showToast('Sign in to start a conversation');
+      if (typeof showToast==='function') showToast('Sign in to message coaches.','warning');
       return;
     }
     var opts = (prefillId && typeof prefillId==='object') ? prefillId : null;

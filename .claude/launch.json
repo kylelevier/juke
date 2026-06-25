@@ -4,8 +4,8 @@
     {
       "name": "juke",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", ".", "-p", "3000", "--no-clipboard"],
-      "port": 3000
+      "runtimeArgs": ["serve", "-l", "4321", "."],
+      "port": 4321
     }
   ]
 }
