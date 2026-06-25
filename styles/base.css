@@ -53,6 +53,14 @@ header{background:#0D0D0D;border-bottom:none;padding:0 24px;position:sticky;top:
 .hd-badge{background:var(--columbia);color:#fff;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:4px;}
 .hd-admin-btn{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:pointer;transition:all .15s;}
 .hd-admin-btn:hover{border-color:#FF0080;color:#FF0080;}
+/* ── PROFILE PROGRESS PILL ── */
+#hd-profile-progress{display:flex;align-items:center;gap:7px;cursor:pointer;padding:5px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.12);transition:border-color .15s;flex-shrink:0;}
+#hd-profile-progress:hover{border-color:rgba(255,255,255,.28);}
+.hd-prog-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.hd-prog-pct{font-family:'Archivo Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em;line-height:1;}
+.hd-prog-lbl{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;line-height:1;}
+.hd-prog-bar{width:36px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.hd-prog-fill{height:100%;border-radius:2px;transition:width .4s;}
 /* ── AUTH ── */
 .auth-btn{background:var(--columbia);color:#fff;font-family:'Archivo Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:4px;border:none;cursor:pointer;transition:background .15s;white-space:nowrap;}
 .auth-btn:hover{background:var(--columbia-lt);}

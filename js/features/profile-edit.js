@@ -242,6 +242,7 @@ function saveProfile(){
   };
   lsSet('juke_player',d);
   cloudSave();
+  setTimeout(updateHeaderProfileProgress,50);
   const ind=document.getElementById('save-indicator');
   if(ind){ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),1500);}
 }

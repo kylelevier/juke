@@ -92,6 +92,7 @@
       +'<button class="juke-chip-dd-item juke-chip-dd-logout" onclick="jukeLogout()">Log Out</button>'
     +'</div>';
   chip.style.display='flex';
+  setTimeout(function(){if(typeof updateHeaderProfileProgress==='function')updateHeaderProfileProgress();},0);
   chip.addEventListener('click',function(e){
     if(e.target.closest('.juke-chip-dd')) return;
     document.getElementById('juke-chip-dd').classList.toggle('open');

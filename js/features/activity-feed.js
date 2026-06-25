@@ -223,7 +223,13 @@ function renderFeed(){
   var pred = FEED_FILTER_MAP[_activeFeedFilter]||FEED_FILTER_MAP.all;
   var items = buildFeed().filter(pred);
   if(!items.length){
-    el.innerHTML='<div class="feed-empty">Nothing here yet — check back as you build your profile.</div>';
+    var FEED_EMPTY={
+      all:'<div class="feed-empty"><strong>Your feed fills in as you build.</strong><p>Add schools to your board and fill in your profile — tips and activity will appear here.</p><button class="feed-empty-btn" onclick="switchTab(\'finder\')">Find Programs →</button></div>',
+      interest:'<div class="feed-empty"><strong>No interest signals yet.</strong><p>Coaches discover athletes with live, complete profiles. Publish yours to start showing up.</p><button class="feed-empty-btn" onclick="switchTab(\'profile\');setTimeout(openProfileEdit,150)">Publish my profile →</button></div>',
+      action:'<div class="feed-empty"><strong>Nothing urgent right now.</strong><p>When a school on your board goes quiet or needs a follow-up, it will show up here.</p></div>',
+      tips:'<div class="feed-empty"><strong>Tips appear as you go.</strong><p>Start your profile to unlock personalized recruiting tips and timeline reminders.</p><button class="feed-empty-btn" onclick="switchTab(\'profile\');setTimeout(openProfileEdit,150)">Start my profile →</button></div>',
+    };
+    el.innerHTML=FEED_EMPTY[_activeFeedFilter]||FEED_EMPTY.all;
     return;
   }
   el.innerHTML = items.map(feedItemHTML).join('');

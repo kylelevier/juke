@@ -250,7 +250,7 @@
 
     if (!threads.length) {
       list.innerHTML = '<div class="msg-thread-empty"><strong>No conversations yet.</strong><br>'
-        + '<span>Start a message from an athlete profile or use <strong>+ New Message</strong>.</span></div>';
+        + '<span>Reach out to a coach from any school on your board — or use <strong>+ New Message</strong> above to start a conversation.</span></div>';
       return;
     }
 

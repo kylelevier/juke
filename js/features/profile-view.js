@@ -1,3 +1,46 @@
+// ── PROFILE COMPLETENESS SCORE ───────────────────────────
+function calcProfileScore(){
+  var p=lsGet('juke_player')||{};
+  function g(k){
+    if(p[k]!==undefined&&p[k]!==null&&p[k]!=='')return p[k];
+    var s=k.replace(/^[ps]-/,'').replace(/-/g,'');
+    return(p[s]!==undefined&&p[s]!==null&&p[s]!=='')? p[s]:'';
+  }
+  var fields=[g('p-fname'),g('p-lname'),g('p-gradyr'),g('p-city'),g('p-school'),g('p-email'),
+    g('p-highlight'),g('p-gamefilm'),g('p-intro'),g('p-word1'),g('p-gpa'),g('p-sat'),
+    g('p-height'),g('p-weight'),g('p-forty'),g('p-vertical')];
+  var filled=fields.filter(function(v){return v&&v!=='';}).length;
+  var positions=p.positions||p._positions||[];
+  if(positions.length) filled+=2;
+  if(localStorage.getItem('juke_avatar')) filled+=1;
+  return Math.min(100,Math.round((filled/(fields.length+3))*100));
+}
+
+function _profileNextStep(score){
+  if(score===100)return'Profile complete ✓';
+  if(score<20)return'Add your name and grad year';
+  if(score<40)return'Add your highlight film link';
+  if(score<60)return'Add your GPA and city';
+  if(score<80)return'Write a short bio (In Her Own Words)';
+  return'Add measurables and season stats';
+}
+
+function updateHeaderProfileProgress(){
+  var el=document.getElementById('hd-profile-progress');
+  if(!el) return;
+  var score=calcProfileScore();
+  if(score===0){el.style.display='none';return;}
+  var color=score<40?'#FF4D4D':score<70?'#FF9800':'var(--columbia)';
+  el.style.display='flex';
+  el.title='Next: '+_profileNextStep(score);
+  el.innerHTML=
+    '<div class="hd-prog-bar"><div class="hd-prog-fill" style="width:'+score+'%;background:'+color+'"></div></div>'
+    +'<div class="hd-prog-wrap">'
+    +'<span class="hd-prog-pct" style="color:'+color+'">'+score+'%</span>'
+    +'<span class="hd-prog-lbl">Profile</span>'
+    +'</div>';
+}
+
 // ── PROFILE READ VIEW (dark card) ────────────────────────
 function pv(id){
   const el=document.getElementById(id);
@@ -239,6 +282,7 @@ function renderProfileView(){
   }
 
   container.innerHTML='<div class="dpc-inner">'+html+'</div>';
+  updateHeaderProfileProgress();
 }
 
 function openProfileEdit(){

@@ -303,6 +303,26 @@ async function _pdUp(e){
 // _boardMeta holds enriched data from Supabase: {schoolName: {...fields}}
 let _boardMeta={};
 
+async function _seedStarterBoard(){
+  if((lsGet('juke_board_seeded')||{}).done) return;
+  if(!RAW||!RAW.length) return;
+  const varsity=RAW.filter(r=>r['Varsity or Club']==='Varsity');
+  if(!varsity.length) return;
+  const d1=varsity.filter(r=>r['Division']==='Division I');
+  const d2=varsity.filter(r=>r['Division']==='Division II');
+  const d3=varsity.filter(r=>r['Division']==='Division III');
+  const pick=(arr,n)=>arr.slice(0,n);
+  const seed=[...pick(d1,2),...pick(d2,2),...pick(d3,1)].slice(0,5).map(r=>r.School);
+  if(!seed.length) return;
+  lsSet('juke_board_seeded',{done:true,ts:Date.now()});
+  for(const school of seed){
+    statusData[school]='saved';
+    await saveBoardStage(school,'saved');
+  }
+  lsSet('juke_status',statusData);
+  showToast?.('We added '+seed.length+' starter programs — move or remove them any time.');
+}
+
 async function renderPipeline(){
   _migrateStages();
   renderMilestoneRail();
@@ -325,6 +345,7 @@ async function renderPipeline(){
       console.error('JUKE board render failed:', err);
       showToast?.('Could not load your board. Showing this device draft.');
     }
+    if(!Object.keys(statusData).length) await _seedStarterBoard();
   }
   try{_renderBoardCols();}catch(err){
     console.error('JUKE board columns render failed:',err);
@@ -422,7 +443,7 @@ function _renderBoardCols(){
     body.className='pipeline-col-body';
     body.dataset.stage=stage.key;
     if(!schools.length){
-      const ph=document.createElement('div');ph.className='pipeline-empty-col';ph.textContent='Drop programs here';
+      const ph=document.createElement('div');ph.className='pipeline-empty-col';ph.textContent='Drag a card here or save a program from Find';
       body.appendChild(ph);
       col.style.display='none'; // collapse empty stages by default
     } else {
