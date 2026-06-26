@@ -73,9 +73,14 @@ test.describe('recruiter board persistence', () => {
     expect(readResult.error).toBeNull();
     expect(readResult.data?.stage).toBe('contacting');
 
-    // Isolation check: open a second unauthenticated client and confirm it
-    // cannot read this recruiter's pipeline row.
-    const isolationResult = await page.evaluate(async ({ url, key, athleteId }) => {
+    // Isolation check: open a fresh unauthenticated browser context and confirm
+    // it cannot read this recruiter's pipeline row.
+    const anonContext = await browser.newContext();
+    const anonPage = await anonContext.newPage();
+    await anonPage.goto('/pages/athlete.html');
+    await anonPage.waitForLoadState('networkidle');
+
+    const isolationResult = await anonPage.evaluate(async ({ url, key, athleteId }) => {
       const anonClient = supabase.createClient(url, key);
       const { data, error } = await anonClient
         .from('recruiter_pipeline')
@@ -84,6 +89,7 @@ test.describe('recruiter board persistence', () => {
         .maybeSingle();
       return { data, error: error ? error.message : null };
     }, { url: SUPABASE_URL, key: SUPABASE_KEY, athleteId: ATHLETE_USER_ID });
+    await anonContext.close();
 
     // RLS must block anon reads: data must be null (no row returned).
     expect(isolationResult.data).toBeNull();

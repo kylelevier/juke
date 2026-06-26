@@ -84,7 +84,26 @@ test.describe('admin deactivate', () => {
   });
 });
 
+test.describe('admin preview router', () => {
+  test('preview URL bypasses role router when admin auth is in localStorage', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('juke_auth', JSON.stringify({
+        name: 'Test Admin',
+        type: 'admin',
+        activeProfileId: 'primary',
+        profiles: [{ id: 'primary', type: 'admin', org: 'JUKE' }]
+      }));
+    });
+
+    await page.goto('/athlete?preview_as=00000000-0000-0000-0000-000000000000');
+    await page.waitForLoadState('domcontentloaded');
+
+    expect(new URL(page.url()).pathname).toBe('/athlete');
+  });
+});
+
 test.describe('admin preview', () => {
+
   test.beforeEach(({ page }) => {
     if (!ADMIN_EMAIL || !ADMIN_PW || !ATHLETE_USER_ID) {
       test.skip(true, 'Admin credentials / TEST_ATHLETE_USER_ID not set');
@@ -141,7 +160,7 @@ test.describe('admin preview', () => {
   });
 
   test('preview URL in athlete portal shows preview banner', async ({ page }) => {
-    await page.goto(`/pages/athlete.html?preview_as=${ATHLETE_USER_ID}`);
+    await page.goto(`/athlete?preview_as=${ATHLETE_USER_ID}`);
     await page.waitForLoadState('networkidle');
 
     // The preview banner must be visible (rendered by config.js).

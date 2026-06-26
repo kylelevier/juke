@@ -4,6 +4,56 @@
 const ls  = key => { try { return JSON.parse(localStorage.getItem('juke_hs_'+key)); } catch(e){ return null; } };
 const lss = (key,val) => { try { localStorage.setItem('juke_hs_'+key, JSON.stringify(val)); } catch(e){} };
 
+let _hsSaveStatusTimer=null;
+function _hsSaveStatus(text,tone){
+  let node=document.getElementById('hs-autosave-status');
+  if(!node){
+    node=document.createElement('div');
+    node.id='hs-autosave-status';
+    node.setAttribute('aria-live','polite');
+    node.style.cssText='position:fixed;right:18px;bottom:14px;z-index:40;font-size:11px;font-weight:600;color:#6b625d;background:rgba(255,255,255,.92);border:1px solid rgba(34,27,24,.12);border-radius:999px;padding:6px 10px;box-shadow:0 8px 24px rgba(34,27,24,.08);opacity:0;transform:translateY(4px);transition:opacity .18s ease,transform .18s ease;pointer-events:none;';
+    document.body.appendChild(node);
+  }
+  node.textContent=text;
+  node.style.color=tone==='error'?'#b91c1c':tone==='saving'?'#6b625d':'#166534';
+  node.style.opacity='1';
+  node.style.transform='translateY(0)';
+  clearTimeout(_hsSaveStatusTimer);
+  if(tone!=='error'){
+    _hsSaveStatusTimer=setTimeout(()=>{node.style.opacity='0';node.style.transform='translateY(4px)';},1800);
+  }
+}
+
+async function _hsBackgroundWrite(work,label){
+  const client=window.sb||window._hsSb||null;
+  const cu=window.currentUser||window._hsCurrentUser||null;
+  if(!client||!cu){
+    _hsSaveStatus('Saved on this device','saved');
+    return {local:true,error:null};
+  }
+  _hsSaveStatus(label||'Saving...','saving');
+  try{
+    const res=await work(client,cu);
+    if(res&&res.error) throw res.error;
+    _hsSaveStatus('Saved','saved');
+    return res||{error:null};
+  }catch(e){
+    console.warn('JUKE hs coach write failed:',e);
+    _hsSaveStatus('Could not save. We will keep it here.','error');
+    return {error:e};
+  }
+}
+
+function _hsShowLiveDataNotice(message){
+  const banner=el('demo-roster-banner');
+  if(!banner) return;
+  banner.style.display='';
+  const title=banner.querySelector('.drb-title');
+  const sub=banner.querySelector('.drb-sub');
+  if(title) title.textContent='Live roster unavailable';
+  if(sub) sub.textContent=message||'Showing sample athletes for now. Your live roster will appear when the connection is restored.';
+}
+
 // ──────────────────────────────────────────────
 // SAMPLE DATA
 // ──────────────────────────────────────────────
@@ -178,9 +228,10 @@ async function loadPublishedHsRoster(){
     // Use server-side school-matched RPC (replaces client-side fuzzy matching)
     const {data,error}=await client.rpc('get_hs_roster');
     if(error){
-      // RPC not available or school not set — fall through to demo
-      if(!/not authenticated|school not set/i.test(error.message||''))
-        console.warn('JUKE HS live roster load failed:', error);
+      console.warn('JUKE HS live roster load failed:', error);
+      _hsShowLiveDataNotice(/school not set/i.test(error.message||'')
+        ? 'Add your school in My Profile, then retry to load your live roster.'
+        : 'Showing sample athletes because the live roster could not load. Refresh or try again shortly.');
       return;
     }
     const live=(data||[])
@@ -347,6 +398,7 @@ async function submitHSEndorsement(id){
   if(!client){alert('Sign in to submit recommendations.');return;}
   var btn=document.querySelector('#endcard-'+CSS.escape(id)+' .epc-submit-btn');
   if(btn){btn.disabled=true;btn.textContent='Submitting...';}
+  _hsSaveStatus('Submitting...','saving');
   const {error}=await client.rpc('submit_recommendation', {
     request_id:id,
     recommendation_text:text,
@@ -354,11 +406,13 @@ async function submitHSEndorsement(id){
   });
   if(btn){btn.disabled=false;btn.textContent='Submit Recommendation';}
   if(error){
+    _hsSaveStatus('Could not submit recommendation.','error');
     alert(hsMissingRecommendationsBackend(error)
       ? 'Recommendation submission is not configured yet. Ask an admin to deploy submit_recommendation.'
       : 'Could not submit recommendation: '+error.message);
     return;
   }
+  _hsSaveStatus('Recommendation submitted','saved');
   var ok=document.getElementById('endsuccess-'+id);
   if(ok)ok.style.display='inline';
   setTimeout(function(){
@@ -519,19 +573,12 @@ function saveHSProfile(){
   if(window.JukeOnboarding){
     JukeOnboarding.mark('hs_coach','setupDone',{school:profile.school});
   }
-  // Backend write
-  const client=window.sb||window._hsSb||null;
-  const cu=window.currentUser||null;
-  if(client&&cu){
-    client.from('hs_coach_profiles').upsert({
+  _hsBackgroundWrite((client,cu)=>client.from('hs_coach_profiles').upsert({
       user_id:cu.id, fname:profile.fname, lname:profile.lname,
       title:profile.title, school:profile.school, city:profile.city,
       state:profile.state, league:profile.league, bio:profile.bio,
       updated_at:new Date().toISOString()
-    },{onConflict:'user_id'}).then(({error})=>{
-      if(error) console.warn('JUKE hs coach profile write failed:',error);
-    });
-  }
+    },{onConflict:'user_id'}),'Saving profile...');
   const msg = el('hs-save-msg');
   if(msg){ msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2200); }
 }
@@ -582,8 +629,7 @@ async function _hsUploadMedia(file, slot){
   const {data:{publicUrl}}=client.storage.from('hs-coach-media').getPublicUrl(path);
   // Persist url to hs_coach_profiles
   const col=slot==='banner'?'banner_url':'logo_url';
-  client.from('hs_coach_profiles').upsert({user_id:cu.id,[col]:publicUrl,updated_at:new Date().toISOString()},{onConflict:'user_id'})
-    .then(({error:e})=>{ if(e) console.warn('JUKE hs media url save failed:',e); });
+  _hsBackgroundWrite(()=>client.from('hs_coach_profiles').upsert({user_id:cu.id,[col]:publicUrl,updated_at:new Date().toISOString()},{onConflict:'user_id'}),'Saving photo...');
   return publicUrl;
 }
 

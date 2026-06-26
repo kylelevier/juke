@@ -42,7 +42,7 @@
     }
   }
   window.renderPreviewAthleteChip=renderPreviewChip;
-  if(window.PREVIEW_USER_ID){
+  if(window.PREVIEW_TARGET_USER_ID){
     renderPreviewChip(window.PREVIEW_PROFILE||null);
     return;
   }

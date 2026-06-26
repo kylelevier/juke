@@ -6,7 +6,11 @@ async function loadHsActivity(){
   if(!client) return;
   try{
     const {data,error}=await client.rpc('get_hs_activity');
-    if(error){ console.warn('JUKE hs activity load failed:',error); return; }
+    if(error){
+      console.warn('JUKE hs activity load failed:',error);
+      if(typeof _hsSaveStatus==='function') _hsSaveStatus('Could not load live activity.','error');
+      return;
+    }
     _hsLiveActivity = data||[];
     renderActivity();
   }catch(e){ console.warn('JUKE hs activity load failed:',e); }
@@ -237,6 +241,7 @@ function sendOutreach(){
   const drafts = (() => { try{ return JSON.parse(localStorage.getItem('juke_hs_outreach_drafts'))||[]; }catch(e){ return []; } })();
   drafts.unshift({ to, subj, body, athleteIds: selected, savedAt: new Date().toISOString() });
   try{ localStorage.setItem('juke_hs_outreach_drafts', JSON.stringify(drafts.slice(0,20))); }catch(e){}
+  if(typeof _hsSaveStatus==='function') _hsSaveStatus('Draft saved on this device','saved');
   if(window.JukeOnboarding){
     JukeOnboarding.mark('hs_coach','firstOutreach',{to,athleteIds:selected});
     JukeOnboarding.event('hs_coach','outreach_draft_saved',{to,athleteCount:selected.length});
@@ -387,13 +392,13 @@ function saveSPNote(id){
   const uid=s.startsWith('live_')?s.slice(5):null;
   const client=window.sb||window._hsSb||null;
   const cu=window.currentUser||null;
-  if(uid&&client&&cu){
-    client.from('hs_coach_notes').upsert({
+  if(uid&&client&&cu&&typeof _hsBackgroundWrite==='function'){
+    _hsBackgroundWrite((client,cu)=>client.from('hs_coach_notes').upsert({
       coach_id:cu.id, athlete_user_id:uid,
       content:content, updated_at:new Date().toISOString()
-    },{onConflict:'coach_id,athlete_user_id'}).then(({error})=>{
-      if(error) console.warn('JUKE hs coach note write failed:',error);
-    });
+    },{onConflict:'coach_id,athlete_user_id'}),'Saving note...');
+  } else if(typeof _hsSaveStatus==='function'){
+    _hsSaveStatus('Saved on this device','saved');
   }
 }
 
@@ -451,17 +456,20 @@ async function submitEndorse(){
     alert('Verified recommendations require a live athlete profile and backend recommendations workflow.');
     return;
   }
+  if(typeof _hsSaveStatus==='function') _hsSaveStatus('Submitting...','saving');
   const {data,error}=await client.rpc('submit_direct_recommendation', {
     athlete_user_id:athlete._userId,
     recommendation_text:text,
     traits:traits
   });
   if(error){
+    if(typeof _hsSaveStatus==='function') _hsSaveStatus('Could not submit recommendation.','error');
     alert(typeof hsMissingRecommendationsBackend==='function'&&hsMissingRecommendationsBackend(error)
       ? 'Direct recommendation backend is not configured yet.'
       : 'Could not submit recommendation: '+error.message);
     return;
   }
+  if(typeof _hsSaveStatus==='function') _hsSaveStatus('Recommendation submitted','saved');
   endorsements[endorseTarget] = {traits, text, date: new Date().toLocaleDateString(), id:data&&data.id};
   lss('endorsements', endorsements);
   if(window.JukeOnboarding){

@@ -1,4 +1,6 @@
 (function(){
+  if(/[?&]preview_as=/.test(location.href)) return;
+
   var auth=null;
   try{auth=JSON.parse(localStorage.getItem('juke_auth'));}catch(e){}
   if(!auth||!auth.name) return;

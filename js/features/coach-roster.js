@@ -138,9 +138,41 @@ function _athleteUserId(localId){
   return s.startsWith('live_') ? s.slice(5) : null;
 }
 function _coachUser(){ return window.currentUser||null; }
-function _coachFire(fn){
-  if(!window.sb||!_coachUser()) return;
-  Promise.resolve().then(fn).catch(e=>console.warn('JUKE recruiter write failed:',e));
+let _coachSaveStatusTimer=null;
+function _coachSaveStatus(text,tone){
+  let el=document.getElementById('coach-autosave-status');
+  if(!el){
+    el=document.createElement('div');
+    el.id='coach-autosave-status';
+    el.setAttribute('aria-live','polite');
+    el.style.cssText='position:fixed;right:18px;bottom:14px;z-index:40;font-size:11px;font-weight:600;color:#6b625d;background:rgba(255,255,255,.92);border:1px solid rgba(34,27,24,.12);border-radius:999px;padding:6px 10px;box-shadow:0 8px 24px rgba(34,27,24,.08);opacity:0;transform:translateY(4px);transition:opacity .18s ease,transform .18s ease;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent=text;
+  el.style.color=tone==='error'?'#b91c1c':tone==='saving'?'#6b625d':'#166534';
+  el.style.opacity='1';
+  el.style.transform='translateY(0)';
+  clearTimeout(_coachSaveStatusTimer);
+  if(tone!=='error'){
+    _coachSaveStatusTimer=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(4px)';},1800);
+  }
+}
+async function _coachFire(fn,label){
+  if(!window.sb||!_coachUser()){
+    _coachSaveStatus('Saved on this device','saved');
+    return {local:true,error:null};
+  }
+  _coachSaveStatus(label||'Saving...','saving');
+  try{
+    const res=await Promise.resolve().then(fn);
+    if(res&&res.error) throw res.error;
+    _coachSaveStatus('Saved','saved');
+    return res||{error:null};
+  }catch(e){
+    console.warn('JUKE recruiter write failed:',e);
+    _coachSaveStatus('Could not save. We will keep it here.','error');
+    return {error:e};
+  }
 }
 
 // Pull all recruiter state from backend and merge into in-memory store.

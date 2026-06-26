@@ -245,6 +245,11 @@ function _av(name){
 }
 
 function _quickAddBoard(id){
+  if(typeof _setStageKey==='function'){
+    _setStageKey(id,'identified');
+    renderCoachFeed();
+    return;
+  }
   if(!coachPipeline.identified) coachPipeline.identified=[];
   if(!coachHasId(coachPipeline.identified,id)) coachPipeline.identified.push(id);
   lss('pipeline', coachPipeline);
